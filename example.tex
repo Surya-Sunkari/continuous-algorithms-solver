@@ -1,0 +1,355 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{subcaption} % only if you want them side-by-side
+\usepackage{float}      % for [H] placement (optional)
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+
+\title{CS 395T Homework 1}
+\author{Surya Sunkari (svs879)}
+\date{February 5, 2026}
+
+\maketitle
+
+\section*{Problem 1}
+\subsection*{(i)}
+$F(\mathbf{x}) = f(A\mathbf{x} + \mathbf{b})$ is always convex.
+\begin{proof}
+Let $\mathbf{x}_1, \mathbf{x}_2 \in \mathbb{R}^n$ and $\lambda \in [0,1]$. Then:
+\begin{align*}
+F(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2) 
+&= f(A(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2) + \mathbf{b}) \\
+&= f(\lambda(A\mathbf{x}_1 + \mathbf{b}) + (1-\lambda)(A\mathbf{x}_2 + \mathbf{b})) \\
+&\leq \lambda f(A\mathbf{x}_1 + \mathbf{b}) + (1-\lambda)f(A\mathbf{x}_2 + \mathbf{b}) \quad \text{(convexity of } f\text{)} \\
+&= \lambda F(\mathbf{x}_1) + (1-\lambda)F(\mathbf{x}_2).
+\end{align*}
+\end{proof}
+
+\subsection*{(ii)}
+$F(\mathbf{x}) = \min_{\mathbf{y} \in \mathbb{R}^{[d]\setminus S}} f(\mathbf{x}, \mathbf{y})$ is always convex.
+\begin{proof}
+Let $\mathbf{x}_1, \mathbf{x}_2 \in \mathbb{R}^S$, $\lambda \in [0,1]$, and let $\mathbf{y}_1^*, \mathbf{y}_2^*$ be the minimizers achieving $F(\mathbf{x}_1)$ and $F(\mathbf{x}_2)$ respectively. Then:
+\begin{align*}
+F(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2) 
+&= \min_{\mathbf{y}} f(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2, \mathbf{y}) \\
+&\leq f(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2, \lambda \mathbf{y}_1^* + (1-\lambda)\mathbf{y}_2^*) \\
+&\leq \lambda f(\mathbf{x}_1, \mathbf{y}_1^*) + (1-\lambda)f(\mathbf{x}_2, \mathbf{y}_2^*) \quad \text{(convexity of } f\text{)} \\
+&= \lambda F(\mathbf{x}_1) + (1-\lambda)F(\mathbf{x}_2).
+\end{align*}
+\end{proof}
+
+\subsection*{(iii)}
+$F(\mathbf{x}) = g(f(\mathbf{x}))$ with $g$ strictly convex is NOT always convex.
+
+\bigskip\noindent\textit{Counterexample.}
+Let $d=1$, $f(x) = |x|$ (convex), and $g(t) = (t-1)^2$ (strictly convex).
+Then $F(x) = (|x| - 1)^2$. We check convexity at $x_1 = -1$, $x_2 = 1$, $\lambda = \frac{1}{2}$:
+\[
+F\left(\frac{1}{2}(-1) + \frac{1}{2}(1)\right) = F(0) = (0-1)^2 = 1,
+\]
+\[
+\frac{1}{2}F(-1) + \frac{1}{2}F(1) = \frac{1}{2}(0) + \frac{1}{2}(0) = 0.
+\]
+Since $1 > 0$, convexity is violated. 
+
+\subsection*{(iv)}
+$F(\mathbf{x}) = g(f(\mathbf{x}))$ with $g$ convex and monotone nondecreasing is always convex.
+\begin{proof}
+Let $\mathbf{x}_1, \mathbf{x}_2 \in \mathbb{R}^d$ and $\lambda \in [0,1]$. By convexity of $f$:
+\[
+f(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2) \leq \lambda f(\mathbf{x}_1) + (1-\lambda)f(\mathbf{x}_2).
+\]
+Since $g$ is monotone nondecreasing:
+\[
+g\bigl(f(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2)\bigr) \leq g\bigl(\lambda f(\mathbf{x}_1) + (1-\lambda)f(\mathbf{x}_2)\bigr).
+\]
+Since $g$ is convex:
+\[
+g\bigl(\lambda f(\mathbf{x}_1) + (1-\lambda)f(\mathbf{x}_2)\bigr) \leq \lambda g(f(\mathbf{x}_1)) + (1-\lambda)g(f(\mathbf{x}_2)).
+\]
+Combining, we get: $F(\lambda \mathbf{x}_1 + (1-\lambda)\mathbf{x}_2) \leq \lambda F(\mathbf{x}_1) + (1-\lambda)F(\mathbf{x}_2)$.
+\end{proof}
+
+\section*{Problem 2}
+\subsection*{(i)}
+We are given $A$, which optimizes $L$-smooth functions over $\mathbb{R}^d$ to additive error $\varepsilon$ in time $\frac{L^2}{\varepsilon}$.
+
+\textbf{Construction of $A'$:} Given $f$ that is $L$-smooth, target accuracy $\varepsilon > 0$, and target runtime $\tau > 0$:
+\begin{enumerate}
+    \item Choose scaling parameter $\beta = \left(\frac{\tau \varepsilon}{L^2}\right)^{1/4}$.
+    \item Define $F(\mathbf{x}) := f(\beta \mathbf{x})$.
+    \item Run $A$ on $F$ with accuracy $\varepsilon$ to obtain $\mathbf{x}^*$.
+    \item Return $\mathbf{y}^* := \beta \mathbf{x}^*$.
+\end{enumerate}
+
+\textbf{Smoothness of $F$:} We verify that $F$ is $(\beta^2 L)$-smooth. Since $\nabla F(\mathbf{x}) = \beta \nabla f(\beta \mathbf{x})$:
+\[
+\|\nabla F(\mathbf{x}) - \nabla F(\mathbf{y})\|_2 = \beta \|\nabla f(\beta \mathbf{x}) - \nabla f(\beta \mathbf{y})\|_2 \leq \beta \cdot L \cdot \beta \|\mathbf{x} - \mathbf{y}\|_2 = \beta^2 L \|\mathbf{x} - \mathbf{y}\|_2.
+\]
+
+\textbf{Runtime:} The runtime of $A$ on $F$ is:
+\[
+\frac{(\beta^2 L)^2}{\varepsilon} = \frac{\beta^4 L^2}{\varepsilon} = \frac{\tau \varepsilon}{L^2} \cdot \frac{L^2}{\varepsilon} = \tau.
+\]
+
+\textbf{Correctness:} Since $F(\mathbf{x}^*) - \min_{\mathbf{x}} F(\mathbf{x}) \leq \varepsilon$ and $F(\mathbf{x}) = f(\beta \mathbf{x})$, we have
+\[
+f(\mathbf{y}^*) - \min_{\mathbf{z} \in \mathbb{R}^d} f(\mathbf{z}) = f(\beta \mathbf{x}^*) - \min_{\mathbf{z}} f(\mathbf{z}) \leq \varepsilon.
+\]
+
+\subsection*{(ii)}
+We are given $A$, which optimizes $L$-Lipschitz functions over $B(R)$ to additive error $\varepsilon$ in time $\frac{LR^2}{\varepsilon}$.
+
+\textbf{Construction of $A'$:} Given $f$ that is $L$-Lipschitz on $B(R)$, target accuracy $\varepsilon > 0$, and target runtime $\tau > 0$:
+\begin{enumerate}
+    \item Choose scaling parameter $\beta = \frac{LR^2}{\tau \varepsilon}$.
+    \item Define $F(\mathbf{x}) := f(\beta \mathbf{x})$ for $\mathbf{x} \in B(R/\beta)$.
+    \item Run $A$ on $F$ with accuracy $\varepsilon$ to obtain $\mathbf{x}^*$.
+    \item Return $\mathbf{y}^* := \beta \mathbf{x}^*$.
+\end{enumerate}
+
+\textbf{Lipschitz constant of $F$:} We verify that $F$ is $(\beta L)$-Lipschitz on $B(R/\beta)$:
+\[
+|F(\mathbf{x}) - F(\mathbf{y})| = |f(\beta \mathbf{x}) - f(\beta \mathbf{y})| \leq L\|\beta \mathbf{x} - \beta \mathbf{y}\|_2 = \beta L \|\mathbf{x} - \mathbf{y}\|_2.
+\]
+
+\textbf{Runtime:} The runtime of $A$ on $F$ with Lipschitz constant $\beta L$ and radius $R/\beta$ is:
+\[
+\frac{(\beta L)(R/\beta)^2}{\varepsilon} = \frac{LR^2}{\beta \varepsilon} = \frac{LR^2 \cdot \tau \varepsilon}{LR^2 \cdot \varepsilon} = \tau.
+\]
+
+\textbf{Correctness:} Since $F(\mathbf{x}^*) - \min_{\mathbf{x} \in B(R/\beta)} F(\mathbf{x}) \leq \varepsilon$, we have
+\[
+f(\mathbf{y}^*) - \min_{\mathbf{z} \in B(R)} f(\mathbf{z}) \leq \varepsilon,
+\]
+and $\|\mathbf{y}^*\|_2 = \beta \|\mathbf{x}^*\|_2 \leq \beta \cdot (R/\beta) = R$, so $\mathbf{y}^* \in B(R)$.
+
+\section*{Problem 3}
+\subsection*{(i)}
+We show that if $f$ is twice-differentiable and $1$-smooth in $\ell_\infty$, then $\mathrm{Tr}(\nabla^2 f(\mathbf{x})) \leq 1$.
+
+\begin{proof}
+By Lemma 14 (Part II), $1$-smoothness in $\ell_\infty$ implies:
+\[
+\nabla^2 f(\mathbf{x})[\mathbf{v}, \mathbf{v}] = \mathbf{v}^\top \nabla^2 f(\mathbf{x}) \mathbf{v} \leq \|\mathbf{v}\|_\infty^2 \quad \text{for all } \mathbf{v} \in \mathbb{R}^d.
+\]
+Let $H := \nabla^2 f(\mathbf{x})$. Consider a random sign vector $\boldsymbol{\sigma} \in \{-1, +1\}^d$ where each component is independently $\pm 1$ with equal probability. Note that $\|\boldsymbol{\sigma}\|_\infty = 1$ for all such vectors, so:
+\[
+\boldsymbol{\sigma}^\top H \boldsymbol{\sigma} \leq 1 \quad \text{for every } \boldsymbol{\sigma} \in \{-1,+1\}^d.
+\]
+Taking the expectation over the uniform distribution on $\{-1,+1\}^d$:
+\[
+\mathbb{E}[\boldsymbol{\sigma}^\top H \boldsymbol{\sigma}] = \mathbb{E}\left[\sum_{i,j} H_{ij} \sigma_i \sigma_j\right] = \sum_{i,j} H_{ij} \mathbb{E}[\sigma_i \sigma_j].
+\]
+Since $\sigma_i$ and $\sigma_j$ are independent for $i \neq j$ with $\mathbb{E}[\sigma_i] = 0$:
+\[
+\mathbb{E}[\sigma_i \sigma_j] = \begin{cases} 1 & \text{if } i = j \\ 0 & \text{if } i \neq j \end{cases}
+\]
+Therefore:
+\[
+\mathrm{Tr}(H) = \sum_{i=1}^d H_{ii} = \mathbb{E}[\boldsymbol{\sigma}^\top H \boldsymbol{\sigma}] \leq 1.
+\]
+\end{proof}
+
+\subsection*{(ii)}
+We show that if $f$ is $1$-strongly convex in $\ell_\infty$, then $\max_{\mathcal{X}} f - \min_{\mathcal{X}} f \geq \frac{d}{2}$.
+
+\begin{proof}
+By Definition 4 (Part II) with $\mu = 1$ and $\lambda = \frac{1}{2}$, $1$-strong convexity in $\ell_\infty$ gives:
+\[
+\frac{f(\mathbf{x}) + f(\mathbf{y})}{2} \geq f\left(\frac{\mathbf{x}+\mathbf{y}}{2}\right) + \frac{1}{8}\|\mathbf{x} - \mathbf{y}\|_\infty^2.
+\]
+\textbf{Claim:} $\displaystyle\mathbb{E}_{\mathbf{v} \in \{-1,+1\}^d}[f(\mathbf{v})] \geq f(\mathbf{0}) + \frac{d}{2}$. \\
+\textit{Proof by induction on $d$:} 
+
+\text{Base case ($d=1$):} For $\mathbf{x} = -1$ and $\mathbf{y} = 1$, we have $\|\mathbf{x}-\mathbf{y}\|_\infty = 2$, so:
+\[
+\frac{f(-1) + f(1)}{2} \geq f(0) + \frac{1}{8} \cdot 4 = f(0) + \frac{1}{2}.
+\]
+
+\text{Inductive step:} Assume the claim holds for dimension $d-1$. For each $\mathbf{w} \in \{-1,+1\}^{d-1}$, consider the pair of vertices $(+1, \mathbf{w})$ and $(-1, \mathbf{w})$ in $\{-1,+1\}^d$. Their midpoint is $(0, \mathbf{w})$, and $\|(+1,\mathbf{w}) - (-1,\mathbf{w})\|_\infty = 2$. By strong convexity:
+\[
+\frac{f((+1,\mathbf{w})) + f((-1,\mathbf{w}))}{2} \geq f((0,\mathbf{w})) + \frac{1}{2}.
+\]
+
+Averaging over all $\mathbf{w} \in \{-1,+1\}^{d-1}$:
+\[
+\mathbb{E}_{\mathbf{v} \in \{-1,+1\}^d}[f(\mathbf{v})] \geq \mathbb{E}_{\mathbf{w} \in \{-1,+1\}^{d-1}}[f((0,\mathbf{w}))] + \frac{1}{2}.
+\]
+
+Define $g(\mathbf{w}) := f((0,\mathbf{w}))$ for $\mathbf{w} \in \mathbb{R}^{d-1}$. We verify $g$ is $1$-strongly convex in $\ell_\infty^{d-1}$: for any $\mathbf{w}, \mathbf{w}' \in \mathbb{R}^{d-1}$ and $\lambda \in [0,1]$,
+\begin{align*}
+g((1-\lambda)\mathbf{w} + \lambda \mathbf{w}') &= f((0, (1-\lambda)\mathbf{w} + \lambda \mathbf{w}')) \\
+&\leq (1-\lambda)f((0,\mathbf{w})) + \lambda f((0,\mathbf{w}')) - \frac{\lambda(1-\lambda)}{2}\|(0,\mathbf{w}-\mathbf{w}')\|_\infty^2 \\
+&= (1-\lambda)g(\mathbf{w}) + \lambda g(\mathbf{w}') - \frac{\lambda(1-\lambda)}{2}\|\mathbf{w}-\mathbf{w}'\|_\infty^2.
+\end{align*}
+
+By the inductive hypothesis applied to $g$:
+\[
+\mathbb{E}_{\mathbf{w} \in \{-1,+1\}^{d-1}}[g(\mathbf{w})] \geq g(\mathbf{0}) + \frac{d-1}{2} = f(\mathbf{0}) + \frac{d-1}{2}.
+\]
+
+Therefore:
+\[
+\mathbb{E}_{\mathbf{v} \in \{-1,+1\}^d}[f(\mathbf{v})] \geq f(\mathbf{0}) + \frac{d-1}{2} + \frac{1}{2} = f(\mathbf{0}) + \frac{d}{2}.
+\]
+
+\noindent\textbf{Conclusion:} By the claim, some vertex $\mathbf{v}^* \in \{-1,+1\}^d$ satisfies $f(\mathbf{v}^*) \geq f(\mathbf{0}) + \frac{d}{2}$. Since $\mathbf{0} \in \mathcal{X}$, we have $\min_{\mathcal{X}} f \leq f(\mathbf{0})$, and thus:
+\[
+\max_{\mathcal{X}} f - \min_{\mathcal{X}} f \geq f(\mathbf{v}^*) - f(\mathbf{0}) \geq \frac{d}{2}.
+\]
+\end{proof}
+
+\section*{Problem 4}
+\subsection*{(i)}
+We show that $\|\mathbf{x}_{t+1} - \mathbf{x}^\star\|_2 \le \|\mathbf{x}_t - \mathbf{x}^\star\|_2$ for all $0 \le t < T$.
+
+\begin{proof}
+\textbf{Case 1:} $\|\mathbf{x}_t - \mathbf{x}^\star\|_2 \le r$. Then $\mathbf{x}^\star \in B(\mathbf{x}_t, r)$, so $\mathbf{x}_{t+1} = \mathbf{x}^\star$ (since $\mathbf{x}^\star$ is the unique global minimizer by strict convexity). Thus $\|\mathbf{x}_{t+1} - \mathbf{x}^\star\|_2 = 0 \le \|\mathbf{x}_t - \mathbf{x}^\star\|_2$.
+
+\textbf{Case 2:} $\|\mathbf{x}_t - \mathbf{x}^\star\|_2 > r$. Since $\mathbf{x}_{t+1}$ minimizes $f$ over the convex set $B(\mathbf{x}_t, r)$, by the first-order optimality condition, there exists $\mathbf{g} \in \partial f(\mathbf{x}_{t+1})$ such that:
+\[
+\langle \mathbf{g}, \mathbf{y} - \mathbf{x}_{t+1} \rangle \ge 0 \quad \text{for all } \mathbf{y} \in B(\mathbf{x}_t, r).
+\]
+
+If $\mathbf{x}_{t+1}$ is in the interior of the ball, then $\mathbf{g} = \mathbf{0}$, implying $\mathbf{x}_{t+1} = \mathbf{x}^\star$, contradicting $\mathbf{x}^\star \notin B(\mathbf{x}_t, r)$. Thus $\mathbf{x}_{t+1}$ is on the boundary, and $\mathbf{g} = \lambda(\mathbf{x}_t - \mathbf{x}_{t+1})$ through the normal cone of the ball for some $\lambda \ge 0$ (the inward normal direction).
+
+Since $\mathbf{x}^\star$ is the global minimizer and $\mathbf{g} \in \partial f(\mathbf{x}_{t+1})$, by the subgradient inequality:
+\[
+f(\mathbf{x}^\star) \ge f(\mathbf{x}_{t+1}) + \langle \mathbf{g}, \mathbf{x}^\star - \mathbf{x}_{t+1} \rangle.
+\]
+Since $f(\mathbf{x}^\star) < f(\mathbf{x}_{t+1})$ (strict convexity, $\mathbf{x}_{t+1} \neq \mathbf{x}^\star$), we have $\langle \mathbf{g}, \mathbf{x}^\star - \mathbf{x}_{t+1} \rangle < 0$, so $\lambda > 0$ and:
+\[
+\langle \mathbf{x}_t - \mathbf{x}_{t+1}, \mathbf{x}^\star - \mathbf{x}_{t+1} \rangle < 0 \quad \Longrightarrow \quad \langle \mathbf{x}_t - \mathbf{x}_{t+1}, \mathbf{x}_{t+1} - \mathbf{x}^\star \rangle > 0.
+\]
+Expanding the squared distance:
+\[
+\|\mathbf{x}_t - \mathbf{x}^\star\|_2^2 = \|(\mathbf{x}_t - \mathbf{x}_{t+1}) + (\mathbf{x}_{t+1} - \mathbf{x}^\star)\|_2^2 = \|\mathbf{x}_t - \mathbf{x}_{t+1}\|_2^2 + \|\mathbf{x}_{t+1} - \mathbf{x}^\star\|_2^2 + 2\langle \mathbf{x}_t - \mathbf{x}_{t+1}, \mathbf{x}_{t+1} - \mathbf{x}^\star \rangle.
+\]
+Since $\langle \mathbf{x}_t - \mathbf{x}_{t+1}, \mathbf{x}_{t+1} - \mathbf{x}^\star \rangle > 0$, we conclude:
+\[
+\|\mathbf{x}_t - \mathbf{x}^\star\|_2^2 > \|\mathbf{x}_{t+1} - \mathbf{x}^\star\|_2^2.
+\]
+\end{proof}
+
+\subsection*{(ii)}
+We show that $f(\mathbf{x}_T) - f(\mathbf{x}^\star) \le \left(1 - \frac{r}{R}\right)^T (f(\mathbf{x}_0) - f(\mathbf{x}^\star))$.
+
+\begin{proof}
+By part (i), $\|\mathbf{x}_t - \mathbf{x}^\star\|_2 \le \|\mathbf{x}_0 - \mathbf{x}^\star\|_2 = R$ for all $t \ge 0$.
+
+\textbf{Case 1:} $r \ge R$. Then $\mathbf{x}^\star \in B(\mathbf{x}_0, r)$, so $\mathbf{x}_1 = \mathbf{x}^\star$ and $f(\mathbf{x}_T) = f(\mathbf{x}^\star)$ for all $T \ge 1$. The bound holds trivially since the left side is zero.
+
+\textbf{Case 2:} $r < R$. For each $t \ge 0$, define:
+\[
+\alpha_t := \min\left\{1, \frac{r}{\|\mathbf{x}_t - \mathbf{x}^\star\|_2}\right\} \in [0,1], \qquad \mathbf{p}_t := (1 - \alpha_t)\mathbf{x}_t + \alpha_t \mathbf{x}^\star.
+\]
+We verify $\mathbf{p}_t \in B(\mathbf{x}_t, r)$:
+\[
+\|\mathbf{p}_t - \mathbf{x}_t\|_2 = \alpha_t \|\mathbf{x}^\star - \mathbf{x}_t\|_2 = \min\{r, \|\mathbf{x}_t - \mathbf{x}^\star\|_2\} \le r.
+\]
+Since $\mathbf{x}_{t+1} = \mathcal{O}(\mathbf{x}_t)$ minimizes $f$ over $B(\mathbf{x}_t, r)$ and $\mathbf{p}_t \in B(\mathbf{x}_t, r)$:
+\[
+f(\mathbf{x}_{t+1}) \le f(\mathbf{p}_t).
+\]
+Since $\alpha_t \in [0,1]$, we can apply convexity of $f$:
+\[
+f(\mathbf{p}_t) \le (1 - \alpha_t) f(\mathbf{x}_t) + \alpha_t f(\mathbf{x}^\star).
+\]
+Subtracting $f(\mathbf{x}^\star)$ from both sides:
+\[
+f(\mathbf{x}_{t+1}) - f(\mathbf{x}^\star) \le (1 - \alpha_t)(f(\mathbf{x}_t) - f(\mathbf{x}^\star)).
+\]
+Now we bound $1 - \alpha_t$. Since $\|\mathbf{x}_t - \mathbf{x}^\star\|_2 \le R$:
+\[
+\alpha_t = \min\left\{1, \frac{r}{\|\mathbf{x}_t - \mathbf{x}^\star\|_2}\right\} \ge \min\left\{1, \frac{r}{R}\right\} = \frac{r}{R},
+\]
+where the last equality uses $r < R$. Therefore:
+\[
+1 - \alpha_t \le 1 - \frac{r}{R}.
+\]
+Since $f(\mathbf{x}_t) - f(\mathbf{x}^\star) \ge 0$, we obtain:
+\[
+f(\mathbf{x}_{t+1}) - f(\mathbf{x}^\star) \le \left(1 - \frac{r}{R}\right)(f(\mathbf{x}_t) - f(\mathbf{x}^\star)).
+\]
+Iterating this inequality for $t = 0, 1, \ldots, T-1$:
+\[
+f(\mathbf{x}_T) - f(\mathbf{x}^\star) \le \left(1 - \frac{r}{R}\right)^T (f(\mathbf{x}_0) - f(\mathbf{x}^\star)).
+\]
+\end{proof}
+
+
+\section*{Problem 5}
+\subsection*{(i)}
+We show that $\frac{d}{dt}\phi(t) \le 0$ for all $t \ge 0$, where $\phi(t) := \frac{1}{2}\|\mathbf{x}_t - \mathbf{x}^\star\|_2^2$.
+
+\begin{proof}
+Computing the derivative using the chain rule:
+\begin{align*}
+\frac{d}{dt}\phi(t) &= \frac{d}{dt}\left(\frac{1}{2}\|\mathbf{x}_t - \mathbf{x}^\star\|_2^2\right) \\
+&= \left\langle \mathbf{x}_t - \mathbf{x}^\star, \frac{d}{dt}\mathbf{x}_t \right\rangle \\
+&= \langle \mathbf{x}_t - \mathbf{x}^\star, -\nabla f(\mathbf{x}_t) \rangle \\
+&= -\langle \nabla f(\mathbf{x}_t), \mathbf{x}_t - \mathbf{x}^\star \rangle.
+\end{align*}
+By convexity of $f$, for any $\mathbf{x}, \mathbf{y} \in \mathbb{R}^d$:
+\[
+f(\mathbf{y}) \ge f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{y} - \mathbf{x} \rangle.
+\]
+Applying this with $\mathbf{x} = \mathbf{x}_t$ and $\mathbf{y} = \mathbf{x}^\star$:
+\[
+f(\mathbf{x}^\star) \ge f(\mathbf{x}_t) + \langle \nabla f(\mathbf{x}_t), \mathbf{x}^\star - \mathbf{x}_t \rangle.
+\]
+Rearranging:
+\[
+\langle \nabla f(\mathbf{x}_t), \mathbf{x}_t - \mathbf{x}^\star \rangle \ge f(\mathbf{x}_t) - f(\mathbf{x}^\star) \ge 0,
+\]
+where the last inequality holds since $\mathbf{x}^\star$ is a global minimizer.
+Therefore:
+\[
+\frac{d}{dt}\phi(t) = -\langle \nabla f(\mathbf{x}_t), \mathbf{x}_t - \mathbf{x}^\star \rangle \le 0.
+\]
+\end{proof}
+
+
+\subsection*{(ii)}
+We show that $f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star) \le \frac{\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{2T}$.
+
+\begin{proof}
+Since $f$ is convex and $\bar{\mathbf{x}} = \frac{1}{T}\int_0^T \mathbf{x}_t\,dt$ is a convex combination (continuous average), Jensen's inequality gives:
+\[
+f(\bar{\mathbf{x}}) = f\left(\frac{1}{T}\int_0^T \mathbf{x}_t\,dt\right) \le \frac{1}{T}\int_0^T f(\mathbf{x}_t)\,dt.
+\]
+Thus it suffices to show:
+\[
+\frac{1}{T}\int_0^T f(\mathbf{x}_t)\,dt - f(\mathbf{x}^\star) \le \frac{\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{2T}.
+\]
+From the computation in part (i), we established:
+\[
+\frac{d}{dt}\phi(t) = -\langle \nabla f(\mathbf{x}_t), \mathbf{x}_t - \mathbf{x}^\star \rangle \le -(f(\mathbf{x}_t) - f(\mathbf{x}^\star)).
+\]
+Rearranging:
+\[
+f(\mathbf{x}_t) - f(\mathbf{x}^\star) \le -\frac{d}{dt}\phi(t).
+\]
+Integrating both sides from $0$ to $T$:
+\[
+\int_0^T (f(\mathbf{x}_t) - f(\mathbf{x}^\star))\,dt \le -\int_0^T \frac{d}{dt}\phi(t)\,dt = \phi(0) - \phi(T).
+\]
+Since $\phi(T) = \frac{1}{2}\|\mathbf{x}_T - \mathbf{x}^\star\|_2^2 \ge 0$:
+\[
+\int_0^T (f(\mathbf{x}_t) - f(\mathbf{x}^\star))\,dt \le \phi(0) = \frac{1}{2}\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2.
+\]
+Dividing by $T$ and combining with Step 1:
+\[
+f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star) \le \frac{1}{T}\int_0^T (f(\mathbf{x}_t) - f(\mathbf{x}^\star))\,dt \le \frac{\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{2T}.
+\]
+\end{proof}
+
+
+\end{document}
+
