@@ -1,7 +1,11 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
-      "WebFetch(domain:*)"
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch"
     ]
   }
 }
