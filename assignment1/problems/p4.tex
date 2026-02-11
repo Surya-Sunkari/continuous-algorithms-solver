@@ -1,0 +1,17 @@
+Let $f : \mathbb{R}^d \to \mathbb{R}$ be a continuous and strictly convex function, let $r \geq 0$, and let $\mathcal{O}$ be an oracle which takes as input $\mathbf{x} \in \mathbb{R}^d$ and returns the minimizer of $f$ in $\mathbb{B}(\mathbf{x}, r)$, i.e.,
+\[
+\mathcal{O}(\mathbf{x}) = \operatorname{argmin}_{\mathbf{x}' \in \mathbb{B}(\mathbf{x}, r)} f(\mathbf{x}').
+\]
+Suppose that $\mathbf{x}^\star := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$ exists. Consider iterating the update, from some $\mathbf{x}_0 \in \mathbb{R}^d$,
+\[
+\mathbf{x}_{t+1} \leftarrow \mathcal{O}(\mathbf{x}_t), \quad \text{for all } 0 \leq t < T.
+\]
+
+\begin{enumerate}[(i)]
+\item Prove that for all $0 \leq t < T$, $\|\mathbf{x}_{t+1} - \mathbf{x}^\star\|_2 \leq \|\mathbf{x}_t - \mathbf{x}^\star\|_2$.
+
+\item Let $R := \|\mathbf{x}_0 - \mathbf{x}^\star\|_2$. Prove that
+\[
+f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \left(1 - \frac{r}{R}\right)^T (f(\mathbf{x}_0) - f(\mathbf{x}^\star)).
+\]
+\end{enumerate}

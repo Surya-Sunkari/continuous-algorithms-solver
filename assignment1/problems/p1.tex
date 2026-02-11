@@ -1,0 +1,15 @@
+Let $f : \mathbb{R}^d \to \mathbb{R}$ be a convex function. For each of the following functions $F$ derived from $f$, either prove $F$ is always convex, or give a counterexample showing $F$ may not always be convex.
+
+\begin{enumerate}[(i)]
+\item Let $g(\mathbf{x}) := \mathbf{A}\mathbf{x} + \mathbf{b}$ for $\mathbf{A} \in \mathbb{R}^{d \times n}$, $\mathbf{b} \in \mathbb{R}^d$,\footnote{In other words, let $g$ be an \emph{affine} function.} and let $F(\mathbf{x}) := f(g(\mathbf{x}))$ for $\mathbf{x} \in \mathbb{R}^n$.
+
+\item Let $S \subseteq [d]$ and let $F$ be a partial minimization of $f$ over $[d] \setminus S$, i.e., for $\mathbf{x} \in \mathbb{R}^S$, let
+\[
+F(\mathbf{x}) := \min_{\mathbf{y} \in \mathbb{R}^{[d] \setminus S}} f(\mathbf{x}, \mathbf{y})
+\]
+where $(\mathbf{x}, \mathbf{y}) \in \mathbb{R}^d$ is associated with coordinates of $[d]$ in the natural way. Assume that the minimum is always achieved for any $\mathbf{x} \in \mathbb{R}^S$.
+
+\item Let $g : \mathbb{R} \to \mathbb{R}$ be strictly convex, and let $F(\mathbf{x}) = g(f(\mathbf{x}))$.
+
+\item Let $g : \mathbb{R} \to \mathbb{R}$ be convex and monotone nondecreasing, and let $F(\mathbf{x}) = g(f(\mathbf{x}))$.
+\end{enumerate}

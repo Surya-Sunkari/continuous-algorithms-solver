@@ -1,0 +1,7 @@
+In each of the following cases, given access to an algorithm $\mathcal{A}$ achieving a purported runtime on a class of functions $\mathcal{F}$, design another optimization algorithm $\mathcal{A}'$ which calls $\mathcal{A}$, and can optimize functions in $\mathcal{F}$ to $\epsilon$ additive error, in $\tau$ time for an arbitrarily small $\tau > 0$, for any $\epsilon > 0$.\footnote{Clearly, this means such a purported runtime for $\mathcal{A}$ is impossible. In all cases, the culprit is non-\textit{scale-invariant} runtimes; this problem is a lesson on common sanity checks which can be applied to runtimes claimed in papers.}
+
+\begin{enumerate}[(i)]
+\item $\mathcal{A}$ can optimize $L$-smooth functions over $\mathbb{R}^d$ to $\epsilon$ additive error in time $\frac{L^2}{\epsilon}$. Here, $\mathcal{F}$ is the class of $L$-smooth functions over $\mathbb{R}^d$, for some finite $L > 0$.
+
+\item $\mathcal{A}$ can optimize $L$-Lipschitz functions over $\mathbb{B}(R)$ to $\epsilon$ additive error in time $\frac{LR^2}{\epsilon}$. Here, $\mathcal{F}$ is the class of $L$-Lipschitz functions supported on $\mathbb{B}(R)$, for some finite $L, R > 0$.
+\end{enumerate}

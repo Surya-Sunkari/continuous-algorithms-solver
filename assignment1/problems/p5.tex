@@ -1,0 +1,10 @@
+Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex and $L$-smooth for $L > 0$,\footnote{This is enough to conclude the ODE has a unique solution, by the Picard-Lindel\"of theorem.} and let $\mathbf{x}^\star \in \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$. Consider the gradient flow ODE discussed in class, i.e., let $\frac{d}{dt}\mathbf{x}_t = -\nabla f(\mathbf{x}_t)$ for all $t \geq 0$.
+
+\begin{enumerate}[(i)]
+\item Prove that, for $\Phi(t) := \frac{1}{2}\|\mathbf{x}_t - \mathbf{x}^\star\|_2^2$, we have $\frac{d}{dt}\Phi(t) \leq 0$ for all $t \geq 0$.
+
+\item Prove that, for $T \geq 0$ and $\bar{\mathbf{x}} = \frac{1}{T}\int_0^T \mathbf{x}_t \, dt$, we have
+\[
+f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star) \leq \frac{\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{2T}.
+\]
+\end{enumerate}
