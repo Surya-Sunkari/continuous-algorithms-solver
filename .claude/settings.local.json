@@ -5,7 +5,11 @@
       "Read",
       "Edit",
       "Write",
-      "WebFetch"
+      "WebFetch",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)"
     ]
   }
 }

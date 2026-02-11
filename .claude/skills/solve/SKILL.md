@@ -15,12 +15,25 @@ Execute the following phases in order. Do NOT skip any phase.
 
 ---
 
+## IMPORTANT: Subagent Output Strategy
+
+All subagents in this skill MUST write their output to files using the Write tool, NOT return text in their response. This ensures the main agent can reliably read subagent results.
+
+- Solution draft subagents write to: `$ARGUMENTS/.drafts/pN_solution.tex`
+- Verification subagents write to: `$ARGUMENTS/.drafts/pN_verification.txt`
+- Style check subagents write to: `$ARGUMENTS/.drafts/pN_style.tex` (corrected) or `$ARGUMENTS/.drafts/pN_style.txt` (APPROVED)
+
+The main agent creates `$ARGUMENTS/.drafts/` before launching subagents and cleans it up after assembly.
+
+---
+
 ## PHASE 1: Validation & Setup
 
 1. Verify that `$ARGUMENTS/problems/` exists and contains `.tex` files. If not, stop and tell the user.
 2. Verify that `$ARGUMENTS/notes/` exists and contains `.pdf` files. If not, stop and tell the user.
 3. Read `example.tex` from the project root to internalize the formatting conventions.
 4. Create the `knowledge_base/` directory at the project root if it does not exist.
+5. Create `$ARGUMENTS/.drafts/` for intermediate subagent output files.
 
 ---
 
@@ -96,21 +109,22 @@ MATHEMATICAL RIGOR:
 - Check that cited theorem hypotheses are satisfied
 - Introduce all variables before use
 
-Produce the complete LaTeX solution for this problem. Output ONLY the LaTeX content (no preamble, no \begin{document} — just the \section*{Problem N} through the end of the last proof environment).
+Produce the complete LaTeX solution for this problem (no preamble, no \begin{document} — just the \section*{Problem N} through the end of the last proof environment).
+
+IMPORTANT: Use the Write tool to save your solution to: [path to $ARGUMENTS/.drafts/pN_solution.tex]
+Do NOT just output the text — you MUST write it to the file.
 ```
 
 ### Step B: Proof Verification
 
-Launch a SEPARATE Task subagent (subagent_type: "general-purpose", model: "opus") with this prompt:
+After the draft subagent completes, launch a SEPARATE Task subagent (subagent_type: "general-purpose", model: "opus"):
 
 ```
 You are a rigorous mathematical proof verifier for a graduate Continuous Algorithms course. Your job is to find errors — be skeptical and thorough.
 
-ORIGINAL PROBLEM:
-[paste the full problem text]
+Read the original problem from: [path to $ARGUMENTS/problems/pN.tex]
 
-PROPOSED SOLUTION:
-[paste the draft solution from Step A]
+Read the proposed solution from: [path to $ARGUMENTS/.drafts/pN_solution.tex]
 
 AVAILABLE THEOREMS:
 [paste the theorems cited in the solution, from the knowledge base]
@@ -125,27 +139,32 @@ Verify the solution by checking EACH of the following:
 6. ALGEBRAIC CORRECTNESS: Check key algebraic manipulations, especially signs, exponents, and factoring.
 7. CONCLUSION: Does the final statement actually prove what was asked?
 
-If you find ANY errors, output them as:
+IMPORTANT: Use the Write tool to save your verdict to: [path to $ARGUMENTS/.drafts/pN_verification.txt]
+Write either "VERIFIED" if the proof is correct, or list errors as:
 ERROR: [description of the error, which step it's in, and what the correct approach should be]
-
-If the proof is correct, output exactly: VERIFIED
 
 Be extremely thorough. It is better to flag a potential issue than to miss a real error.
 ```
 
-**If the verifier returns errors:**
-- Take the error feedback and launch a NEW solution generator subagent with the original problem PLUS the error feedback. Include the instruction: "The previous attempt had these errors: [errors]. Fix them while maintaining the same formatting and style."
-- Re-verify the new solution with a fresh verifier subagent.
-- Repeat up to 3 times. If still failing after 3 attempts, include the best attempt in the solution but add a LaTeX comment `% NOTE: This solution could not be fully verified — review manually` at the top of that problem's section.
+**After the verifier completes, read `pN_verification.txt`:**
+- If VERIFIED, proceed to Step C.
+- If errors were found:
+  - Launch a NEW solution generator subagent with the original problem PLUS the error feedback. Instruct it to read `pN_solution.tex`, fix the listed errors, and overwrite the file.
+  - Launch a fresh verifier to re-check and overwrite `pN_verification.txt`.
+  - Repeat up to 3 times. If still failing after 3 attempts, prepend a LaTeX comment `% NOTE: This solution could not be fully verified — review manually` to the solution file.
 
 ### Step C: Style & Formatting Check
 
-After verification passes, launch a Task subagent (subagent_type: "general-purpose", model: "sonnet") with this prompt:
+After verification passes, launch a Task subagent (subagent_type: "general-purpose", model: "sonnet"):
 
 ```
 You are a style and formatting editor for a LaTeX math homework document.
 
-REFERENCE DOCUMENT STYLE (example.tex patterns):
+Read the reference document style from: example.tex (in the project root)
+
+Read the solution to check from: [path to $ARGUMENTS/.drafts/pN_solution.tex]
+
+REFERENCE PATTERNS (from example.tex):
 - \section*{Problem N} for problem headings
 - \subsection*{(i)} for subparts (lowercase roman numerals)
 - \begin{proof}...\end{proof} for proofs
@@ -155,22 +174,19 @@ REFERENCE DOCUMENT STYLE (example.tex patterns):
 - \bigskip\noindent\textit{Counterexample.} for counterexamples
 - Parenthetical justifications in math: \quad \text{(reason)}
 
-SOLUTION TO CHECK:
-[paste the verified solution]
-
 Check for:
 1. FORMATTING: Does it match the reference patterns above exactly?
 2. AI-SOUNDING PHRASES: Flag any of these — "delve", "it's important to note", "let's", "straightforward", "it can be shown that", "obviously", "clearly" (unless truly trivial), "we can see that", "interestingly", "notably", "crucial", "vital", "in order to", excessive "Note that"
 3. TONE: Does it sound like a strong, confident math student? Not like a textbook, not like AI?
 4. LATEX CORRECTNESS: Are there any LaTeX syntax issues?
 
-If changes are needed, output the corrected LaTeX.
-If no changes needed, output exactly: APPROVED
-
-When making corrections, output ONLY the corrected LaTeX content.
+If changes are needed, use the Write tool to save the CORRECTED LaTeX to: [path to $ARGUMENTS/.drafts/pN_style.tex]
+If no changes needed, use the Write tool to write "APPROVED" to: [path to $ARGUMENTS/.drafts/pN_style.txt]
 ```
 
-If changes were made, use the corrected version. Store the final solution for this problem.
+**After the style checker completes:**
+- If `pN_style.txt` exists and says APPROVED, the solution in `pN_solution.tex` is final.
+- If `pN_style.tex` exists, that corrected version is the final solution.
 
 ---
 
@@ -178,13 +194,17 @@ If changes were made, use the corrected version. Store the final solution for th
 
 1. Read `example.tex` to extract the preamble (everything from `\documentclass` through `\maketitle`).
 2. Extract the homework number from the folder name (e.g., "assignment2" → 2).
-3. Construct the full `solution.tex`:
+3. For each problem, read the final solution:
+   - If `$ARGUMENTS/.drafts/pN_style.tex` exists, use that.
+   - Otherwise use `$ARGUMENTS/.drafts/pN_solution.tex`.
+4. Construct the full `solution.tex`:
    - Use the same preamble as example.tex
    - Update `\title{CS 395T Homework N}` with the correct number
    - Update `\date{...}` with today's date
    - Concatenate all problem solutions in order
    - Close with `\end{document}`
-4. Write the file to `$ARGUMENTS/solution.tex`.
+5. Write the file to `$ARGUMENTS/solution.tex`.
+6. Delete the `$ARGUMENTS/.drafts/` directory and all its contents.
 
 ---
 

@@ -13,7 +13,8 @@ homework_solver/
 │   ├── solve/SKILL.md           # The /solve skill
 │   └── convert/SKILL.md         # The /convert skill
 ├── assignmentN/
-│   ├── screenshots/             # Input: problem screenshots (for /convert)
+│   ├── homework.pdf             # Input: full homework PDF (for /convert, PDF mode)
+│   ├── screenshots/             # Input: problem screenshots (for /convert, screenshot mode)
 │   │   ├── problem1/            #   one folder per problem with image files
 │   │   ├── problem2/
 │   │   └── ...
@@ -29,10 +30,16 @@ homework_solver/
 2. Create `assignmentN/notes/` and place relevant lecture note PDFs
 3. Run `/solve assignmentN`
 
-### Option B: Problems as screenshots
+### Option B: Problems as a single PDF
+1. Place the homework PDF in `assignmentN/` (e.g., `assignmentN/homework.pdf`)
+2. Create `assignmentN/notes/` and place relevant lecture note PDFs
+3. Run `/convert assignmentN` — auto-detects the PDF, splits into individual `.tex` files in `assignmentN/problems/`
+4. Run `/solve assignmentN`
+
+### Option C: Problems as screenshots
 1. Create `assignmentN/screenshots/problem1/`, `problem2/`, etc. and place screenshot images in each
 2. Create `assignmentN/notes/` and place relevant lecture note PDFs
-3. Run `/convert assignmentN` — this converts screenshots to `.tex` files in `assignmentN/problems/`
+3. Run `/convert assignmentN` — converts screenshots to `.tex` files in `assignmentN/problems/`
 4. Run `/solve assignmentN`
 
 ## Knowledge Base
