@@ -31,7 +31,7 @@ The main agent creates `$ARGUMENTS/.drafts/` before launching subagents and clea
 
 1. Verify that `$ARGUMENTS/problems/` exists and contains `.tex` files. If not, stop and tell the user.
 2. Verify that `$ARGUMENTS/notes/` exists and contains `.pdf` files. If not, stop and tell the user.
-3. Read `example.tex` from the project root to internalize the formatting conventions.
+3. Read `example.tex` from the project root to internalize the formatting conventions, if available.
 4. Create the `knowledge_base/` directory at the project root if it does not exist.
 5. Create `$ARGUMENTS/.drafts/` for intermediate subagent output files.
 
@@ -86,7 +86,7 @@ PROBLEM:
 AVAILABLE THEOREMS FROM LECTURE NOTES:
 [paste relevant theorems from the knowledge base YAML files]
 
-FORMATTING RULES (from example.tex — follow EXACTLY):
+FORMATTING RULES (from example.tex, if available — follow EXACTLY):
 - Use \begin{proof}...\end{proof} for proofs
 - Use align* for multi-line math, \[...\] for single display math
 - Use \textbf{Case N:} for case analysis
@@ -95,7 +95,7 @@ FORMATTING RULES (from example.tex — follow EXACTLY):
 - No problem restatement — start directly with the solution
 - Subparts use \subsection*{(i)}, \subsection*{(ii)}, etc.
 
-WRITING STYLE (match example.tex exactly):
+WRITING STYLE (match example.tex exactly, if available):
 - Confident, direct, terse prose
 - Minimal text between equations — let the math carry the argument
 - No filler phrases (see CLAUDE.md for the full banned list)
@@ -160,11 +160,11 @@ After verification passes, launch a Task subagent (subagent_type: "general-purpo
 ```
 You are a style and formatting editor for a LaTeX math homework document.
 
-Read the reference document style from: example.tex (in the project root)
+Read the reference document style from: example.tex, if available (in the project root)
 
 Read the solution to check from: [path to $ARGUMENTS/.drafts/pN_solution.tex]
 
-REFERENCE PATTERNS (from example.tex):
+REFERENCE PATTERNS (from example.tex, if available):
 - \section*{Problem N} for problem headings
 - \subsection*{(i)} for subparts (lowercase roman numerals)
 - \begin{proof}...\end{proof} for proofs
@@ -192,13 +192,13 @@ If no changes needed, use the Write tool to write "APPROVED" to: [path to $ARGUM
 
 ## PHASE 5: Assembly
 
-1. Read `example.tex` to extract the preamble (everything from `\documentclass` through `\maketitle`).
+1. Read `example.tex` (if available) to extract the preamble (everything from `\documentclass` through `\maketitle`).
 2. Extract the homework number from the folder name (e.g., "assignment2" → 2).
 3. For each problem, read the final solution:
    - If `$ARGUMENTS/.drafts/pN_style.tex` exists, use that.
    - Otherwise use `$ARGUMENTS/.drafts/pN_solution.tex`.
 4. Construct the full `solution.tex`:
-   - Use the same preamble as example.tex
+   - Use the same preamble as example.tex, if available.
    - Update `\title{CS 395T Homework N}` with the correct number
    - Update `\date{...}` with today's date
    - Concatenate all problem solutions in order

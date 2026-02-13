@@ -1,0 +1,241 @@
+source: "Part2_main.pdf"
+lecture_number: 2
+title: "CS395T: Continuous Algorithms, Part II — Gradient descent"
+items:
+  - type: lemma
+    number: "1"
+    name: "Value oracle lower bound"
+    statement: |
+      No algorithm $\mathcal{A}$ which accesses a target $f : [0,1] \to [0,1]$ using a value oracle can optimize $f$ to additive error $< 1$ in a finite number of queries.
+    context: "Shows value oracles alone are insufficient for optimization without structure."
+
+  - type: definition
+    number: "1"
+    name: "Lipschitzness"
+    statement: |
+      $f : \mathcal{X} \to \mathbb{R}$ is $L$-Lipschitz with respect to norm $\|\cdot\|$ if $|f(\mathbf{x}) - f(\mathbf{x}')| \leq L \|\mathbf{x} - \mathbf{x}'\|$ for all $\mathbf{x}, \mathbf{x}' \in \mathcal{X}$. If $\|\cdot\| = \|\cdot\|_2$, we simply say $f$ is $L$-Lipschitz.
+    context: "Regularity condition bounding rate of change of function values."
+
+  - type: lemma
+    number: "2"
+    name: "Lipschitz characterization via subgradients"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be convex and $L$-Lipschitz for $\mathcal{X} \subseteq \mathbb{R}^d$, $\mathbf{x} \in \mathrm{relint}(\mathcal{X})$, and $\mathbf{g} \in \partial f(\mathbf{x})$ in the lowest-dimensional subspace containing $\mathcal{X}$. Then $\|\mathbf{g}\|_2 \leq L$. Conversely, if $\|\mathbf{g}\|_2 \leq L$ for all such subgradients, then $f$ is $L$-Lipschitz over $\mathrm{relint}(\mathcal{X})$.
+    context: "Subgradient norms characterize Lipschitz constant."
+
+  - type: lemma
+    number: "3"
+    name: "Norms are 1-Lipschitz"
+    statement: |
+      Let $f(\mathbf{x}) = \|\mathbf{x}\|$ for some norm $\|\cdot\|$. Then $f$ is 1-Lipschitz with respect to $\|\cdot\|$.
+    context: "Basic Lipschitz function example."
+
+  - type: definition
+    number: "2"
+    name: "Packings and coverings"
+    statement: |
+      Let $S, T \subset \mathbb{R}^d$ and $\epsilon > 0$. $\{T_i\}_{i \in [n]}$ is an $\epsilon$-packing of $S$ by $T$ if $T_i = \{\mathbf{x}_i\} \oplus \epsilon T$ are pairwise disjoint subsets of $S$. It is an $\epsilon$-covering if $\bigcup T_i \supseteq S$.
+    context: "Metric entropy concepts for lower bounds."
+
+  - type: lemma
+    number: "5"
+    name: "Lipschitz value oracle lower bound"
+    statement: |
+      Let $L > \epsilon > 0$. No algorithm accessing a target $L$-Lipschitz function $f : \mathbb{B}(\mathbf{0}_d, 1) \to \mathbb{R}$ using a value oracle can optimize $f$ to additive error $\epsilon$ in $< (\frac{L}{2\epsilon})^d - 1$ queries.
+    context: "Exponential-in-dimension lower bound for value-oracle Lipschitz optimization."
+
+  - type: theorem
+    number: "1"
+    name: "Lipschitz convex lower bound"
+    statement: |
+      Let $\epsilon, L, R > 0$. No algorithm $\mathcal{A}$ accessing a target $L$-Lipschitz convex function $f : \mathbb{B}(\mathbf{0}_d, R) \to \mathbb{R}$ using a subgradient oracle $\mathcal{O}$ can optimize $f$ to additive error $\epsilon$ using $T < \min(d, (\frac{LR}{4\epsilon})^2)$ queries, subject to the span restriction.
+    context: "Lower bound $\Omega(\frac{L^2 R^2}{\epsilon^2})$ for Lipschitz convex optimization. Matched by projected subgradient descent."
+
+  - type: theorem
+    number: "2"
+    name: "Projected gradient descent"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be convex and $L$-Lipschitz for $\mathcal{X} \subseteq \mathbb{B}(\mathbf{0}_d, R)$. Iterating $\mathbf{g}_t \in \partial f(\mathbf{x}_t)$, $\mathbf{x}_{t+1} \leftarrow \Pi_\mathcal{X}(\mathbf{x}_t - \eta \mathbf{g}_t)$ with $\eta = \frac{R}{L\sqrt{T}}$ and $\bar{\mathbf{x}} = \frac{1}{T}\sum \mathbf{x}_t$: $f(\bar{\mathbf{x}}) - \min_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x}) \leq \frac{LR}{\sqrt{T}}$.
+    context: "Optimal algorithm for Lipschitz convex optimization. Rate $O(\frac{LR}{\sqrt{T}})$."
+
+  - type: definition
+    number: "3"
+    name: "Smoothness"
+    statement: |
+      $f : \mathbb{R}^d \to \mathbb{R}$ is $L$-smooth with respect to norm $\|\cdot\|$ if $f$ is differentiable and $\nabla f$ is $L$-Lipschitz: $\|\nabla f(\mathbf{x}') - \nabla f(\mathbf{x})\|_* \leq L \|\mathbf{x} - \mathbf{x}'\|$ for all $\mathbf{x}, \mathbf{x}' \in \mathbb{R}^d$. If $\|\cdot\| = \|\cdot\|_2$, we simply say $f$ is $L$-smooth.
+    context: "Key regularity condition. Implies gradient is stable, enabling gradient descent."
+
+  - type: lemma
+    number: "6"
+    name: "Smoothness characterization"
+    statement: |
+      If $f : \mathbb{R}^d \to \mathbb{R}$ is differentiable and convex, then $f$ is $L$-smooth iff $f(\mathbf{x}') \leq f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle + \frac{L}{2}\|\mathbf{x}' - \mathbf{x}\|_2^2$ for all $\mathbf{x}, \mathbf{x}'$. If twice-differentiable (possibly nonconvex), $f$ is $L$-smooth iff $|\nabla^2 f(\mathbf{x})[\mathbf{v}, \mathbf{v}]| \leq L\|\mathbf{v}\|_2^2$ for all $\mathbf{x}, \mathbf{v}$.
+    context: "Quadratic upper bound characterization. Used constantly in smooth optimization."
+
+  - type: corollary
+    number: "2"
+    name: "Gradient descent progress"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth. Then for $\mathbf{x}' = \mathbf{x} - \frac{1}{L}\nabla f(\mathbf{x})$: $f(\mathbf{x}') \leq f(\mathbf{x}) - \frac{1}{2L}\|\nabla f(\mathbf{x})\|_2^2$.
+    context: "Each gradient step decreases function value. Key to convergence proofs."
+
+  - type: lemma
+    number: "7"
+    name: "Stationary point finding"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth with $f(\mathbf{x}_0) - \min f \leq \Delta$. Iterating $\mathbf{x}_{t+1} = \mathbf{x}_t - \frac{1}{L}\nabla f(\mathbf{x}_t)$ for $T \geq \frac{2L\Delta}{\epsilon^2}$ gives $\min_{0 \leq t < T} \|\nabla f(\mathbf{x}_t)\|_2 \leq \epsilon$.
+    context: "Gradient descent finds approximate stationary points even for nonconvex smooth functions."
+
+  - type: theorem
+    number: "3"
+    name: "Smooth gradient descent"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and convex with $\|\mathbf{x}_0 - \mathbf{x}^\star\|_2 \leq R$. Iterating $\mathbf{x}_{t+1} = \mathbf{x}_t - \frac{1}{L}\nabla f(\mathbf{x}_t)$: $f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \frac{2LR^2}{T}$.
+    context: "Convergence rate for smooth convex optimization. Rate $O(\frac{LR^2}{T})$."
+
+  - type: lemma
+    number: "8"
+    name: "Gradient descent contractivity"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and convex, and let $\mathbf{x}' = \mathbf{x} - \eta \nabla f(\mathbf{x})$ for $\eta \leq \frac{1}{L}$. Then for $\mathbf{x}^\star \in \mathrm{argmin} f$: $\|\mathbf{x}' - \mathbf{x}^\star\|_2 \leq \|\mathbf{x} - \mathbf{x}^\star\|_2$.
+    context: "Gradient descent iterates do not move farther from optimum."
+
+  - type: definition
+    number: "4"
+    name: "Strong convexity"
+    statement: |
+      $f : \mathcal{X} \to \mathbb{R}$ is $\mu$-strongly convex with respect to $\|\cdot\|$ if for all $\mathbf{x}, \mathbf{x}' \in \mathbb{R}^d$ and $\lambda \in [0,1]$: $f((1-\lambda)\mathbf{x} + \lambda\mathbf{x}') \leq (1-\lambda)f(\mathbf{x}) + \lambda f(\mathbf{x}') - \frac{\mu\lambda(1-\lambda)}{2}\|\mathbf{x} - \mathbf{x}'\|^2$. If $\|\cdot\| = \|\cdot\|_2$, we simply say $f$ is $\mu$-strongly convex.
+    context: "Stronger than convexity — enforces quadratic growth. Yields linear convergence."
+
+  - type: lemma
+    number: "9"
+    name: "Strong convexity characterizations"
+    statement: |
+      If $f$ is differentiable, $f$ is $\mu$-strongly convex iff $f(\mathbf{x}') \geq f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle + \frac{\mu}{2}\|\mathbf{x}' - \mathbf{x}\|_2^2$ for all $\mathbf{x}, \mathbf{x}'$. If twice-differentiable, iff $\nabla^2 f(\mathbf{x})[\mathbf{v}, \mathbf{v}] \geq \mu \|\mathbf{v}\|_2^2$ for all $\mathbf{x}, \mathbf{v}$.
+    context: "First-order and second-order characterizations of strong convexity."
+
+  - type: corollary
+    number: "3"
+    name: "Gradient dominance for strongly convex functions"
+    statement: |
+      Let $f$ be $\mu$-strongly convex with $\mathbf{x}^\star = \mathrm{argmin} f$. Then $f(\mathbf{x}) - f(\mathbf{x}^\star) \leq \frac{1}{2\mu}\|\nabla f(\mathbf{x})\|_2^2$.
+    context: "Implies the Polyak-Lojasiewicz condition with $C = 2\mu$."
+
+  - type: theorem
+    number: "4"
+    name: "Well-conditioned gradient descent"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and $\mu$-strongly convex with $\kappa = L/\mu \geq 1$. Iterating $\mathbf{x}_{t+1} = \mathbf{x}_t - \frac{1}{L}\nabla f(\mathbf{x}_t)$: $f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq (1 - \frac{1}{\kappa})^T (f(\mathbf{x}_0) - f(\mathbf{x}^\star))$.
+    context: "Linear convergence for well-conditioned (smooth + strongly convex) functions."
+
+  - type: theorem
+    number: "5"
+    name: "Well-conditioned lower bound"
+    statement: |
+      Let $\kappa \geq 1$ and $\epsilon \in (0,1)$. No algorithm accessing a target $L$-smooth, $\mu$-strongly convex function with $\kappa = L/\mu$ using a gradient oracle can optimize $f$ to $\epsilon$-multiplicative error using $T < \frac{\sqrt{\kappa}-1}{2}\log(\frac{1}{\kappa\epsilon})$ queries (subject to span restriction).
+    context: "Lower bound $\Omega(\sqrt{\kappa} \log \frac{1}{\epsilon})$ for well-conditioned optimization. Gap with Theorem 4 closed by acceleration."
+
+  - type: definition
+    number: "5"
+    name: "Laplacian"
+    statement: |
+      Let $G = (V, E, \mathbf{w})$ be an undirected graph. The Laplacian matrix is $\mathbf{L}_G := \mathbf{D}_G - \mathbf{A}_G$, where $\mathbf{D}_G$ is the diagonal degree matrix and $\mathbf{A}_G$ is the weighted adjacency matrix.
+    context: "Used in constructing hard instances for lower bounds."
+
+  - type: definition
+    number: "6"
+    name: "Dual norm"
+    statement: |
+      For a norm $\|\cdot\|$ on $\mathbb{R}^d$, the dual norm is $\|\mathbf{x}\|_* := \max_{\|\mathbf{y}\| \leq 1} \langle \mathbf{x}, \mathbf{y} \rangle$.
+    context: "Key concept for general-norm optimization. The dual of $\ell_p$ is $\ell_q$ with $1/p + 1/q = 1$."
+
+  - type: lemma
+    number: "12"
+    name: "Dual norm properties"
+    statement: |
+      For any norm $\|\cdot\|$ on $\mathbb{R}^d$, $\|\cdot\|_*$ is a norm, $\langle \mathbf{x}, \mathbf{y} \rangle \leq \|\mathbf{x}\| \|\mathbf{y}\|_*$ for all $\mathbf{x}, \mathbf{y}$. Moreover, $\|\cdot\|_{**} = \|\cdot\|$.
+    context: "Generalized Cauchy-Schwarz and biduality of norms."
+
+  - type: lemma
+    number: "13"
+    name: "Lipschitz in general norms"
+    statement: |
+      If $f : \mathcal{X} \to \mathbb{R}$ is convex and $L$-Lipschitz, $\mathbf{x} \in \mathrm{relint}(\mathcal{X})$, and $\mathbf{g} \in \partial f(\mathbf{x})$, then $\|\mathbf{g}\|_* \leq L$.
+    context: "General-norm version of subgradient bound for Lipschitz functions."
+
+  - type: lemma
+    number: "14"
+    name: "Smoothness and strong convexity in general norms"
+    statement: |
+      If $f : \mathbb{R}^d \to \mathbb{R}$ is differentiable and convex, then $f$ is $L$-smooth w.r.t. $\|\cdot\|$ iff $f(\mathbf{x}') \leq f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle + \frac{L}{2}\|\mathbf{x}' - \mathbf{x}\|^2$ for all $\mathbf{x}, \mathbf{x}'$. If twice-differentiable (possibly nonconvex), iff $|\nabla^2 f(\mathbf{x})[\mathbf{v}, \mathbf{v}]| \leq L\|\mathbf{v}\|^2$ for all $\mathbf{x}, \mathbf{v}$. Similarly, $f$ is $\mu$-strongly convex w.r.t. $\|\cdot\|$ iff $f(\mathbf{x}') \geq f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle + \frac{\mu}{2}\|\mathbf{x}' - \mathbf{x}\|^2$. If twice-differentiable, iff $\nabla^2 f(\mathbf{x})[\mathbf{v}, \mathbf{v}] \geq \mu\|\mathbf{v}\|^2$ for all $\mathbf{x}, \mathbf{v}$.
+    context: "General-norm characterizations of smoothness and strong convexity. Used in Problem 3."
+
+  - type: corollary
+    number: "4"
+    name: "Gradient descent progress in general norms"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth w.r.t. $\|\cdot\|$. Then for $\mathbf{x}' = \mathrm{argmin}_{\mathbf{x}'} f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle + \frac{L}{2}\|\mathbf{x}' - \mathbf{x}\|^2$: $f(\mathbf{x}') \leq f(\mathbf{x}) - \frac{1}{2L}\|\nabla f(\mathbf{x})\|_*^2$.
+    context: "General-norm version of gradient descent progress guarantee."
+
+  - type: theorem
+    number: "6"
+    name: "Smooth gradient descent in general norms"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth w.r.t. $\|\cdot\|$ and convex, with $\max_{\mathbf{x}: f(\mathbf{x}) \leq f(\mathbf{x}_0)} \|\mathbf{x} - \mathbf{x}^\star\| \leq R$. Iterating $\mathbf{x}_{t+1} = \mathbf{x}_t - \frac{1}{L}\|\nabla f(\mathbf{x}_t)\|_* \mathbf{v}_t$ where $\|\mathbf{v}_t\| = 1$ and $\langle \nabla f(\mathbf{x}_t), \mathbf{v}_t \rangle = \|\nabla f(\mathbf{x}_t)\|_*$: $f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \frac{2LR^2}{T}$.
+    context: "General-norm smooth gradient descent. Same rate as Euclidean case."
+
+  - type: definition
+    number: "7"
+    name: "Proximal oracle"
+    statement: |
+      $\mathcal{O}$ is a proximal oracle for $\psi : \mathbb{R}^d \to \mathbb{R}$ if for any $\mathbf{v} \in \mathbb{R}^d$ and $\lambda \in \mathbb{R}_{\geq 0}$, $\mathcal{O}(\lambda, \mathbf{v})$ returns $\mathrm{argmin}_{\mathbf{x} \in \mathbb{R}^d} \frac{\lambda}{2}\|\mathbf{x} - \mathbf{v}\|_2^2 + \psi(\mathbf{x})$.
+    context: "Enables optimization of composite objectives $F = f + \psi$."
+
+  - type: theorem
+    number: "7"
+    name: "Proximal well-conditioned gradient descent"
+    statement: |
+      Let $f$ be $L$-smooth and convex, $\psi$ admit a proximal oracle, $F = f + \psi$ be $\mu$-strongly convex, $\kappa = L/\mu$. Iterating $\mathbf{x}_{t+1} = \mathrm{argmin}_\mathbf{x} \langle \nabla f(\mathbf{x}_t), \mathbf{x} - \mathbf{x}_t \rangle + \frac{L}{2}\|\mathbf{x} - \mathbf{x}_t\|_2^2 + \psi(\mathbf{x})$: $F(\mathbf{x}_T) - F(\mathbf{x}^\star) \leq (1 - \frac{1}{\kappa+1})^T(F(\mathbf{x}_0) - F(\mathbf{x}^\star))$.
+    context: "Linear convergence for composite well-conditioned optimization."
+
+  - type: theorem
+    number: "8"
+    name: "Proximal smooth gradient descent"
+    statement: |
+      Under same setup as Theorem 7 but without strong convexity, with $\max_{\mathbf{x}: F(\mathbf{x}) \leq F(\mathbf{x}_0)} \|\mathbf{x} - \mathbf{x}^\star\|_2 \leq R$: $F(\mathbf{x}_T) - F(\mathbf{x}^\star) \leq \frac{2LR^2}{T-1}$.
+    context: "Sublinear convergence for smooth composite optimization."
+
+  - type: remark
+    number: "1"
+    name: "Lipschitz lower bound with strong convexity"
+    statement: |
+      Theorem 1 further shows that $\Omega(\min(d, \frac{L^2}{\alpha\epsilon}))$ queries are necessary when $f$ is both $L$-Lipschitz and $\alpha$-strongly convex. This lower bound is also optimal.
+    context: "Tight lower bound for Lipschitz + strongly convex optimization."
+
+  - type: remark
+    number: "4"
+    name: "Reduction between well-conditioned and smooth optimization"
+    statement: |
+      Lemma 11 gives a reduction from well-conditioned to smooth optimization. The reduction goes losslessly in the other direction as well. Combined, there is an algorithm achieving $O(\sqrt{\kappa} \log \frac{1}{\epsilon})$ query complexity for well-conditioned optimization.
+    context: "Equivalence between smooth and well-conditioned optimization settings."
+
+  - type: lemma
+    number: "11"
+    name: "Reduction from well-conditioned to smooth"
+    statement: |
+      Suppose there is an algorithm $\mathcal{A}$ which takes input $\mathbf{x}_0$ and an $L$-smooth, convex $f$ with $\mathbf{x}^\star = \mathrm{argmin} f$, and produces $\mathbf{x}$ with $f(\mathbf{x}) - f(\mathbf{x}^\star) \leq \frac{CL\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{T^c}$ using $T$ queries. Then there is an algorithm $\mathcal{A}'$ for $L$-smooth, $\mu$-strongly convex $f$ with $\kappa = L/\mu$ producing $\mathbf{x}$ with $f(\mathbf{x}) - f(\mathbf{x}^\star) \leq \epsilon(f(\mathbf{x}_0) - f(\mathbf{x}^\star))$ in $O(\kappa^{1/c} \log \frac{1}{\epsilon})$ queries.
+    context: "Shows smooth convex rate $\Omega(LR^2/T^2)$ is best possible (else contradicts well-conditioned lower bound)."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      For convex, non-differentiable $f : \mathbb{R}^d \to \mathbb{R}$, $\mu$-strong convexity is equivalent to $f(\mathbf{x}') \geq f(\mathbf{x}) + \langle \mathbf{g}, \mathbf{x}' - \mathbf{x} \rangle + \frac{\mu}{2}\|\mathbf{x}' - \mathbf{x}\|_2^2$ for all $\mathbf{g} \in \partial f(\mathbf{x})$.
+    context: "Subgradient version of strong convexity characterization."
+
+  - type: remark
+    number: "3"
+    name: ""
+    statement: |
+      Theorem 4 only used strong convexity of $f$ through the consequence in Corollary 3 (gradient dominance / Polyak-Lojasiewicz condition). Gradient domination further implies quadratic growth bounds of the form $f(\mathbf{x}) - f(\mathbf{x}^\star) \geq \frac{\mu}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2$ around $\mathbf{x}^\star$.
+    context: "Connection between strong convexity, gradient dominance, and quadratic growth."

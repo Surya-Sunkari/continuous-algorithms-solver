@@ -1,0 +1,145 @@
+source: "Part1_main.pdf"
+lecture_number: 1
+title: "CS395T: Continuous Algorithms, Part I — Convexity, logconcavity, and continuous algorithms"
+items:
+  - type: definition
+    number: "1"
+    name: "Convex set"
+    statement: |
+      A set $\mathcal{X} \subseteq \mathbb{R}^d$ is convex if for all $\mathbf{x}, \mathbf{x}' \in \mathcal{X}$ the line segment between $\mathbf{x}$ and $\mathbf{x}'$ lies in $\mathcal{X}$, i.e., $(1-\lambda)\mathbf{x} + \lambda\mathbf{x}' \in \mathcal{X}$ for all $\lambda \in [0,1]$.
+    context: "Basic definition of convexity for sets."
+
+  - type: definition
+    number: "2"
+    name: "Convex function"
+    statement: |
+      A function $f : \mathcal{X} \to \mathbb{R}$ is convex if $\mathcal{X}$ is convex and for all $\mathbf{x}, \mathbf{x}' \in \mathcal{X}$, $f((1-\lambda)\mathbf{x} + \lambda\mathbf{x}') \leq (1-\lambda)f(\mathbf{x}) + \lambda f(\mathbf{x}')$ for all $\lambda \in [0,1]$.
+    context: "Fundamental definition. Strictly convex if the inequality is strict for $\mathbf{x} \neq \mathbf{x}'$ and $\lambda \in (0,1)$."
+
+  - type: lemma
+    number: "1"
+    name: "First-order characterization of convexity"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be differentiable. Then $f$ is convex iff for all $\mathbf{x}, \mathbf{x}' \in \mathcal{X}$,
+      $f(\mathbf{x}') \geq f(\mathbf{x}) + \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle$.
+    context: "Convexity equivalent to the function lying above all tangent hyperplanes. Used constantly."
+
+  - type: lemma
+    number: "2"
+    name: "First-order optimality"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be differentiable and convex. Then $\mathbf{x}^\star \in \mathrm{argmin}_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x}) \iff \langle \nabla f(\mathbf{x}^\star), \mathbf{x}^\star - \mathbf{x} \rangle \leq 0$ for all $\mathbf{x} \in \mathcal{X}$.
+    context: "Characterizes minimizers of convex functions. When $\mathcal{X} = \mathbb{R}^d$, reduces to $\nabla f(\mathbf{x}^\star) = \mathbf{0}$."
+
+  - type: lemma
+    number: "3"
+    name: "Minimizer and maximizer sets"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be convex. The minimizer set $\mathcal{X}^\star$ is convex. If $\mathcal{X}^+ \neq \emptyset$, it either contains a boundary point of $\mathcal{X}$ or $\mathcal{X}$ has no boundary points. If $f$ is strictly convex, $\mathcal{X}^\star$ is a singleton and $\mathcal{X}^+$ only contains boundary points.
+    context: "Properties of minimizer/maximizer sets of convex functions."
+
+  - type: lemma
+    number: "4"
+    name: "Norms are convex"
+    statement: |
+      Let $\|\cdot\| : \mathbb{R}^d \to \mathbb{R}$ be a seminorm (triangle inequality + absolute homogeneity). Then $\|\cdot\|$ is a convex function.
+    context: "Useful for constructing convex functions from norms."
+
+  - type: definition
+    number: "3"
+    name: "Subgradient"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$. We say $\mathbf{g}$ is a subgradient of $f$ at $\mathbf{x} \in \mathcal{X}$ if $f(\mathbf{x}') \geq f(\mathbf{x}) + \langle \mathbf{g}, \mathbf{x}' - \mathbf{x} \rangle$ for all $\mathbf{x}' \in \mathcal{X}$. The set of subgradients at $\mathbf{x}$ is denoted $\partial f(\mathbf{x})$.
+    context: "Generalization of gradient to non-differentiable convex functions."
+
+  - type: corollary
+    number: "1"
+    name: "Separating hyperplane"
+    statement: |
+      Let $S \subset \mathbb{R}^d$ be compact and convex, and suppose $\mathbf{x}_0 \notin S$. There is a separating hyperplane $\mathbf{g} \neq \mathbf{0}_d$ such that $\mathbf{g}^\top \mathbf{x}_0 > \mathbf{g}^\top \mathbf{x}$ for all $\mathbf{x} \in S$. If $\mathbf{x}_0 \in S$ is a boundary point, there is a supporting hyperplane $\mathbf{g} \neq \mathbf{0}_d$ with $\mathbf{g}^\top \mathbf{x}_0 \geq \mathbf{g}^\top \mathbf{x}$ for all $\mathbf{x} \in S$.
+    context: "Separation theorem for convex sets."
+
+  - type: lemma
+    number: "5"
+    name: "Existence of subgradients"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be convex with $\mathcal{X} \subseteq \mathbb{R}^d$. For all $\mathbf{x} \in \mathrm{relint}(\mathcal{X})$, $\partial f(\mathbf{x})$ is nonempty.
+    context: "Convex functions have subgradients in relative interior."
+
+  - type: theorem
+    number: "1"
+    name: "Polynomial-time convex optimization"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ be convex for $\mathcal{X} \subset \mathbb{R}^d$, and assume $f$ has additive range bounded by $\mathrm{poly}(d)$. There is an algorithm which uses $O(d \log \frac{d}{\epsilon})$ queries to a value and subgradient oracle for $f$, and $\mathrm{poly}(d, \log \frac{1}{\epsilon})$ additional time, such that with high probability the algorithm returns $\mathbf{x}$ satisfying $f(\mathbf{x}) \leq \min_{\mathbf{x}^\star \in \mathcal{X}} f(\mathbf{x}^\star) + \epsilon$.
+    context: "Main result: convex optimization is polynomial-time solvable via center of gravity / cutting-plane methods."
+
+  - type: definition
+    number: "4"
+    name: "Cutting-plane game"
+    statement: |
+      A game between Bob (holding compact convex $S^\star \subset \mathbb{R}^d$) and Alice (holding $S_0 \supseteq S^\star$), parameterized by $V_{\min} > 0$. On turn $t$: if $\mathrm{Vol}(S_t) < V_{\min}$, game ends. Else Alice chooses $\mathbf{x}_t \in S_t$. If $\mathbf{x}_t \in S^\star$, game ends. Else Bob chooses separating hyperplane $\mathbf{g}_t$, and Alice updates $S_{t+1} = S_t \cap H_t$.
+    context: "Conceptual framework for convex optimization algorithms."
+
+  - type: definition
+    number: "5"
+    name: "Value and subgradient oracle"
+    statement: |
+      $\mathcal{O}$ is a value oracle for $f : \mathcal{X} \to \mathbb{R}^d$ if queried at $\mathbf{x} \in \mathbb{R}^d$, it returns $f(\mathbf{x})$ if $\mathbf{x} \in \mathcal{X}$ and $\infty$ otherwise. $\mathcal{O}$ is a subgradient oracle if it returns an element of $\partial f(\mathbf{x})$ if it exists, set to $\mathbf{0}_d$ if $\mathbf{0}_d \in \partial f(\mathbf{x})$. When $f$ is differentiable, a gradient oracle returns $\nabla f(\mathbf{x})$.
+    context: "Oracle model for optimization algorithms."
+
+  - type: lemma
+    number: "6"
+    name: "Cutting-plane game convergence"
+    statement: |
+      Under the cutting-plane game framework, if Alice always chooses $\mathbf{x}_t \in \mathrm{relint}(S_t)$ and Bob plays optimally, then after $T$ iterations: $\min_{t \in [T]} f(\mathbf{x}_t) \leq f^\star + \alpha^{1/d}(\max_{\mathbf{z} \in \mathcal{X}} f(\mathbf{z}) - f^\star)$, where $\alpha = V_{\min}/\mathrm{Vol}(S_0)$.
+    context: "Bounds optimization error via volume reduction in cutting-plane game."
+
+  - type: lemma
+    number: "7"
+    name: "Optimality via zero subgradient"
+    statement: |
+      $\mathbf{x}^\star \in \mathrm{argmin}_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x}) \iff \mathbf{0}_d \in \partial f(\mathbf{x}^\star)$.
+    context: "Characterizes minimizers via subgradients."
+
+  - type: theorem
+    number: "2"
+    name: "Grunbaum's theorem"
+    statement: |
+      Let $S \subseteq \mathbb{R}^d$ be convex, and let $\bar{\mathbf{x}}_S$ be its center of gravity. Then any halfspace passing through $\bar{\mathbf{x}}_S$ satisfies $\mathrm{Vol}(S \cap H) \geq \frac{1}{e} \mathrm{Vol}(S)$.
+    context: "Key to the center of gravity method for cutting-plane games."
+
+  - type: definition
+    number: "6"
+    name: "Logconcave function"
+    statement: |
+      A function $\mu : \mathcal{X} \to \mathbb{R}_{>0}$ is logconcave if $\mathcal{X}$ is convex and $\mu((1-\lambda)\mathbf{x} + \lambda\mathbf{x}') \geq \mu(\mathbf{x})^{1-\lambda} \mu(\mathbf{x}')^\lambda$ for all $\lambda \in [0,1]$.
+    context: "Equivalent to $-\log \mu$ being convex. Key concept for sampling algorithms."
+
+  - type: theorem
+    number: "3"
+    name: "Polynomial-time logconcave sampling"
+    statement: |
+      Let $\mu : \mathbb{R}^d \to \mathbb{R}_{\geq 0}$ be a logconcave density, and let $\mu \propto \exp(-f)$ where $f$ is convex and $\mathrm{poly}(d)$-well-conditioned. There is an algorithm using $\mathrm{poly}(d, \log \frac{1}{\epsilon})$ queries to a value oracle for $f$, and $\mathrm{poly}(d, \log \frac{1}{\epsilon})$ additional time, to produce a sample within $\epsilon$ total variation distance of $\mu$.
+    context: "Sampling analog of Theorem 1 for logconcave distributions."
+
+  - type: theorem
+    number: "4"
+    name: "Prekopa-Leindler inequality"
+    statement: |
+      Let $\lambda \in (0,1)$, and let $f, g, h : \mathbb{R}^d \to \mathbb{R}_{\geq 0}$ satisfy $h((1-\lambda)\mathbf{x} + \lambda\mathbf{x}') \geq f(\mathbf{x})^{1-\lambda} g(\mathbf{x}')^\lambda$ for all $\mathbf{x}, \mathbf{x}' \in \mathbb{R}^d$. Then $\int h(\mathbf{x}) d\mathbf{x} \geq (\int f(\mathbf{x}) d\mathbf{x})^{1-\lambda} (\int g(\mathbf{x}) d\mathbf{x})^\lambda$.
+    context: "Fundamental inequality in logconcave analysis. Implies Brunn-Minkowski."
+
+  - type: corollary
+    number: "2"
+    name: "Marginals and convolutions of logconcave functions"
+    statement: |
+      1. Marginals of logconcave functions are logconcave (and marginals of logconcave densities are logconcave densities).
+      2. Convolutions of logconcave functions are logconcave.
+    context: "Closure properties of logconcavity."
+
+  - type: theorem
+    number: "5"
+    name: "Brunn-Minkowski inequality"
+    statement: |
+      Let $A, B$ be compact and $d$-dimensional. Then $\mathrm{Vol}(A \oplus B)^{1/d} \geq \mathrm{Vol}(A)^{1/d} + \mathrm{Vol}(B)^{1/d}$. Equivalently, $\mathrm{Vol}((1-\lambda)A \oplus \lambda B) \geq \mathrm{Vol}(A)^{1-\lambda} \mathrm{Vol}(B)^\lambda$.
+    context: "Fundamental inequality in convex geometry. Follows from Prekopa-Leindler."
