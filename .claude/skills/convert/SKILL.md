@@ -1,8 +1,6 @@
 ---
 name: convert
 description: Convert homework PDF or problem screenshots to exact LaTeX representations
-user-invocable: true
-argument-hint: assignmentN
 ---
 
 # Homework to LaTeX Converter

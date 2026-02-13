@@ -11,7 +11,9 @@ homework_solver/
 ├── knowledge_base/              # Auto-indexed theorem database (YAML, one file per lecture)
 ├── .claude/skills/
 │   ├── solve/SKILL.md           # The /solve skill
-│   └── convert/SKILL.md         # The /convert skill
+│   ├── convert/SKILL.md         # The /convert skill
+│   ├── learn/SKILL.md           # The /learn skill
+│   └── combine/SKILL.md         # The /combine skill
 ├── assignmentN/
 │   ├── homework.pdf             # Input: full homework PDF (for /convert, PDF mode)
 │   ├── screenshots/             # Input: problem screenshots (for /convert, screenshot mode)
@@ -20,7 +22,8 @@ homework_solver/
 │   │   └── ...
 │   ├── problems/                # Input/Output: one .tex file per problem (p1.tex, p2.tex, ...)
 │   ├── notes/                   # Input: lecture note PDFs
-│   └── solution.tex             # Output: generated solution
+│   ├── solutions/               # Output: individual solved problems (p1.tex, p2.tex, ...)
+│   └── solution.tex             # Output: combined final document
 ```
 
 ## Usage
@@ -28,23 +31,29 @@ homework_solver/
 ### Option A: Problems already in LaTeX
 1. Create `assignmentN/problems/` and place individual problem `.tex` files (p1.tex, p2.tex, etc.)
 2. Create `assignmentN/notes/` and place relevant lecture note PDFs
-3. Run `/solve assignmentN`
+3. Run `/learn assignmentN`
+4. Run `/solve assignmentN 1`, `/solve assignmentN 2`, etc. for each problem
+5. Run `/combine assignmentN`
 
 ### Option B: Problems as a single PDF
 1. Place the homework PDF in `assignmentN/` (e.g., `assignmentN/homework.pdf`)
 2. Create `assignmentN/notes/` and place relevant lecture note PDFs
 3. Run `/convert assignmentN` — auto-detects the PDF, splits into individual `.tex` files in `assignmentN/problems/`
-4. Run `/solve assignmentN`
+4. Run `/learn assignmentN`
+5. Run `/solve assignmentN 1`, `/solve assignmentN 2`, etc. for each problem
+6. Run `/combine assignmentN`
 
 ### Option C: Problems as screenshots
 1. Create `assignmentN/screenshots/problem1/`, `problem2/`, etc. and place screenshot images in each
 2. Create `assignmentN/notes/` and place relevant lecture note PDFs
 3. Run `/convert assignmentN` — converts screenshots to `.tex` files in `assignmentN/problems/`
-4. Run `/solve assignmentN`
+4. Run `/learn assignmentN`
+5. Run `/solve assignmentN 1`, `/solve assignmentN 2`, etc. for each problem
+6. Run `/combine assignmentN`
 
 ## Knowledge Base
 
-The `knowledge_base/` directory stores extracted theorems, lemmas, definitions, and corollaries from lecture notes as structured YAML files. These are auto-indexed when `/solve` runs and persist across assignments.
+The `knowledge_base/` directory stores extracted theorems, lemmas, definitions, and corollaries from lecture notes as structured YAML files. These are auto-indexed when `/learn` runs and persist across assignments.
 
 ### YAML Schema
 
