@@ -68,6 +68,11 @@ items:
     statement: |
       Full mathematical statement in plain text with LaTeX math notation
     context: "Brief note on when/how this result is typically used"
+    proof_notes:           # optional — key citable internals from the proof
+      - label: "(3)"       # equation/line label as it appears in the notes
+        content: |
+          The exact equation or claim in LaTeX math notation
+        description: "What this equation/step establishes and when it is useful to cite directly"
 ```
 
 ## LaTeX Style Guide (from example.tex)
@@ -89,6 +94,7 @@ These conventions MUST be followed exactly in all generated solutions:
 - **Counterexamples**: `\bigskip\noindent\textit{Counterexample.}`
 - **Enumerated steps**: `\begin{enumerate}` with `\item`
 - **Theorem citations**: `By Theorem X.Y (Lecture Z)` or `By Lemma X (Lecture Z)`
+- **Proof-internal citations**: `by equation (3) in the proof of Lemma X.Y (Lecture Z)` or `by the bound at Line 4 of the proof of Theorem X.Y (Lecture Z)` — always cite the specific label or line explicitly
 - **No problem restatement** — jump directly into the solution/proof
 
 ## Writing Style Rules
