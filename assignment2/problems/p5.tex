@@ -1,0 +1,20 @@
+\section*{Problem 5}
+
+Let $f : \mathbb{R}^d \to \mathbb{R}$ be differentiable, and let $\mathbf{x}^\star := \operatorname{argmin}_{\mathbf{x} \in \mathbb{B}(R)} f(\mathbf{x})$ exist and be unique. Suppose that $\mathcal{A}$ is a randomized algorithm which produces a point $\mathbf{x} \in \mathbb{B}(R)$ satisfying
+\[
+\mathbb{E}\left[f(\mathbf{x}) - f(\mathbf{x}^\star)\right] \leq \epsilon.
+\]
+
+Let $\mathbf{g} : \mathbb{B}(R) \to \mathbb{R}^d$ be a randomized estimator satisfying
+\[
+\mathbb{E}\mathbf{g}(\mathbf{x}) = \nabla f(\mathbf{x}), \quad \mathbb{E}\|\mathbf{g}(\mathbf{x})\|_2^2 \leq L^2, \quad \text{for all } \mathbf{x} \in \mathbb{B}(R).
+\]
+
+\begin{enumerate}[(i)]
+\item Let $\alpha > 0$, $\delta \in (0,1)$. Given $\mathbf{x}, \mathbf{x}' \in \mathbb{B}(R)$, design an algorithm which calls $\mathbf{g}$ $O\!\left(\frac{L^2 R^2}{\alpha^2} \log \frac{1}{\delta}\right)$ times, and estimates $f(\mathbf{x}) - f(\mathbf{x}')$ to additive error $\alpha$ with probability $\geq 1 - \delta$.\footnote{It may be helpful to first write $f(\mathbf{x}) - f(\mathbf{x}')$ as an integral involving gradients.}
+
+\item Give an algorithm which calls $\mathcal{A}$ $O\!\left(\log \frac{1}{\delta}\right)$ times and $\mathbf{g}$ $O\!\left(\frac{L^2 R^2}{\epsilon^2} \cdot \operatorname{polylog}\!\left(\frac{1}{\delta}\right)\right)$ times,\footnote{I am curious to see how low people can get the polylog :)} and produces $\mathbf{x}$ such that with probability $\geq 1 - \delta$,
+\[
+f(\mathbf{x}) - f(\mathbf{x}^\star) \leq 3\epsilon.
+\]
+\end{enumerate}

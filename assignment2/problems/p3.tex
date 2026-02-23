@@ -1,0 +1,12 @@
+\section*{Problem 3}
+
+Let $\mathcal{X} \subseteq \mathbb{R}^d$, let $f : \mathcal{X} \to \mathbb{R}$ be convex, differentiable, and $L$-Lipschitz in $\|\cdot\|$, and let $\psi : \mathcal{X} \to \mathbb{R}$ be convex and admit subgradients everywhere in $\mathcal{X}$. Let $F(\mathbf{x}) = f(\mathbf{x}) + \psi(\mathbf{x})$.\footnote{The purpose of this problem is to explore how to generalize the mirror descent framework in Theorem 2, Part III, to handle composite objectives just as gradient descent can, as shown by Section 5.2, Part II.} Finally, let $\varphi : \mathcal{X} \to \mathbb{R}$ be 1-strongly convex in $\|\cdot\|$ and of Legendre type. Consider iterating the update
+\[
+\mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \left\{ \langle \eta \nabla f(\mathbf{x}_t), \mathbf{x} \rangle + \eta \psi(\mathbf{x}) + D_\varphi(\mathbf{x} \| \mathbf{x}_t) \right\} , \text{ for } 0 \le t < T, \; \eta > 0.
+\]
+
+Give an initialization strategy for choosing $\mathbf{x}_0$ that depends only on $\psi$ and $\mathcal{X}$ (but not $f$), and prove that following your initialization strategy,
+\[
+F(\bar{\mathbf{x}}) - F(\mathbf{x}^\star) \le \frac{\Theta}{\eta T} + \frac{\eta L^2}{2},
+\]
+where $\bar{\mathbf{x}} = \frac{1}{T} \sum_{0 \le t < T} \mathbf{x}_t$, $\mathbf{x}^\star = \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} F(\mathbf{x})$, and $\Theta \ge \sup_{\mathbf{x}_0 \in \mathcal{X}} D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0)$.
