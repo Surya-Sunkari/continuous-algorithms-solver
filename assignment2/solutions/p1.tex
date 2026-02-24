@@ -1,0 +1,56 @@
+\section*{Problem 1}
+
+For each $\lambda > 0$, the function $g_\lambda(\mathbf{x}) := f(\mathbf{x}) + \frac{\lambda}{2}\|\mathbf{x}\|_2^2$ is the sum of a convex function and a $\lambda$-strongly convex function, hence $\lambda$-strongly convex. By Lemma 3 (Part I), $g_\lambda$ has a unique minimizer $\mathbf{x}_\lambda^\star$, and by Lemma 2 (Part I):
+\[
+\nabla f(\mathbf{x}_\lambda^\star) + \lambda \mathbf{x}_\lambda^\star = \mathbf{0}.
+\]
+
+\subsection*{(i)}
+
+\begin{proof}
+Let $\lambda' > \lambda > 0$. Since $\mathbf{x}_\lambda^\star$ minimizes $g_\lambda$ and $\mathbf{x}_{\lambda'}^\star$ minimizes $g_{\lambda'}$:
+\begin{align*}
+f(\mathbf{x}_\lambda^\star) + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 &\leq f(\mathbf{x}_{\lambda'}^\star) + \frac{\lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2, \tag{A} \\
+f(\mathbf{x}_{\lambda'}^\star) + \frac{\lambda'}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 &\leq f(\mathbf{x}_\lambda^\star) + \frac{\lambda'}{2}\|\mathbf{x}_\lambda^\star\|_2^2. \tag{B}
+\end{align*}
+Adding (A) and (B):
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 + \frac{\lambda'}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \frac{\lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 + \frac{\lambda'}{2}\|\mathbf{x}_\lambda^\star\|_2^2.
+\]
+Rearranging:
+\[
+\frac{\lambda' - \lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \frac{\lambda' - \lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2.
+\]
+Since $\lambda' - \lambda > 0$, dividing both sides gives $\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \|\mathbf{x}_\lambda^\star\|_2^2$, hence $\|\mathbf{x}_\lambda^\star\|_2 \geq \|\mathbf{x}_{\lambda'}^\star\|_2$.
+\end{proof}
+
+\subsection*{(ii)}
+
+Take $\lambda_R = \dfrac{2L}{R}$.
+
+\begin{proof}
+The minimality of $\mathbf{x}_\lambda^\star$ gives:
+\[
+f(\mathbf{x}_\lambda^\star) + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq f(\mathbf{0}_d).
+\]
+By Lemma 1 (Part I) applied with $\mathbf{x} = \mathbf{0}_d$ and $\mathbf{x}' = \mathbf{x}_\lambda^\star$:
+\[
+f(\mathbf{x}_\lambda^\star) \geq f(\mathbf{0}_d) + \langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle.
+\]
+Combining these two inequalities:
+\[
+f(\mathbf{0}_d) + \langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq f(\mathbf{0}_d).
+\]
+Canceling $f(\mathbf{0}_d)$:
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq -\langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle \leq \|\nabla f(\mathbf{0}_d)\|_2 \cdot \|\mathbf{x}_\lambda^\star\|_2 \leq L\|\mathbf{x}_\lambda^\star\|_2, \quad \text{(Cauchy--Schwarz)}
+\]
+where the last step uses $\|\nabla f(\mathbf{0}_d)\|_2 \leq L$. If $\|\mathbf{x}_\lambda^\star\|_2 = 0$, the desired bound $\|\mathbf{x}_\lambda^\star\|_2 \leq R$ holds trivially. Otherwise, dividing both sides by $\|\mathbf{x}_\lambda^\star\|_2 > 0$:
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2 \leq L \quad \implies \quad \|\mathbf{x}_\lambda^\star\|_2 \leq \frac{2L}{\lambda}.
+\]
+For $\lambda \geq \lambda_R = \frac{2L}{R}$:
+\[
+\|\mathbf{x}_\lambda^\star\|_2 \leq \frac{2L}{\lambda} \leq \frac{2L}{2L/R} = R.
+\]
+\end{proof}

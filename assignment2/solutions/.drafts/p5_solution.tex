@@ -1,0 +1,110 @@
+\section*{Problem 5}
+\subsection*{(i)}
+
+\begin{proof}
+\textbf{Algorithm:}
+By the Fundamental Theorem of Calculus, for $\mathbf{x}_t := (1-t)\mathbf{x}' + t\mathbf{x}$:
+\[
+f(\mathbf{x}) - f(\mathbf{x}') = \int_0^1 \nabla f(\mathbf{x}_t)^\top (\mathbf{x} - \mathbf{x}')\,dt = \mathbb{E}_{t \sim \mathrm{Uniform}[0,1]}\bigl[\nabla f(\mathbf{x}_t)^\top (\mathbf{x} - \mathbf{x}')\bigr].
+\]
+Since $\mathbf{x}, \mathbf{x}' \in \mathbb{B}(R)$ and $\mathbb{B}(R)$ is convex, $\mathbf{x}_t \in \mathbb{B}(R)$ for all $t \in [0,1]$, so $\mathbf{g}(\mathbf{x}_t)$ is well-defined. We use a \emph{median-of-means} estimator.
+
+Fix parameters $k = \lceil 12L^2R^2/\alpha^2 \rceil$ and $m = \lceil 24\log(1/\delta) \rceil$.
+
+\textbf{Step 1:} Partition $mk$ samples into $m$ groups of size $k$. For each group $j \in [m]$: draw $t_1, \ldots, t_k \stackrel{\text{i.i.d.}}{\sim} \mathrm{Uniform}[0,1]$, and compute
+\[
+\hat{d}_j := \frac{1}{k}\sum_{i=1}^{k} \mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}').
+\]
+
+\textbf{Step 2:} Return $\hat{d} := \mathrm{median}(\hat{d}_1, \ldots, \hat{d}_m)$.
+
+\medskip
+\textbf{Analysis:}
+Define $Z_i := \mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}')$ for a single sample. Since $\mathbb{E}[\mathbf{g}(\mathbf{x}_{t_i})] = \nabla f(\mathbf{x}_{t_i})$:
+\[
+\mathbb{E}[Z_i \mid t_i] = \nabla f(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}'),
+\]
+so by the tower rule and the integral representation, $\mathbb{E}[Z_i] = f(\mathbf{x}) - f(\mathbf{x}')$.
+
+For the variance, by Cauchy--Schwarz:
+\[
+\mathbb{E}[Z_i^2] = \mathbb{E}\bigl[(\mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}'))^2\bigr] \leq \mathbb{E}\bigl[\|\mathbf{g}(\mathbf{x}_{t_i})\|_2^2\bigr] \cdot \|\mathbf{x} - \mathbf{x}'\|_2^2 \leq L^2 \cdot (2R)^2 = 4L^2R^2,
+\]
+where we used $\|\mathbf{x} - \mathbf{x}'\|_2 \leq 2R$ since both points lie in $\mathbb{B}(R)$. Thus $\mathrm{Var}(Z_i) \leq 4L^2R^2$.
+
+Each group mean $\hat{d}_j$ satisfies $\mathbb{E}[\hat{d}_j] = f(\mathbf{x}) - f(\mathbf{x}')$ and
+\[
+\mathrm{Var}(\hat{d}_j) \leq \frac{4L^2R^2}{k} \leq \frac{4L^2R^2}{12L^2R^2/\alpha^2} = \frac{\alpha^2}{3}.
+\]
+By Chebyshev's inequality (Fact 1, Part VI):
+\[
+\Pr\bigl[|\hat{d}_j - (f(\mathbf{x}) - f(\mathbf{x}'))| \geq \alpha\bigr] \leq \frac{\mathrm{Var}(\hat{d}_j)}{\alpha^2} \leq \frac{1}{3}.
+\]
+So each group mean is $\alpha$-accurate with probability $\geq 2/3$. Let $S := \#\{j : |\hat{d}_j - (f(\mathbf{x})-f(\mathbf{x}'))| \leq \alpha\}$. Then $\mathbb{E}[S] \geq 2m/3$. The median $\hat{d}$ fails only if fewer than $m/2$ groups succeed, i.e., $S < m/2$. By a standard Chernoff bound (Theorem 3, Part VI) applied to the $m$ independent Bernoulli variables $\mathbf{1}[|\hat{d}_j - (f(\mathbf{x})-f(\mathbf{x}'))| \leq \alpha]$, each with success probability $\geq 2/3$:
+\[
+\Pr\bigl[S < m/2\bigr] \leq \Pr\bigl[S < (1 - 1/4) \cdot 2m/3\bigr] \leq \exp\!\left(-\frac{(1/4)^2 \cdot 2m/3}{2}\right) = \exp\!\left(-\frac{m}{24}\right) \leq \delta,
+\]
+for $m \geq 24\log(1/\delta)$, which is satisfied by $m = \lceil 24\log(1/\delta) \rceil$.
+
+The total number of calls to $\mathbf{g}$ is $mk = O\!\left(\frac{L^2R^2}{\alpha^2}\log\frac{1}{\delta}\right)$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+\textbf{Algorithm:}
+
+\textbf{Step 1:} Run $\mathcal{A}$ independently $k = \lceil 36\log(2/\delta) \rceil$ times, producing candidates $\mathbf{x}_1, \ldots, \mathbf{x}_k \in \mathbb{B}(R)$.
+
+\textbf{Step 2:} For each $i = 2, \ldots, k$, apply the part~(i) estimator with accuracy $\alpha = \epsilon/2$ and failure probability $\delta' = \delta/(2k)$ to estimate $f(\mathbf{x}_i) - f(\mathbf{x}_1)$. Call the result $\hat{d}_i$. Set $\hat{d}_1 = 0$.
+
+\textbf{Step 3:} Return $\mathbf{x}_{i^*}$ where $i^* = \operatorname{argmin}_{i \in [k]} \hat{d}_i$.
+
+\medskip
+\textbf{Call counts:}
+\begin{itemize}
+\item $\mathcal{A}$ is called $k = O(\log(1/\delta))$ times.
+\item Each of the $k - 1$ comparisons calls $\mathbf{g}$ a total of $O\!\left(\frac{L^2R^2}{(\epsilon/2)^2}\log\frac{2k}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\log\frac{\log(1/\delta)}{\delta}\right)$ times. Over all comparisons:
+\[
+(k-1) \cdot O\!\left(\frac{L^2R^2}{\epsilon^2}\log\frac{k}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\cdot\log\frac{1}{\delta}\cdot\log\frac{\log(1/\delta)}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\cdot\operatorname{polylog}\frac{1}{\delta}\right).
+\]
+\end{itemize}
+
+\textbf{Correctness:}
+Define the following events.
+
+$E_1$: at least $k/3$ of the candidates satisfy $f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon$.
+
+By Markov's inequality (Fact 1, Part VI), for each $i$:
+\[
+\Pr\bigl[f(\mathbf{x}_i) - f(\mathbf{x}^\star) > 2\epsilon\bigr] \leq \frac{\mathbb{E}[f(\mathbf{x}_i) - f(\mathbf{x}^\star)]}{2\epsilon} \leq \frac{\epsilon}{2\epsilon} = \frac{1}{2}.
+\]
+So each candidate is ``good'' (i.e., $f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon$) independently with probability $\geq 1/2$. Let $G = \sum_{i=1}^k \mathbf{1}[f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon]$. Then $\mathbb{E}[G] \geq k/2$. By the Chernoff bound (Theorem 3, Part VI) with $\epsilon' = 1/3$:
+\[
+\Pr\bigl[G < k/3\bigr] = \Pr\bigl[G < (1-1/3) \cdot k/2\bigr] \leq \exp\!\left(-\frac{(1/3)^2 \cdot k/2}{2}\right) = \exp\!\left(-\frac{k}{36}\right).
+\]
+For $k \geq 36\log(2/\delta)$, we get $\Pr[E_1^c] \leq \delta/2$, which is satisfied by $k = \lceil 36\log(2/\delta) \rceil$.
+
+$E_2$: all $k-1$ estimates satisfy $|\hat{d}_i - (f(\mathbf{x}_i) - f(\mathbf{x}_1))| \leq \epsilon/2$.
+
+By part~(i), each estimate fails with probability $\leq \delta' = \delta/(2k)$. By a union bound over $k-1 < k$ comparisons:
+\[
+\Pr[E_2^c] \leq (k-1) \cdot \frac{\delta}{2k} < \frac{\delta}{2}.
+\]
+
+On the event $E_1 \cap E_2$, which holds with probability $\geq 1 - \delta$:
+
+There exists a good candidate $j$ with $f(\mathbf{x}_j) - f(\mathbf{x}^\star) \leq 2\epsilon$. Since $i^* = \operatorname{argmin}_i \hat{d}_i$:
+\[
+\hat{d}_{i^*} \leq \hat{d}_j.
+\]
+By the accuracy guarantee on $E_2$:
+\begin{align*}
+f(\mathbf{x}_{i^*}) - f(\mathbf{x}_1) &\leq \hat{d}_{i^*} + \frac{\epsilon}{2} \leq \hat{d}_j + \frac{\epsilon}{2} \leq \bigl(f(\mathbf{x}_j) - f(\mathbf{x}_1)\bigr) + \frac{\epsilon}{2} + \frac{\epsilon}{2} \\
+&= f(\mathbf{x}_j) - f(\mathbf{x}_1) + \epsilon.
+\end{align*}
+Therefore:
+\[
+f(\mathbf{x}_{i^*}) \leq f(\mathbf{x}_j) + \epsilon \leq f(\mathbf{x}^\star) + 2\epsilon + \epsilon = f(\mathbf{x}^\star) + 3\epsilon. \qedhere
+\]
+\end{proof}

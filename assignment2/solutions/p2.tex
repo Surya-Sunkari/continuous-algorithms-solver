@@ -1,0 +1,63 @@
+\section*{Problem 2}
+
+\subsection*{(i)}
+
+\begin{proof}
+Since $\mathbf{M} \succ 0$, the bilinear form $\langle \mathbf{u}, \mathbf{v} \rangle_{\mathbf{M}} := \mathbf{u}^\top \mathbf{M} \mathbf{v}$ is a valid inner product on $\mathbb{R}^d$. By definition of the dual norm,
+\[
+\|\mathbf{M}\mathbf{v}\|_* = \max_{\|\mathbf{u}\| \leq 1} \langle \mathbf{u}, \mathbf{M}\mathbf{v} \rangle = \max_{\|\mathbf{u}\| \leq 1} \mathbf{u}^\top \mathbf{M} \mathbf{v}.
+\]
+For any $\mathbf{u}$ with $\|\mathbf{u}\| \leq 1$, Cauchy--Schwarz in $\langle \cdot, \cdot \rangle_{\mathbf{M}}$ gives
+\[
+\mathbf{u}^\top \mathbf{M} \mathbf{v} \leq \sqrt{\mathbf{u}^\top \mathbf{M} \mathbf{u}} \cdot \sqrt{\mathbf{v}^\top \mathbf{M} \mathbf{v}}.
+\]
+By hypothesis, $\mathbf{M}[\mathbf{u}, \mathbf{u}] \leq \|\mathbf{u}\|^2 \leq 1$ and $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$, so
+\[
+\mathbf{u}^\top \mathbf{M} \mathbf{v} \leq \|\mathbf{u}\| \cdot \|\mathbf{v}\| \leq \|\mathbf{v}\|.
+\]
+Taking the maximum over $\|\mathbf{u}\| \leq 1$ yields $\|\mathbf{M}\mathbf{v}\|_* \leq \|\mathbf{v}\|$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+\textbf{($\Rightarrow$)}
+Assume $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$ for all $\mathbf{v} \in \mathbb{R}^d$. Fix $\mathbf{w} \in \mathbb{R}^d$; the case $\mathbf{w} = \mathbf{0}$ is trivial. For any $\mathbf{u}$ with $\|\mathbf{u}\| \leq 1$, write $\langle \mathbf{u}, \mathbf{w} \rangle = \mathbf{u}^\top \mathbf{M}^{1/2} \mathbf{M}^{-1/2} \mathbf{w}$, where $\mathbf{M}^{1/2} \succ 0$ exists since $\mathbf{M} \succ 0$. Then by Cauchy--Schwarz in $\ell_2$:
+\begin{align*}
+\langle \mathbf{u}, \mathbf{w} \rangle &= \langle \mathbf{M}^{1/2}\mathbf{u},\, \mathbf{M}^{-1/2}\mathbf{w} \rangle_2 \\
+&\leq \|\mathbf{M}^{1/2}\mathbf{u}\|_2 \cdot \|\mathbf{M}^{-1/2}\mathbf{w}\|_2 \\
+&= \sqrt{\mathbf{u}^\top \mathbf{M}\, \mathbf{u}} \cdot \sqrt{\mathbf{w}^\top \mathbf{M}^{-1} \mathbf{w}} \\
+&\leq \|\mathbf{u}\| \cdot \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]} \quad \text{(hypothesis: $\mathbf{M}[\mathbf{u}, \mathbf{u}] \leq \|\mathbf{u}\|^2$)} \\
+&\leq \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]}. \quad \text{($\|\mathbf{u}\| \leq 1$)}
+\end{align*}
+Taking the supremum over $\|\mathbf{u}\| \leq 1$:
+\[
+\|\mathbf{w}\|_* \leq \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]},
+\]
+hence $\|\mathbf{w}\|_*^2 \leq \mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]$.
+
+\bigskip
+
+\textbf{($\Leftarrow$)}
+Assume $\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}] \geq \|\mathbf{w}\|_*^2$ for all $\mathbf{w} \in \mathbb{R}^d$. Fix $\mathbf{v} \in \mathbb{R}^d$; the case $\mathbf{v} = \mathbf{0}$ is trivial. Set $\mathbf{w} = \mathbf{M}\mathbf{v}$:
+\[
+\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}] = (\mathbf{M}\mathbf{v})^\top \mathbf{M}^{-1}(\mathbf{M}\mathbf{v}) = \mathbf{v}^\top \mathbf{M} \mathbf{v} = \mathbf{M}[\mathbf{v}, \mathbf{v}],
+\]
+so by hypothesis,
+\[
+\mathbf{M}[\mathbf{v}, \mathbf{v}] \geq \|\mathbf{M}\mathbf{v}\|_*^2.
+\]
+By definition of the dual norm, $\mathbf{u} = \mathbf{v}/\|\mathbf{v}\|$ is a feasible point ($\|\mathbf{u}\| = 1$), so
+\[
+\|\mathbf{M}\mathbf{v}\|_* \geq \left\langle \frac{\mathbf{v}}{\|\mathbf{v}\|},\, \mathbf{M}\mathbf{v} \right\rangle = \frac{\mathbf{M}[\mathbf{v}, \mathbf{v}]}{\|\mathbf{v}\|}.
+\]
+Combining:
+\[
+\mathbf{M}[\mathbf{v}, \mathbf{v}] \geq \|\mathbf{M}\mathbf{v}\|_*^2 \geq \frac{(\mathbf{M}[\mathbf{v}, \mathbf{v}])^2}{\|\mathbf{v}\|^2}.
+\]
+Since $\mathbf{M} \succ 0$ and $\mathbf{v} \neq \mathbf{0}$, we have $\mathbf{M}[\mathbf{v}, \mathbf{v}] > 0$. Dividing by $\mathbf{M}[\mathbf{v}, \mathbf{v}]$:
+\[
+1 \geq \frac{\mathbf{M}[\mathbf{v}, \mathbf{v}]}{\|\mathbf{v}\|^2},
+\]
+i.e., $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$.
+\end{proof}

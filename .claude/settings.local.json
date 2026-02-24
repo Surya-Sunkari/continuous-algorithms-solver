@@ -5,11 +5,11 @@
       "Edit",
       "Write",
       "WebFetch",
-      "Bash(grep:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(mkdir:*)",
-      "Bash(pdflatex:*)"
+      "Bash(grep *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(pdflatex *)"
     ],
     "defaultMode": "acceptEdits"
   }

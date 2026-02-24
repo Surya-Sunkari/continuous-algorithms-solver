@@ -1,0 +1,99 @@
+\section*{Problem 3}
+
+\textbf{Initialization.} Set
+\[
+\mathbf{x}_0 \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}}\, \psi(\mathbf{x}),
+\]
+which depends only on $\psi$ and $\mathcal{X}$.
+
+\begin{proof}
+Fix any $\mathbf{u} \in \mathcal{X}$; we take $\mathbf{u} = \mathbf{x}^\star$ at the end.
+
+\textbf{Step 1: Per-iteration bound.}
+Since $\mathbf{x}_{t+1}$ minimizes $\langle \eta \nabla f(\mathbf{x}_t), \mathbf{x}\rangle + \eta\psi(\mathbf{x}) + D_\varphi(\mathbf{x} \| \mathbf{x}_t)$ over $\mathcal{X}$, the first-order optimality condition yields a subgradient $\mathbf{g}_{t+1} \in \partial\psi(\mathbf{x}_{t+1})$ such that for all $\mathbf{x} \in \mathcal{X}$,
+\[
+\langle \eta \nabla f(\mathbf{x}_t) + \eta \mathbf{g}_{t+1} + \nabla\varphi(\mathbf{x}_{t+1}) - \nabla\varphi(\mathbf{x}_t),\; \mathbf{x} - \mathbf{x}_{t+1}\rangle \ge 0.
+\]
+Setting $\mathbf{x} = \mathbf{u}$ and rearranging,
+\begin{align*}
+\eta\langle \nabla f(\mathbf{x}_t) + \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle
+&\le \langle \nabla\varphi(\mathbf{x}_t) - \nabla\varphi(\mathbf{x}_{t+1}),\; \mathbf{x}_{t+1} - \mathbf{u}\rangle \\
+&= D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) - D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t),
+\end{align*}
+where the last equality is the three-point Bregman identity (equation (7) in the proof of Theorem 1, Part III).
+
+By convexity of $f$ (Lemma 1, Part I),
+\[
+f(\mathbf{x}_t) - f(\mathbf{u}) \le \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{u}\rangle = \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_{t+1} - \mathbf{u}\rangle + \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle.
+\]
+By convexity of $\psi$ and $\mathbf{g}_{t+1} \in \partial\psi(\mathbf{x}_{t+1})$,
+\[
+\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u}) \le \langle \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle.
+\]
+Adding and multiplying by $\eta$,
+\begin{align*}
+\eta\bigl[f(\mathbf{x}_t) - f(\mathbf{u}) + \psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u})\bigr]
+&\le \eta\langle \nabla f(\mathbf{x}_t) + \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle + \eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle \\
+&\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) - D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) \\
+&\quad + \eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle.
+\end{align*}
+
+\textbf{Step 2: Bounding the inner product.}
+By the generalized Cauchy--Schwarz inequality followed by Young's inequality ($ab \le \tfrac{1}{2}a^2 + \tfrac{1}{2}b^2$),
+\[
+\eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle
+\le \eta\|\nabla f(\mathbf{x}_t)\|_* \cdot \|\mathbf{x}_t - \mathbf{x}_{t+1}\|
+\le \frac{1}{2}\|\mathbf{x}_t - \mathbf{x}_{t+1}\|^2 + \frac{\eta^2}{2}\|\nabla f(\mathbf{x}_t)\|_*^2.
+\]
+Since $\varphi$ is $1$-strongly convex in $\|\cdot\|$, Fact 5 (Part III) gives $D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) \ge \tfrac{1}{2}\|\mathbf{x}_t - \mathbf{x}_{t+1}\|^2$. Since $f$ is $L$-Lipschitz in $\|\cdot\|$, Lemma 13 (Part II) gives $\|\nabla f(\mathbf{x}_t)\|_* \le L$. Therefore
+\[
+\eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle
+\le D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) + \frac{\eta^2 L^2}{2}.
+\]
+
+Substituting into Step 1, the $D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t)$ terms cancel:
+\[
+\eta\bigl[f(\mathbf{x}_t) - f(\mathbf{u}) + \psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u})\bigr]
+\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) + \frac{\eta^2 L^2}{2}.
+\]
+
+\textbf{Step 3: Rewriting the left side.}
+Write $f(\mathbf{x}_t) + \psi(\mathbf{x}_{t+1}) = F(\mathbf{x}_t) + \bigl(\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{x}_t)\bigr)$, so
+\[
+\eta\bigl[F(\mathbf{x}_t) - F(\mathbf{u})\bigr] + \eta\bigl[\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{x}_t)\bigr]
+\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) + \frac{\eta^2 L^2}{2}.
+\]
+
+\textbf{Step 4: Telescoping.}
+Set $\mathbf{u} = \mathbf{x}^\star$ and sum over $t = 0, \dots, T-1$. The Bregman terms telescope and the $\psi$ differences telescope:
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr] + \eta\bigl[\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) - D_\varphi(\mathbf{x}^\star \| \mathbf{x}_T) + \frac{\eta^2 T L^2}{2}.
+\]
+Since $D_\varphi(\mathbf{x}^\star \| \mathbf{x}_T) \ge 0$ (Fact 3, Part III),
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr] + \eta\bigl[\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) + \frac{\eta^2 T L^2}{2}.
+\]
+
+\textbf{Step 5: Using the initialization.}
+By construction, $\mathbf{x}_0 = \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \psi(\mathbf{x})$, so $\psi(\mathbf{x}_0) \le \psi(\mathbf{x}_T)$, hence $\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0) \ge 0$. Dropping this nonnegative term,
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) + \frac{\eta^2 T L^2}{2}
+\le \Theta + \frac{\eta^2 T L^2}{2},
+\]
+where the last inequality uses $D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) \le \sup_{\mathbf{y} \in \mathcal{X}} D_\varphi(\mathbf{x}^\star \| \mathbf{y}) \le \Theta$. Dividing by $\eta T$,
+\[
+\frac{1}{T}\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le \frac{\Theta}{\eta T} + \frac{\eta L^2}{2}.
+\]
+
+\textbf{Step 6: Jensen's inequality.}
+Since $F = f + \psi$ is convex (sum of convex functions) and $\bar{\mathbf{x}} = \frac{1}{T}\sum_{t=0}^{T-1}\mathbf{x}_t$,
+\[
+F(\bar{\mathbf{x}}) - F(\mathbf{x}^\star)
+\le \frac{1}{T}\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le \frac{\Theta}{\eta T} + \frac{\eta L^2}{2}. \qedhere
+\]
+\end{proof}

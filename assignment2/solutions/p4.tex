@@ -1,0 +1,51 @@
+\section*{Problem 4}
+
+\subsection*{(i)}
+
+\begin{proof}
+Define $\mathbf{A} = \begin{pmatrix} a\mathbf{I}_d \\ \mathbf{I}_d \end{pmatrix} \in \mathbb{R}^{2d \times d}$. Then
+\[
+\mathbf{A}\mathbf{M}\mathbf{A}^T = \begin{pmatrix} a\mathbf{I}_d \\ \mathbf{I}_d \end{pmatrix} \mathbf{M} \begin{pmatrix} a\mathbf{I}_d & \mathbf{I}_d \end{pmatrix} = \begin{pmatrix} a^2\mathbf{M} & a\mathbf{M} \\ a\mathbf{M} & \mathbf{M} \end{pmatrix}.
+\]
+For any $\mathbf{w} \in \mathbb{R}^{2d}$,
+\[
+\mathbf{w}^T (\mathbf{A}\mathbf{M}\mathbf{A}^T) \mathbf{w} = (\mathbf{A}^T \mathbf{w})^T \mathbf{M} (\mathbf{A}^T \mathbf{w}) \geq 0 \quad \text{(since } \mathbf{M} \succeq \mathbf{0}\text{)}
+\]
+so $\mathbf{A}\mathbf{M}\mathbf{A}^T \succeq \mathbf{0}$ by the spectral characterization of PSD matrices (Theorem 4, Part VI).
+
+Writing $\mathbf{w} = \begin{pmatrix} \mathbf{u} \\ \mathbf{v} \end{pmatrix}$ with $\mathbf{u}, \mathbf{v} \in \mathbb{R}^d$, we have $\mathbf{A}^T \mathbf{w} = a\mathbf{u} + \mathbf{v}$, so the quadratic form equals $(a\mathbf{u} + \mathbf{v})^T \mathbf{M} (a\mathbf{u} + \mathbf{v}) \geq 0$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Write $\mathbf{S} = \sum_{i \in [n]} a_i \mathbf{M}_i$ and $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i$.
+
+\textbf{Step 1:} By part (i), for each $i \in [n]$,
+\[
+\begin{pmatrix} a_i^2 \mathbf{M}_i & a_i \mathbf{M}_i \\ a_i \mathbf{M}_i & \mathbf{M}_i \end{pmatrix} \succeq \mathbf{0}.
+\]
+Summing over $i \in [n]$ (PSD matrices are closed under addition) gives
+\[
+\begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{T} \end{pmatrix} \succeq \mathbf{0}.
+\]
+
+\textbf{Step 2:} Since $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i \preceq \mathbf{I}_d$, the matrix $\mathbf{I}_d - \mathbf{T} \succeq \mathbf{0}$. Adding the PSD block matrix
+\[
+\begin{pmatrix} \mathbf{0} & \mathbf{0} \\ \mathbf{0} & \mathbf{I}_d - \mathbf{T} \end{pmatrix} \succeq \mathbf{0}
+\]
+to the result of Step 1 yields
+\[
+\begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{I}_d \end{pmatrix} \succeq \mathbf{0}.
+\]
+
+\textbf{Step 3:} The bottom-right block $\mathbf{I}_d \succ \mathbf{0}$ is invertible. By the Schur complement characterization (Fact 4, Part VI), the block matrix
+\[
+\begin{pmatrix} \mathbf{P} & \mathbf{Q} \\ \mathbf{Q}^T & \mathbf{R} \end{pmatrix} \succeq \mathbf{0} \quad \text{with } \mathbf{R} \succ \mathbf{0} \quad \implies \quad \mathbf{P} - \mathbf{Q}\mathbf{R}^{-1}\mathbf{Q}^T \succeq \mathbf{0}.
+\]
+Applying this with $\mathbf{P} = \sum_{i \in [n]} a_i^2 \mathbf{M}_i$, $\mathbf{Q} = \mathbf{S}$, and $\mathbf{R} = \mathbf{I}_d$:
+\[
+\sum_{i \in [n]} a_i^2 \mathbf{M}_i - \mathbf{S} \cdot \mathbf{I}_d^{-1} \cdot \mathbf{S} = \sum_{i \in [n]} a_i^2 \mathbf{M}_i - \mathbf{S}^2 \succeq \mathbf{0}.
+\]
+This is precisely $\left(\sum_{i \in [n]} a_i \mathbf{M}_i\right)^2 \preceq \sum_{i \in [n]} a_i^2 \mathbf{M}_i$.
+\end{proof}
