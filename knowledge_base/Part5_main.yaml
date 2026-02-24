@@ -1,0 +1,389 @@
+source: "Part5_main.pdf"
+lecture_number: 5
+title: "CS395T: Continuous Algorithms, Part V — Acceleration and high-order methods"
+items:
+  - type: proposition
+    number: "1"
+    name: "Accelerated gradient flow"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex and $L$-smooth for $L > 0$, and let
+      $\mathbf{x}^\star \in \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      For $\mathbf{x}_t$ following the ODE
+      \[
+        \ddot{\mathbf{x}}_t + \frac{3}{t}\dot{\mathbf{x}}_t + \nabla f(\mathbf{x}_t) = 0
+      \]
+      starting from $\mathbf{x}_0 \in \mathbb{R}^d$ and $\dot{\mathbf{x}}_0 = \mathbf{0}_d$,
+      \[
+        f(\mathbf{x}_t) - f(\mathbf{x}^\star) \leq \frac{2\|\mathbf{x}_0 - \mathbf{x}^\star\|_2^2}{t^2}.
+      \]
+    context: "Establishes that the second-order ODE (accelerated gradient flow) achieves a $1/t^2$ convergence rate for convex smooth functions; motivates discretization into accelerated gradient descent."
+    proof_notes:
+      - label: "(1)"
+        content: |
+          \ddot{\mathbf{x}}_t + \frac{3}{t}\dot{\mathbf{x}}_t + \nabla f(\mathbf{x}_t) = 0
+        description: "The accelerated gradient flow ODE; equivalently written as $\dot{\mathbf{v}}_t = -\frac{3}{t}\mathbf{v}_t - \nabla f(\mathbf{x}_t)$, $\dot{\mathbf{x}}_t = \mathbf{v}_t$."
+      - label: "Potential"
+        content: |
+          \Phi_t := t^2\bigl(f(\mathbf{x}_t) - f(\mathbf{x}^\star)\bigr) + 2\|\mathbf{z}_t - \mathbf{x}^\star\|_2^2,
+          \quad \text{where } \mathbf{z}_t := \mathbf{x}_t + \frac{t}{2}\dot{\mathbf{x}}_t.
+        description: "Lyapunov/potential function used to prove $\dot{\Phi}_t \leq 0$; the fast-forwarded trajectory $\mathbf{z}_t$ induces cancellations via the second-order nature of the ODE."
+      - label: "Phi-dot"
+        content: |
+          \dot{\Phi}_t = 2t\bigl(f(\mathbf{x}_t) - f(\mathbf{x}^\star) - \langle \nabla f(\mathbf{x}_t), \mathbf{x}_t - \mathbf{x}^\star\rangle\bigr) \leq 0
+        description: "After substituting ODE (1) and simplifying, $\dot{\Phi}_t \leq 0$ follows by convexity of $f$."
+
+  - type: proposition
+    number: "2"
+    name: "Accelerated gradient flow, well-conditioned regime"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and $\mu$-strongly convex, let
+      $\kappa := \frac{L}{\mu}$, and let $\mathbf{x}^\star \in \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      For $\mathbf{x}_t$ following the ODE
+      \[
+        \ddot{\mathbf{x}}_t + \frac{2}{\sqrt{\kappa}}\dot{\mathbf{x}}_t + \frac{1}{L}\nabla f(\mathbf{x}_t) = 0
+      \]
+      from $\mathbf{x}_0 \in \mathbb{R}^d$ and $\dot{\mathbf{x}}_0 = \mathbf{0}_d$,
+      \[
+        f(\mathbf{x}_t) - f(\mathbf{x}^\star) \leq 2\exp\!\left(-\frac{t}{\sqrt{\kappa}}\right)\bigl(f(\mathbf{x}_0) - f(\mathbf{x}^\star)\bigr).
+      \]
+    context: "Accelerated ODE convergence in the strongly convex regime; achieves exponential rate $\exp(-t/\sqrt{\kappa})$, analogous to gradient flow's $\exp(-t/\kappa)$ rate."
+    proof_notes:
+      - label: "(2)"
+        content: |
+          \ddot{\mathbf{x}}_t + \frac{2}{\sqrt{\kappa}}\dot{\mathbf{x}}_t + \frac{1}{L}\nabla f(\mathbf{x}_t) = 0
+        description: "The strongly-convex accelerated gradient flow ODE."
+      - label: "(3)"
+        content: |
+          \dot{\mathbf{z}}_t = \dot{\mathbf{x}}_t + \sqrt{\kappa}\ddot{\mathbf{x}}_t
+          = -\frac{1}{\mu\sqrt{\kappa}}\nabla f(\mathbf{x}_t) + \frac{1}{\sqrt{\kappa}}(\mathbf{x}_t - \mathbf{z}_t),
+          \quad \mathbf{z}_t := \mathbf{x}_t + \sqrt{\kappa}\dot{\mathbf{x}}_t.
+        description: "Dynamics of the fast-forwarded trajectory $\mathbf{z}_t$; used in the first line of the $\dot{\Phi}_t$ computation and crucial to invoking Eq. (7) of Part III."
+      - label: "Potential-SC"
+        content: |
+          \Phi_t := f(\mathbf{x}_t) - f(\mathbf{x}^\star) + \frac{\mu}{2}\|\mathbf{z}_t - \mathbf{x}^\star\|_2^2
+        description: "Lyapunov function for the strongly convex ODE proof; satisfies $\dot{\Phi}_t \leq -\frac{1}{\sqrt{\kappa}}\Phi_t$, giving exponential decay via Grönwall."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be differentiable and convex. Following the notation of
+      iterations (4), (5), define
+      \[
+        \Phi_k := A_k \epsilon_k + r_k,
+        \quad \epsilon_k := f(\mathbf{x}_k) - f(\mathbf{x}^\star),
+        \quad r_k := \frac{1}{2}\|\mathbf{z}_k - \mathbf{x}^\star\|_2^2,
+      \]
+      for all $k \geq 0$, where $\mathbf{x}^\star := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      Then for all $k \geq 0$, $\Phi_{k+1} \leq \Phi_k$.
+    context: "Main invariant for the Accelerated Proximal Point Algorithm (APPA); descent of the potential $\Phi_k$ is the key to proving Theorem 1. Also proved in the AGD setting as Lemma 3."
+    proof_notes:
+      - label: "(7)"
+        content: |
+          \Phi_k := A_k \epsilon_k + r_k,\quad r_k := \frac{1}{2}\|\mathbf{z}_k - \mathbf{x}^\star\|_2^2
+        description: "Definition of the APPA potential; $\Phi_{k+1} \leq \Phi_k$ is the central invariant used in the proof of Theorem 1."
+      - label: "(8)"
+        content: |
+          a_{k+1}\langle \nabla f(\mathbf{x}_{k+1}), \mathbf{x}^\star - \mathbf{z}_k\rangle
+          \leq A_k \epsilon_k - A_{k+1}\epsilon_{k+1} - a_{k+1}^2\|\nabla f(\mathbf{x}_{k+1})\|_2^2
+          = A_k\epsilon_k - A_{k+1}\epsilon_{k+1} - a_{k+1}^2\|\nabla f(\mathbf{x}_{k+1})\|_2^2
+        description: "Intermediate inequality from convexity applied twice plus the definition of $\mathbf{x}_{k+1}$ and the recurrence $a_{k+1}^2 = \lambda_{k+1} A_{k+1}$; combines with (9) to give (10)."
+      - label: "(9)"
+        content: |
+          a_{k+1}\langle \nabla f(\mathbf{x}_{k+1}), \mathbf{z}_k - \mathbf{x}^\star\rangle
+          \leq r_k - r_{k+1} + \frac{a_{k+1}^2}{2}\|\nabla f(\mathbf{x}_{k+1})\|_2^2
+        description: "Follows from the standard mirror descent analysis (Eq. (11), Part III); combines with (8) to yield the potential descent in (10)."
+      - label: "(10)"
+        content: |
+          0 \leq \Phi_k - \Phi_{k+1} - \frac{a_{k+1}^2}{2}\|\nabla f(\mathbf{x}_{k+1})\|_2^2 \leq \Phi_k - \Phi_{k+1}
+        description: "Combines (8) and (9) to establish $\Phi_{k+1} \leq \Phi_k$; the squared gradient norm slack is later exploited in the AGD proof (Lemma 3)."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Following the notation in (4), (5), suppose that $\lambda_k = \lambda$ for all $k \geq 1$. Then
+      \[
+        A_k \geq \frac{\lambda k^2}{4}.
+      \]
+    context: "Provides the quadratic growth of $A_k$ under constant step sizes in APPA; combined with Lemma 1 gives the $O(1/T^2)$ convergence rate of Theorem 1."
+    proof_notes:
+      - label: "sqrt-telescope"
+        content: |
+          \sqrt{A_k} = \sqrt{A_k} - \sqrt{A_0}
+          = \sum_{i \in [k]} \frac{a_i}{\sqrt{A_i} + \sqrt{A_{i-1}}}
+          = \sum_{i \in [k]} \frac{\sqrt{\lambda_i A_i}}{\sqrt{A_i} + \sqrt{A_{i-1}}}
+          \geq \frac{1}{2}\sum_{i \in [k]}\sqrt{\lambda_i}
+          = \frac{k\sqrt{\lambda}}{2}
+        description: "Telescoping argument using the recurrence $a_{k+1}^2 = \lambda_{k+1}A_{k+1}$ and monotonicity of $\{A_k\}$; yields $\sqrt{A_k} \geq k\sqrt{\lambda}/2$, i.e., $A_k \geq \lambda k^2/4$."
+
+  - type: theorem
+    number: "1"
+    name: "Accelerated proximal point"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex and differentiable, and suppose for
+      $\mathbf{x}_0 \in \mathbb{R}^d$ we have $\|\mathbf{x}_0 - \mathbf{x}^\star\|_2 \leq R$ for
+      $\mathbf{x}^\star := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      Further, let $A_0 = 0$ and $\lambda_k = \lambda > 0$ for all $k \geq 1$. Then iterating
+      (4), (5) for $0 \leq k < T$,
+      \[
+        f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \frac{2R^2}{\lambda T^2}.
+      \]
+    context: "Main convergence result for APPA; achieves $O(1/T^2)$ rate for convex differentiable functions, improving upon the $O(1/T)$ rate of gradient descent by a quadratic factor in $T$. The iteration is implicit (requires solving a proximal point subproblem)."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and convex. Following the notation in
+      (5), (7), (11), and letting $\lambda_k = \frac{1}{L}$ for all $k \geq 1$, we have for all
+      $k \geq 0$ that $\Phi_{k+1} \leq \Phi_k$.
+    context: "AGD analog of Lemma 1; the key difference from Lemma 1 is that the gradient is evaluated at $\mathbf{y}_k$ (explicit) rather than $\mathbf{x}_{k+1}$ (implicit). Uses smoothness (Corollary 2, Part II) to bound the squared gradient norm slack."
+
+  - type: theorem
+    number: "2"
+    name: "Accelerated gradient descent"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and convex, and suppose for
+      $\mathbf{x}_0 \in \mathbb{R}^d$ we have $\|\mathbf{x}_0 - \mathbf{x}^\star\|_2 \leq R$ for
+      $\mathbf{x}^\star := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      Further, let $A_0 = 0$ and $\lambda_k = \frac{1}{L} > 0$ for all $k \geq 1$.
+      Then iterating (5), (11) for $0 \leq k < T$,
+      \[
+        f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \frac{2LR^2}{T^2}.
+      \]
+    context: "Nesterov's accelerated gradient descent (AGD); achieves the optimal $O(L/T^2)$ rate for smooth convex functions via explicit gradient steps. Improves upon gradient descent (Theorem 3, Part II) by a quadratic factor in $T$. The AGD iteration (11) is a linear coupling of mirror descent and gradient descent."
+    proof_notes:
+      - label: "(11)"
+        content: |
+          \mathbf{y}_k \leftarrow \frac{A_k}{A_{k+1}}\mathbf{x}_k + \frac{a_{k+1}}{A_{k+1}}\mathbf{z}_k,\quad
+          \mathbf{z}_{k+1} \leftarrow \mathbf{z}_k - a_{k+1}\nabla f(\mathbf{y}_k),\quad
+          \mathbf{x}_{k+1} \leftarrow \mathbf{y}_k - \frac{1}{L}\nabla f(\mathbf{y}_k)
+        description: "The AGD update rule; $\{A_k, a_k\}$ follow recurrence (5) with $\lambda_k = 1/L$. Equivalent to momentum iteration (12)."
+      - label: "(12)"
+        content: |
+          \mathbf{x}_{k+1} \leftarrow \mathbf{y}_k - \frac{1}{L}\nabla f(\mathbf{y}_k),\quad
+          \mathbf{y}_{k+1} \leftarrow \mathbf{x}_{k+1} + \frac{A_k}{A_{k+1}}(\mathbf{x}_{k+1} - \mathbf{x}_k)
+        description: "Momentum form of AGD; $\mathbf{x}_{k+1}$ is a gradient step and $\mathbf{y}_{k+1}$ is a history-dependent momentum update. Directly discretizes the accelerated gradient flow ODE (1)."
+
+  - type: definition
+    number: "1"
+    name: "Tensor operator norm"
+    statement: |
+      For $\mathbf{T} \in \mathbb{R}^{d_1 \times d_2 \times \cdots \times d_p}$, define
+      \[
+        \|\mathbf{T}\|_{\mathrm{op}} := \max_{\{\mathbf{v}_i \in \mathbb{R}^{d_i} \mid \|\mathbf{v}_i\|_2 \leq 1\}_{i \in [p]}}
+        |\mathbf{T}[\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_p]|.
+      \]
+    context: "Defines the operator norm for tensors; used to state the Lipschitz condition on $p$th-order derivative tensors $\nabla^p f$."
+
+  - type: definition
+    number: "2"
+    name: "L-Lipschitz $p$th derivative"
+    statement: |
+      Let $\mathbf{T} : \mathbb{R}^d \to \mathbb{R}^{d_1 \times d_2 \times \cdots \times d_p}$.
+      We say $\mathbf{T}$ is $L$-Lipschitz if for all $\mathbf{x}, \mathbf{x}' \in \mathbb{R}^d$,
+      \[
+        \|\mathbf{T}(\mathbf{x}) - \mathbf{T}(\mathbf{x}')\|_{\mathrm{op}} \leq L\|\mathbf{x} - \mathbf{x}'\|_2.
+      \]
+      When $\mathbf{T} = \nabla^p f$ for $p$-times differentiable $f : \mathbb{R}^d \to \mathbb{R}$,
+      we say $f$ has an $L$-Lipschitz $p$th derivative.
+    context: "Generalizes $L$-smoothness ($p=1$) and Lipschitz Hessian ($p=2$) to arbitrary order; the standing assumption for all high-order methods in Section 2."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      Let $\mathbf{T} \in \mathbb{R}^{d^{\otimes p}}$ be a symmetric tensor, i.e.,
+      $\mathbf{T}[\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_p] = \mathbf{T}[\mathbf{v}_{\pi(1)}, \mathbf{v}_{\pi(2)}, \ldots, \mathbf{v}_{\pi(p)}]$
+      for any set of vectors $\{\mathbf{v}_i\}_{i \in [p]} \subset \mathbb{R}^d$ and permutation
+      $\pi : [p] \to [p]$. Then
+      \[
+        \|\mathbf{T}\|_{\mathrm{op}} = \max_{\substack{\mathbf{v} \in \mathbb{R}^d \\ \|\mathbf{v}\|_2 \leq 1}}
+        \mathbf{T}[\mathbf{v}, \mathbf{v}, \ldots, \mathbf{v}].
+      \]
+    context: "For symmetric tensors (in particular, $\nabla^p f$ by Schwarz's theorem), the operator norm is achieved by $p$ copies of the same vector; simplifies norm computations and is used in Lemma 5."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      Suppose $f : \mathbb{R}^d \to \mathbb{R}$ is $(p+1)$-times continuously differentiable.
+      Then $f$ has an $L$-Lipschitz $p$th derivative if and only if for all $\mathbf{x} \in \mathbb{R}^d$,
+      $\|\nabla^{p+1} f(\mathbf{x})\|_{\mathrm{op}} \leq L$.
+    context: "High-order analog of Lemma 6, Part II; gives an equivalent pointwise characterization of the Lipschitz $p$th derivative condition in terms of the $(p+1)$th derivative norm. Used to verify the Lipschitz condition in proofs."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Suppose $f : \mathbb{R}^d \to \mathbb{R}$ is $p$-times differentiable. Then for all
+      $\bar{\mathbf{x}}, \mathbf{x} \in \mathbb{R}^d$ and all $0 \leq i < p$,
+      \[
+        \nabla^i f(\mathbf{x}) = \nabla^i \mathcal{T}^{p-1}_{\bar{\mathbf{x}}} f(\mathbf{x})
+        + \int_0^1 \frac{\lambda^{p-i-1}}{(p-i-1)!} \nabla^p f(\mathbf{x}_\lambda)
+          [(\mathbf{x} - \bar{\mathbf{x}})^{\otimes(p-i)}]\,\mathrm{d}\lambda,
+      \]
+      where $\mathbf{x}_\lambda := (1-\lambda)\bar{\mathbf{x}} + \lambda\mathbf{x}$ for all
+      $\lambda \in [0,1]$. Moreover, for any $i \in [p]$, as a function of $\mathbf{x}$,
+      \[
+        \nabla\!\left(\nabla^i f(\bar{\mathbf{x}})\left[(\mathbf{x}-\bar{\mathbf{x}})^{\otimes i}\right]\right)
+        = i\,\nabla^i f(\bar{\mathbf{x}})\left[(\mathbf{x}-\bar{\mathbf{x}})^{\otimes(i-1)}, \cdot\right].
+      \]
+    context: "Taylor remainder formula for higher derivatives; fundamental tool used in Lemma 7 to derive upper and lower bounds on $f$ in terms of its Taylor expansion. The $i=0$ case gives the scalar Taylor remainder; the gradient formula is used to compute gradients of Taylor-expanded upper bounds."
+    proof_notes:
+      - label: "(13)"
+        content: |
+          \mathcal{T}^k_{\bar{\mathbf{x}}} f(\mathbf{x}) := \sum_{i=0}^k \frac{1}{i!}\nabla^i f(\bar{\mathbf{x}})[(\mathbf{x} - \bar{\mathbf{x}})^{\otimes i}]
+        description: "Definition of the $k$th-order Taylor series of $f$ around $\bar{\mathbf{x}}$; for $k=2$ this is the Newton approximation $\mathcal{T}^2_{\bar{\mathbf{x}}} f(\mathbf{x}) = f(\bar{\mathbf{x}}) + \langle \nabla f(\bar{\mathbf{x}}), \mathbf{x} - \bar{\mathbf{x}}\rangle + \frac{1}{2}\nabla^2 f(\bar{\mathbf{x}})[\mathbf{x}-\bar{\mathbf{x}},\mathbf{x}-\bar{\mathbf{x}}]$."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ have an $L$-Lipschitz $p$th derivative. Then for all
+      $\mathbf{x}, \bar{\mathbf{x}} \in \mathbb{R}^d$,
+      \[
+        \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) - \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+        \leq f(\mathbf{x}) \leq
+        \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}.
+      \]
+      Moreover, if $f$ is convex, then the upper bound is also convex.
+    context: "High-order analog of the smooth upper/lower bound lemma (Lemma 6, Part II); the upper bound is the fundamental object minimized in Taylor descent and the stationary-point algorithm. Convexity of the upper bound (when $f$ is convex) is key for the proximal step to be efficiently solvable."
+    proof_notes:
+      - label: "(14)"
+        content: |
+          \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) - \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+          \leq f(\mathbf{x}) \leq
+          \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+        description: "The main upper and lower Taylor bound; the upper bound is used directly in Lemmas 8 and 9. For $i=2$ the residual bound gives $\|\nabla^2 f(\mathbf{x}) - \nabla^2 \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x})\|_{\mathrm{op}} \leq \frac{L}{(p-1)!}\|\mathbf{x}-\bar{\mathbf{x}}\|_2^{p-1}$."
+      - label: "(15)"
+        content: |
+          \|\nabla^2 f(\mathbf{x}) - \nabla^2 \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x})\|_{\mathrm{op}}
+          \leq \frac{L}{(p-1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p-1}
+        description: "Residual bound on the Hessian of $f$ vs. the Hessian of its Taylor expansion; used together with (16) to prove convexity of the upper bound in (14)."
+      - label: "(16)"
+        content: |
+          \nabla^2\!\left(\frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}\right)
+          = \frac{L}{(p-1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p-1}\mathbf{I}_d
+            + C(\mathbf{x}-\bar{\mathbf{x}})(\mathbf{x}-\bar{\mathbf{x}})^\top
+          \succeq \frac{L}{(p-1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p-1}\mathbf{I}_d
+        description: "Hessian of the regularization term $\frac{L}{(p+1)!}\|\cdot - \bar{\mathbf{x}}\|_2^{p+1}$; is $\frac{L}{(p-1)!}\|\mathbf{x}-\bar{\mathbf{x}}\|_2^{p-1}$-strongly convex, ensuring the upper bound is convex."
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      In principle, Lemma 7 combined with Theorem 1, Part I shows that we can minimize the
+      right-hand side of (14) to high accuracy in polynomial time, as long as $f$ is convex.
+      For the specific case of $p = 2$, by using Lagrange multipliers to characterize the minimizer
+      as being of the form $\bar{\mathbf{x}} - (\nabla^2 f(\bar{\mathbf{x}}) + \lambda \mathbf{I}_d)^{-1}\nabla f(\bar{\mathbf{x}})$
+      for some $\lambda > 0$, binary searching efficiently computes the minimizer to high accuracy,
+      even for nonconvex $f$.
+    context: "Discusses practical implementability of the Taylor descent step; $p=2$ (cubic regularization of Newton's method) is efficiently solvable. Used to justify end-to-end implementations of Lemmas 8 and 9 for $p=2$."
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ have an $L$-Lipschitz $p$th derivative. For any
+      $\bar{\mathbf{x}} \in \mathbb{R}^d$, letting
+      \[
+        \mathbf{x} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d}
+        \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{2L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1},
+      \]
+      we have
+      \[
+        f(\mathbf{x}) \leq f(\bar{\mathbf{x}}) - \frac{L}{(p+1)!}
+        \left(\frac{\|\nabla f(\bar{\mathbf{x}})\|_2\, p!}{3L}\right)^{\frac{p+1}{p}}.
+      \]
+    context: "Per-step progress bound for the stationary-point finding algorithm (high-order analog of Lemma 7, Part II); shows each Taylor descent step reduces $f$ by an amount proportional to $\|\nabla f\|^{(p+1)/p}$. Used to derive Corollary 1."
+    proof_notes:
+      - label: "(17)"
+        content: |
+          \mathbf{x} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d}
+          \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{2L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+        description: "The Taylor descent step for stationary-point finding; uses $2L$ (double the Lipschitz constant) as regularization, giving both a function value decrease and a gradient norm bound."
+      - label: "(18)"
+        content: |
+          f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+          \leq \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{2L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+          \leq f(\bar{\mathbf{x}})
+        description: "Combines the Lemma 7 upper bound with the optimality of $\mathbf{x}$ in (17) to bound $f(\mathbf{x}) \leq f(\bar{\mathbf{x}})$; used to establish function decrease and to bound $\|\mathbf{x} - \bar{\mathbf{x}}\|_2$."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of Lemma 8, let $\epsilon > 0$, and suppose for $\mathbf{x}_0 \in \mathbb{R}^d$
+      we have $f(\mathbf{x}) - \min_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x}) \leq \Delta$.
+      Then iterating $(\mathbf{x}_{t+1}, \mathbf{x}_t) \leftarrow (\mathbf{x}, \bar{\mathbf{x}})$
+      as given by (17) for $0 \leq t < T$ where
+      \[
+        T \geq \frac{\Delta}{\dfrac{L}{(p+1)!} \cdot \left(\dfrac{p!}{3L}\right)^{\frac{p+1}{p}}
+        \cdot \epsilon^{\frac{p+1}{p}}},
+      \]
+      we have
+      \[
+        \min_{0 \leq t < T} \|\nabla f(\mathbf{x}_t)\|_2 \leq \epsilon.
+      \]
+    context: "Iteration complexity for finding an $\epsilon$-approximate stationary point via high-order Taylor descent; achieves $T^{-p/(p+1)}$ rate, improving upon $T^{-1/2}$ for smooth functions as $p$ increases. Applies to potentially nonconvex $f$."
+
+  - type: lemma
+    number: "9"
+    name: ""
+    statement: |
+      Let convex $f : \mathbb{R}^d \to \mathbb{R}$ have an $L$-Lipschitz $p$th derivative.
+      For any $\bar{\mathbf{x}} \in \mathbb{R}^d$, letting
+      \[
+        \mathbf{x} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d}
+        \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1},
+      \]
+      we have for $\mathbf{x}^\star \in \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$,
+      \[
+        f(\mathbf{x}) - f(\mathbf{x}^\star) \leq
+        \left(1 - \frac{p}{p+1} \cdot \min\!\left(1,\,
+        \left(\frac{p!\,(f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star))}{2L\|\mathbf{x} - \mathbf{x}^\star\|_2^{p+1}}\right)^{\!\frac{1}{p}}
+        \right)\right)(f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star)).
+      \]
+    context: "Per-step progress bound for Taylor descent in the convex setting; used to derive Theorem 3. The step uses $L$ (not $2L$) as regularization, sufficient because $f$ is convex."
+    proof_notes:
+      - label: "(19)"
+        content: |
+          \mathbf{x} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d}
+          \mathcal{T}^p_{\bar{\mathbf{x}}} f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \bar{\mathbf{x}}\|_2^{p+1}
+        description: "The convex Taylor descent step (regularization $L$, not $2L$); the minimizer satisfies $\nabla U_{\bar{\mathbf{x}}}(\mathbf{x}) = \mathbf{0}_d$."
+      - label: "(20)"
+        content: |
+          f(\mathbf{x}) - f(\mathbf{x}^\star)
+          \leq \min_{\lambda \in [0,1]}\left(
+            (1-\lambda)(f(\bar{\mathbf{x}}) - f(\mathbf{x}^\star))
+            + \frac{2L\lambda^{p+1}}{(p+1)!}\|\bar{\mathbf{x}} - \mathbf{x}^\star\|_2^{p+1}
+          \right)
+        description: "Intermediate bound obtained by optimizing over the line between $\bar{\mathbf{x}}$ and $\mathbf{x}^\star$; applying the $\lambda$-optimization formula then gives the per-step contraction in Lemma 9."
+
+  - type: theorem
+    number: "3"
+    name: "Taylor descent"
+    statement: |
+      Let convex $f : \mathbb{R}^d \to \mathbb{R}$ have an $L$-Lipschitz $p$th derivative, and
+      suppose for $\mathbf{x}_0 \in \mathbb{R}^d$,
+      $\max_{\mathbf{x}: f(\mathbf{x}) \leq f(\mathbf{x}_0)} \|\mathbf{x} - \mathbf{x}^\star\|_2 \leq R$
+      for $\mathbf{x}^\star \in \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$.
+      Then iterating
+      \[
+        \mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d}
+        \mathcal{T}^p_{\mathbf{x}_t} f(\mathbf{x}) + \frac{L}{(p+1)!}\|\mathbf{x} - \mathbf{x}_t\|_2^{p+1}
+      \]
+      for $0 \leq t < T$, we have
+      \[
+        f(\mathbf{x}_T) - f(\mathbf{x}^\star) \leq \frac{(p+1)^p}{p!} \cdot \frac{2LR^{p+1}}{(T-1)^p}.
+      \]
+    context: "Main convergence theorem for Taylor descent on convex functions; achieves $O(T^{-p})$ rate under $L$-Lipschitz $p$th derivative, a dramatic improvement over the $O(T^{-1})$ rate of smooth gradient descent for $p > 1$. The tradeoff is the cost of minimizing the Taylor upper bound at each step."
+    proof_notes:
+      - label: "(21)"
+        content: |
+          -\alpha(T-1) \geq \sum_{t \in [T-1]} \frac{\Phi_{t+1} - \Phi_t}{\Phi_t^{1+\frac{1}{p}}}
+          \geq \int_{\Phi_1}^{\Phi_T} \frac{1}{\tau^{1+\frac{1}{p}}}\,\mathrm{d}\tau
+          = -p\!\left(\Phi_T^{-\frac{1}{p}} - \Phi_1^{-\frac{1}{p}}\right) \geq -p\Phi_T^{-\frac{1}{p}}
+        description: "Self-bounded differential inequality used to aggregate the per-step progress from Lemma 9; yields the $T^{-p}$ rate by bounding the telescoping sum via an integral."

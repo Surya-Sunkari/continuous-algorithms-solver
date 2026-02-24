@@ -1,0 +1,402 @@
+source: "Part3_main.pdf"
+lecture_number: 3
+title: "CS395T: Continuous Algorithms, Part III — Mirror Descent"
+items:
+  - type: definition
+    number: "1"
+    name: "Convex conjugate"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ be convex, closed, and proper. The
+      convex conjugate of $f$ is $f^* : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$, defined as
+      \[
+        f^*(\mathbf{y}) := \sup_{\mathbf{x} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{x} \rangle - f(\mathbf{x}), \quad \text{for all } \mathbf{y} \in \mathbb{R}^d.
+      \]
+    context: "Also called the Fenchel dual or Legendre transform of $f$. Used to pass between primal and dual representations of a convex function; central to mirror descent."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      For a set $S$, let $f_s : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ be a convex function for all $s \in S$.
+      Then $f_S(\mathbf{x}) := \sup_{s \in S} f_s(\mathbf{x})$ is convex, and if $s^* \in S$ attains the supremum,
+      we have $\partial f_{s^*}(\mathbf{x}) \subseteq \partial f_S(\mathbf{x})$.
+    context: "Used to establish convexity of the convex conjugate (a supremum of linear functions) and to characterize its subdifferential."
+
+  - type: proposition
+    number: "Fact 1"
+    name: ""
+    statement: |
+      If $f^*$ is the convex conjugate of convex, closed, and proper $f : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$,
+      it is convex, closed, and proper. Moreover, for $\mathbf{y} \in \mathbb{R}^d$,
+      $\mathbf{x} \in \operatorname{argmax}_{\mathbf{x} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{x} \rangle - f(\mathbf{x})$
+      iff $\mathbf{x} \in \partial f^*(\mathbf{y})$.
+    context: "Characterizes the maximizing argument in the convex conjugate definition as a subdifferential membership; used to relate primal and dual optimality conditions."
+
+  - type: proposition
+    number: "Fact 2"
+    name: "Fenchel–Young inequality"
+    statement: |
+      If $f^*$ is the convex conjugate of convex, closed, and proper $f : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$,
+      \[
+        f^*(\mathbf{y}) + f(\mathbf{x}) \geq \langle \mathbf{y}, \mathbf{x} \rangle \quad \text{for all } \mathbf{x}, \mathbf{y} \in \mathbb{R}^d.
+      \]
+    context: "Fundamental inequality used throughout mirror descent and duality arguments; equality holds iff $\mathbf{x} \in \partial f^*(\mathbf{y})$ (equivalently $\mathbf{y} \in \partial f(\mathbf{x})$)."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      For closed, proper, and convex $f : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$, $f^{**} = f$.
+    context: "Shows that conjugation is its own inverse for closed proper convex functions; generalizes Lemma 12 of Part II to this setting."
+    proof_notes:
+      - label: "sup-inf swap"
+        content: |
+          f^{**}(\mathbf{x}) := \sup_{\mathbf{y} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{x} \rangle - \left(\sup_{\mathbf{z} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{z} \rangle - f(\mathbf{z})\right)
+          = \sup_{\mathbf{y} \in \mathbb{R}^d} \inf_{\mathbf{z} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{x} - \mathbf{z} \rangle + f(\mathbf{z})
+          \leq \inf_{\mathbf{z} \in \mathbb{R}^d} \sup_{\mathbf{y} \in \mathbb{R}^d} \langle \mathbf{y}, \mathbf{x} - \mathbf{z} \rangle + f(\mathbf{z}) = f(\mathbf{x}).
+        description: "Establishes $f^{**} \leq f$ pointwise via the sup-inf inequality (min-max inequality); the reverse direction uses the separating hyperplane theorem."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex, closed, and proper. Then for all $\mathbf{x} \in \mathbb{R}^d$
+      and $\mathbf{y} \in \partial f(\mathbf{x})$, $\langle \mathbf{y}, \mathbf{x} \rangle = f(\mathbf{x}) + f^*(\mathbf{y})$,
+      and $\mathbf{x} \in \partial f^*(\mathbf{y})$ if $\partial f^*(\mathbf{y}) \neq \emptyset$.
+    context: "Key duality characterization: $\nabla f$ and $\nabla f^*$ are mutual inverses when both exist. Used to show the mirror map update is well-defined and to relate primal and dual gradients."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      (Rockafellar [Roc70].) Let $f : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ be convex and of Legendre type
+      ($f$ is differentiable everywhere in $\mathcal{X} := \operatorname{int}(\{x \in \mathbb{R}^d \mid f(\mathbf{x}) < \infty\}) \neq \emptyset$,
+      and $\nabla f \to \infty$ as $\mathbf{x}$ approaches the boundary of $\mathcal{X}$).
+      Then $\nabla f$ and $\nabla f^*$ are bijections between $\mathcal{X}$ and
+      $\mathcal{X}^* := \operatorname{int}(\{\mathbf{y} \in \mathbb{R}^d \mid f^*(\mathbf{y}) < \infty\})$.
+    context: "Establishes bijectivity of $\nabla f$ and $\nabla f^*$ for Legendre-type functions; crucial for the mirror descent update rule to be well-defined via $\nabla\varphi^*$."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      ([KST09].) Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex, closed, and proper. Then if $f$ is
+      $L$-smooth in $\|\cdot\|$, $f^*$ is $\frac{1}{L}$-strongly convex in $\|\cdot\|_*$, and if $f^*$
+      is $\frac{1}{L}$-strongly convex in $\|\cdot\|$, $f^*$ is $L$-smooth in $\|\cdot\|_*$.
+    context: "Inverse second-order regularity duality: smoothness of $f$ corresponds to strong convexity of $f^*$ and vice versa, with respect to dual norms. Used to derive Corollary 2."
+
+  - type: corollary
+    number: "2"
+    name: ""
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be convex, closed, proper, and $L$-smooth in $\|\cdot\|$. Then
+      \[
+        f(\mathbf{x}') - f(\mathbf{x}) - \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle
+        \geq \frac{1}{2L} \|\nabla f(\mathbf{x}') - \nabla f(\mathbf{x})\|_*^2
+        \quad \text{for all } \mathbf{x}, \mathbf{x}' \in \mathbb{R}^d.
+      \]
+    context: "Lower bounds the function gap by gradient variation; implies co-coercivity of the gradient (equation (2)). Used in convergence analyses."
+    proof_notes:
+      - label: "(1)"
+        content: |
+          f(\mathbf{x}') - f(\mathbf{x}) - \langle \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle
+          = f^*(\nabla f(\mathbf{x})) - f^*(\nabla f(\mathbf{x}')) - \langle \mathbf{x}', \nabla f(\mathbf{x}) - \nabla f(\mathbf{x}') \rangle
+        description: "Reformulates the function gap in terms of $f^*$ using Corollary 1; the claim then follows from $\frac{1}{L}$-strong convexity of $f^*$."
+      - label: "(2)"
+        content: |
+          \langle \nabla f(\mathbf{x}') - \nabla f(\mathbf{x}), \mathbf{x}' - \mathbf{x} \rangle
+          \geq \frac{1}{L} \|\nabla f(\mathbf{x}') - \nabla f(\mathbf{x})\|_*^2
+        description: "Co-coercivity of the gradient for $L$-smooth functions; obtained by adding the conclusion of Corollary 2 with $\mathbf{x}, \mathbf{x}'$ interchanged."
+
+  - type: definition
+    number: "2"
+    name: "Relative conditioning"
+    statement: |
+      Let $f : \mathcal{X} \to \mathbb{R}$ and $\varphi : \mathcal{X} \to \mathbb{R}$ both be convex. We say $f$ is
+      $L$-relatively smooth with respect to $\varphi$, or $L$-relatively smooth in $\varphi$, if
+      $L\varphi - f$ is convex. Similarly, we say $f$ is $\mu$-relatively strongly convex with
+      respect to (or in) $\varphi$ if $f - \mu\varphi$ is convex.
+    context: "Generalizes standard smoothness and strong convexity to non-Euclidean settings by measuring regularity relative to a reference function $\varphi$ rather than a norm. Central to mirror descent analysis."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      If $f : \mathcal{X} \to \mathbb{R}$ is convex, it is $\mu$-strongly convex iff it is $\mu$-relatively
+      strongly convex in $\varphi := \frac{1}{2}\|\cdot\|_2^2$, and it is $L$-smooth iff it is
+      $L$-relatively smooth in $\varphi$.
+    context: "Confirms that relative conditioning definitions recover Part II definitions in the Euclidean setting."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          \frac{1}{2}\|(1-\lambda)\mathbf{x} + \lambda\mathbf{x}'\|_2^2
+          = \frac{1-\lambda}{2}\|\mathbf{x}\|_2^2 + \frac{\lambda}{2}\|\mathbf{x}'\|_2^2
+          - \frac{\lambda(1-\lambda)}{2}\|\mathbf{x} - \mathbf{x}'\|_2^2
+        description: "Parallelogram-law identity for the squared Euclidean norm; used to translate $\mu$-strong convexity into the relative framework."
+
+  - type: definition
+    number: "3"
+    name: "Bregman divergence"
+    statement: |
+      Let $\varphi : \mathcal{X} \to \mathbb{R}$ be convex and differentiable. The Bregman divergence
+      induced by $\varphi$ is defined as
+      \[
+        D_\varphi(\mathbf{x} \| \bar{\mathbf{x}}) := \varphi(\mathbf{x}) - \varphi(\bar{\mathbf{x}}) - \langle \nabla\varphi(\bar{\mathbf{x}}), \mathbf{x} - \bar{\mathbf{x}} \rangle.
+      \]
+    context: "Measures the gap between $\varphi(\mathbf{x})$ and its first-order extrapolation at $\bar{\mathbf{x}}$; generalizes squared Euclidean distance. Used as the proximity measure in proximal point and mirror descent algorithms."
+
+  - type: proposition
+    number: "Fact 3"
+    name: ""
+    statement: |
+      Let $\varphi : \mathcal{X} \to \mathbb{R}$ be convex and differentiable. Then
+      $D_\varphi(\mathbf{x} \| \mathbf{x}) \geq 0$ for all $\mathbf{x}, \bar{\mathbf{x}} \in \mathcal{X}$,
+      and $D_\varphi(\cdot \| \bar{\mathbf{x}})$ is convex for any fixed $\bar{\mathbf{x}} \in \mathcal{X}$.
+      In general, $D_\varphi(\mathbf{x} \| \cdot)$ may not be convex for fixed $\mathbf{x} \in \mathcal{X}$.
+    context: "Basic nonnegativity and partial convexity of Bregman divergences; used throughout proximal point and mirror descent analyses."
+
+  - type: proposition
+    number: "Fact 4"
+    name: ""
+    statement: |
+      If $f$ and $f^*$ are both differentiable,
+      \[
+        D_f(\mathbf{x} \| \mathbf{x}') = D_{f^*}(\nabla f(\mathbf{x}') \| \nabla f(\mathbf{x})).
+      \]
+    context: "Relates Bregman divergences of a function and its conjugate; useful in duality-based analyses."
+
+  - type: proposition
+    number: "Fact 5"
+    name: ""
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^d$, and let $\varphi : \mathcal{X} \to \mathbb{R}$ be 1-strongly convex
+      in $\|\cdot\|$. For any $\mathbf{x}, \bar{\mathbf{x}} \in \mathcal{X}$,
+      \[
+        D_\varphi(\mathbf{x} \| \bar{\mathbf{x}}) \geq \frac{1}{2}\|\mathbf{x} - \bar{\mathbf{x}}\|^2.
+      \]
+    context: "Lower bounds the Bregman divergence by half the squared norm distance when $\varphi$ is 1-strongly convex; used in the mirror descent convergence proof to bound the discretization error."
+
+  - type: theorem
+    number: "1"
+    name: "Proximal point method"
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^d$, and let $f : \mathcal{X} \to \mathbb{R}$ and $\varphi : \mathcal{X} \to \mathbb{R}$
+      both be convex and of Legendre type. Consider iterating the update
+      \[
+        \mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \{\eta f(\mathbf{x}) + D_\varphi(\mathbf{x} \| \mathbf{x}_t)\}
+      \]
+      for $0 \leq t < T$, from $\mathbf{x}_0 \in \mathcal{X}$ with $\eta > 0$, and let
+      $\bar{\mathbf{x}} := \frac{1}{T}\sum_{t \in [T]} \mathbf{x}_t$. Then letting $\mathbf{x}^* \in \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x})$,
+      \[
+        f(\bar{\mathbf{x}}) - f(\mathbf{x}^*) \leq \frac{D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)}{\eta T}.
+      \]
+      If $f$ is further $\mu$-relatively strongly convex with respect to $\varphi$ for $\mu > 0$,
+      \[
+        f(\mathbf{x}_T) - f(\mathbf{x}^*) \leq \frac{D_\varphi(\mathbf{x}^* \| \mathbf{x}_{T-1})}{\eta},
+        \quad \text{and} \quad
+        D_\varphi(\mathbf{x}^* \| \mathbf{x}_t) \leq (1 + \eta\mu)^{-t} D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)
+        \quad \text{for all } t \in [T].
+      \]
+    context: "Implicit (backward Euler) oracle method for minimizing $f$ with $\varphi$ as regularizer. Achieves $O(1/T)$ convergence in the convex case and geometric convergence under relative strong convexity. Motivates mirror descent as an explicit approximation."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          \langle \nabla f(\mathbf{x}^*), \mathbf{x}^* - \mathbf{x} \rangle \leq 0 \quad \text{for all } \mathbf{x} \in \mathcal{X}.
+        description: "First-order optimality condition at $\mathbf{x}^*$; used to absorb the gradient term at the optimum in the telescoping bound."
+      - label: "(6)"
+        content: |
+          \eta(f(\mathbf{x}_{t+1}) - f(\mathbf{x}^*))
+          \leq D_\varphi(\mathbf{x}^* \| \mathbf{x}_t) - D_\varphi(\mathbf{x}^* \| \mathbf{x}_{t+1}).
+        description: "Per-iteration potential decrease; telescopes to give the overall convergence bound for the proximal point method."
+      - label: "(7)"
+        content: |
+          \langle \nabla\varphi(\mathbf{x}) - \nabla\varphi(\mathbf{y}), \mathbf{y} - \mathbf{z} \rangle
+          = D_\varphi(\mathbf{z} \| \mathbf{x}) - D_\varphi(\mathbf{z} \| \mathbf{y}) - D_\varphi(\mathbf{y} \| \mathbf{x}).
+        description: "Three-point equality (Bregman three-point identity); holds for all $\mathbf{x}, \mathbf{y}, \mathbf{z} \in \mathcal{X}$. Used repeatedly in proximal point and mirror descent analyses to decompose inner products involving Bregman divergences."
+      - label: "(8)"
+        content: |
+          \mathbf{x}_{t+1} = \nabla\varphi^*\!\left(\nabla\varphi(\mathbf{x}_t) - \eta\nabla f(\mathbf{x}_{t+1})\right).
+        description: "Closed-form expression for the proximal point update when $\varphi^*$ is differentiable; shows the update is a mirror map applied to a gradient step in the dual space."
+
+  - type: theorem
+    number: "2"
+    name: "Mirror descent"
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^d$, let $f : \mathcal{X} \to \mathbb{R}$ be convex and $L$-Lipschitz
+      in $\|\cdot\|$, and let $\varphi : \mathcal{X} \to \mathbb{R}$ be 1-strongly convex in $\|\cdot\|$
+      and of Legendre type. Consider iterating the update
+      \[
+        \mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \{\langle \eta\mathbf{g}_t, \mathbf{x} \rangle + D_\varphi(\mathbf{x} \| \mathbf{x}_t)\},
+        \quad \mathbf{g}_t \in \partial f(\mathbf{x}_t), \quad 0 \leq t < T,
+      \]
+      from $\mathbf{x}_0 \in \mathcal{X}$ with $\eta > 0$, and let $\bar{\mathbf{x}} := \frac{1}{T}\sum_{0 \leq t < T} \mathbf{x}_t$.
+      Then letting $\mathbf{x}^* \in \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x})$,
+      \[
+        f(\bar{\mathbf{x}}) - f(\mathbf{x}^*) \leq \frac{D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)}{\eta T} + \frac{\eta L^2}{2}.
+      \]
+      Letting $\Theta \geq D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)$ and $\eta \leftarrow \frac{1}{L} \cdot \sqrt{2\Theta} T^{-1/2}$,
+      the right-hand side is at most $\sqrt{2\Theta} L T^{-1/2}$.
+    context: "Main mirror descent convergence theorem; explicit (forward Euler) discretization of the proximal point method using subgradients. Achieves $O(1/\sqrt{T})$ rate for Lipschitz objectives. When $\varphi = \frac{1}{2}\|\cdot\|_2^2$ recovers projected subgradient descent."
+    proof_notes:
+      - label: "(10)"
+        content: |
+          \mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \{\langle \eta\mathbf{g}_t, \mathbf{x} \rangle + D_\varphi(\mathbf{x} \| \mathbf{x}_t)\}
+        description: "Mirror descent update rule; implementable when $\operatorname{argmin}_{\mathbf{x} \in \mathcal{X}}\{\langle \mathbf{g}, \mathbf{x} \rangle + \varphi(\mathbf{x})\}$ is available in closed form, equivalently when $\nabla\varphi^*(-\mathbf{g})$ can be computed."
+      - label: "(11)"
+        content: |
+          \eta(f(\mathbf{x}_t) - f(\mathbf{x}^*))
+          \leq D_\varphi(\mathbf{x}^* \| \mathbf{x}_t) - D_\varphi(\mathbf{x}^* \| \mathbf{x}_{t+1})
+          - D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) + \langle \eta\mathbf{g}_t, \mathbf{x}_t - \mathbf{x}_{t+1} \rangle.
+        description: "Per-iteration bound before bounding the discretization error term; the term $-D_\varphi(\mathbf{x}_{t+1}\|\mathbf{x}_t) + \langle\eta\mathbf{g}_t, \mathbf{x}_t - \mathbf{x}_{t+1}\rangle$ is bounded by $\frac{\eta^2 L^2}{2}$ using Fact 5 and Young's inequality."
+
+  - type: corollary
+    number: "4"
+    name: "Stochastic mirror descent"
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^d$, let $f : \mathcal{X} \to \mathbb{R}$ be convex and admit a
+      stochastic subgradient estimator $\tilde{\mathbf{g}} : \mathcal{X} \to \mathbb{R}^d$, and let
+      $\varphi : \mathcal{X} \to \mathbb{R}$ be 1-strongly convex in $\|\cdot\|$ and of Legendre type.
+      Consider iterating the update
+      \[
+        \mathbf{x}_{t+1} \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \{\langle \eta\tilde{\mathbf{g}}_t, \mathbf{x} \rangle + D_\varphi(\mathbf{x} \| \mathbf{x}_t)\},
+        \quad \tilde{\mathbf{g}}_t \leftarrow \tilde{\mathbf{g}}(\mathbf{x}_t), \quad 0 \leq t < T,
+      \]
+      from $\mathbf{x}_0 \in \mathcal{X}$ with $\eta > 0$, and let $\bar{\mathbf{x}} := \frac{1}{T}\sum_{0 \leq t < T} \mathbf{x}_t$.
+      Further, suppose $\mathbb{E}\|\tilde{\mathbf{g}}(\mathbf{x})\|_*^2 \leq L^2$ for all $\mathbf{x} \in \mathcal{X}$.
+      Then letting $\mathbf{x}^* \in \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x})$,
+      \[
+        \mathbb{E}\left[f(\bar{\mathbf{x}}) - f(\mathbf{x}^*)\right]
+        \leq \frac{D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)}{\eta T} + \frac{\eta L^2}{2}.
+      \]
+      Letting $\Theta \geq D_\varphi(\mathbf{x}^* \| \mathbf{x}_0)$ and $\eta \leftarrow \frac{1}{L}\cdot\sqrt{2\Theta}T^{-1/2}$,
+      the right-hand side is at most $\sqrt{2\Theta}LT^{-1/2}$.
+    context: "Extension of Theorem 2 to stochastic subgradient oracles; achieves the same $O(1/\sqrt{T})$ rate in expectation. Decouples randomness of iterates from subgradient estimator, making it robust to stochastic estimation."
+
+  - type: definition
+    number: "4"
+    name: "Stochastic subgradient estimator"
+    statement: |
+      We say $\tilde{\mathbf{g}} : \mathcal{X} \to \mathbb{R}$ is a stochastic subgradient estimator for
+      convex $f : \mathcal{X} \to \mathbb{R}$ if for all $\mathbf{x} \in \mathcal{X}$,
+      $\mathbb{E}\tilde{\mathbf{g}}(\mathbf{x}) \in \partial f(\mathbf{x})$.
+    context: "Defines unbiased stochastic subgradient access; used in stochastic mirror descent (Corollary 4) and variance reduction (Section 6)."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Defining $\mathcal{X}$, $\varphi$ as in (12), (13) (i.e., $\mathcal{X} := \{\mathbf{x} \in \mathbb{R}^d_{>0} \mid \|\mathbf{x}\|_1 = 1\}$
+      and $\varphi(\mathbf{x}) := \sum_{i \in [d]} \mathbf{x}_i \log \mathbf{x}_i$),
+      $\varphi$ is 1-strongly convex with respect to $\|\cdot\|_1$ over $\mathcal{X}$.
+    context: "Establishes that the entropy regularizer on the probability simplex is 1-strongly convex in $\ell_1$; key lemma enabling Theorem 2 to apply in the multiplicative weights / online learning setting."
+    proof_notes:
+      - label: "Hessian bound"
+        content: |
+          \nabla^2\varphi(\mathbf{x})[\mathbf{v}, \mathbf{v}]
+          = \sum_{i \in [d]} \frac{\mathbf{v}_i^2}{\mathbf{x}_i}
+          \geq \left(\sum_{i \in [d]} |\mathbf{v}_i|\right)^2 = \|\mathbf{v}\|_1^2.
+        description: "Lower bounds the Hessian quadratic form of the entropy by $\|\mathbf{v}\|_1^2$ via Cauchy-Schwarz; this establishes 1-strong convexity of $\varphi$ in $\|\cdot\|_1$ by Lemma 14, Part II."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      If $\mathbf{x}_0 := \frac{1}{d}\mathbf{1}_d$ is the uniform distribution on $[d]$,
+      $D_\varphi(\mathbf{x} \| \mathbf{x}_0) < \log d$ for all $\mathbf{x} \in \mathcal{X}$.
+    context: "Bounds the initial Bregman diameter $\Theta$ for the entropy regularizer starting from the uniform distribution; gives $\Theta = \log d$, leading to an $O(\sqrt{\log d / T})$ regret bound."
+    proof_notes:
+      - label: "(14)"
+        content: |
+          D_\varphi(\mathbf{x} \| \bar{\mathbf{x}})
+          = \left\langle \mathbf{x}, \log\frac{\mathbf{x}}{\bar{\mathbf{x}}} \right\rangle
+          = \sum_{i \in [d]} \mathbf{x}_i \log\frac{\mathbf{x}_i}{\bar{\mathbf{x}}_i}
+        description: "Closed-form formula for the Bregman divergence of the entropy regularizer; this is the Kullback-Leibler (KL) divergence $\mathrm{KL}(\mathbf{x} \| \bar{\mathbf{x}})$."
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      Defining $\mathcal{X}$, $\varphi$ as in (12), (13), we have
+      \[
+        \varphi^*(\mathbf{y}) := \log\!\left(\sum_{i \in [d]} \exp(\mathbf{y}_i)\right)
+        \quad \text{for all } \mathbf{y} \in \mathbb{R}^d,
+        \qquad
+        \nabla_i \varphi^*(\mathbf{y}) = \frac{\exp(\mathbf{y}_i)}{\sum_{j \in [d]} \exp(\mathbf{y}_j)}
+        \quad \text{for all } i \in [d].
+      \]
+    context: "The convex conjugate of the entropy regularizer is the log-sum-exp (softmax) function; $\nabla\varphi^*$ induces a probability distribution proportional to $\exp(\mathbf{y})$. Used to compute mirror descent updates explicitly in the multiplicative weights setting."
+
+  - type: corollary
+    number: "3"
+    name: ""
+    statement: |
+      Let $\eta > 0$. For any $\mathbf{y} \in \mathbb{R}^d$,
+      \[
+        \max(\mathbf{y}) \leq \operatorname{smax}_\eta(\mathbf{y}) \leq \max(\mathbf{y}) + \eta\log(d),
+      \]
+      where $\max(\mathbf{y}) := \max_{i \in [d]} \mathbf{y}_i$, and $\operatorname{smax}_\eta$ is $\frac{1}{\eta}$-smooth in $\|\cdot\|_\infty$,
+      where
+      \[
+        \operatorname{smax}_\eta(\mathbf{y}) := \max_{\mathbf{x} \in \mathcal{X}} \langle \mathbf{y}, \mathbf{x} \rangle - \eta\varphi(\mathbf{x})
+        = \eta\log\!\left(\sum_{i \in [d]} \exp\!\left(\tfrac{1}{\eta}\mathbf{y}_i\right)\right).
+      \]
+    context: "The softmax function approximates $\max(\mathbf{y})$ up to an additive $\eta\log(d)$ and is $\frac{1}{\eta}$-smooth in $\ell_\infty$; used to obtain efficient algorithms for max-type objectives via mirror descent."
+
+  - type: lemma
+    number: "9"
+    name: ""
+    statement: |
+      Let $\mathbf{x}, \bar{\mathbf{x}} \in \mathbb{R}^d$, let $f(\mathbf{x}) = \frac{1}{n}\sum_{i \in [n]} f_i(\mathbf{x})$
+      where each $f_i : \mathbb{R}^d \to \mathbb{R}$ is $L$-smooth and convex, and consider the stochastic
+      gradient estimator
+      \[
+        \tilde{\mathbf{g}}(\mathbf{x}) := \nabla f_i(\mathbf{x}) - \nabla f_i(\bar{\mathbf{x}}) + \nabla f(\bar{\mathbf{x}}),
+        \quad i \sim_{\text{unif.}} [n].
+      \]
+      Then $\mathbb{E}\|\tilde{\mathbf{g}}\|_2^2 \leq 4L(f(\mathbf{x}) - f(\mathbf{x}^*)) + 4L(f(\bar{\mathbf{x}}) - f(\mathbf{x}^*))$.
+    context: "Variance bound for the SVRG gradient estimator; shows variance vanishes as both $\mathbf{x}$ and the anchor $\bar{\mathbf{x}}$ approach $\mathbf{x}^*$. Key lemma enabling linear convergence of stochastic variance reduction (Theorem 3)."
+    proof_notes:
+      - label: "(18)"
+        content: |
+          \tilde{\mathbf{g}}(\mathbf{x}) := \nabla f_i(\mathbf{x}) - \nabla f_i(\bar{\mathbf{x}}) + \nabla f(\bar{\mathbf{x}}),
+          \quad i \sim_{\text{unif.}} [n].
+        description: "The variance-reduced (SVRG) gradient estimator; unbiased since $\mathbb{E}[\nabla f_i(\mathbf{x}) - \nabla f_i(\bar{\mathbf{x}})] = \nabla f(\mathbf{x}) - \nabla f(\bar{\mathbf{x}})$."
+      - label: "(19)"
+        content: |
+          \mathbb{E}\|\mathbf{v} - \mathbb{E}\mathbf{v}\|_2^2 = \mathbb{E}\|\mathbf{v}\|_2^2 - \|\mathbb{E}\mathbf{v}\|_2^2 \leq \mathbb{E}\|\mathbf{v}\|_2^2.
+        description: "Variance decomposition: $\mathrm{Var}(\mathbf{v}) \leq \mathbb{E}\|\mathbf{v}\|_2^2$; used to bound the second moment of the centered estimator."
+
+  - type: lemma
+    number: "10"
+    name: ""
+    statement: |
+      Let $\bar{\mathbf{x}} \in \mathbb{R}^d$, and let $f(\mathbf{x}) = \frac{1}{n}\sum_{i \in [n]} f_i(\mathbf{x})$
+      where each $f_i : \mathbb{R}^d \to \mathbb{R}$ is $L$-smooth and convex, and $f$ is $\mu$-strongly convex.
+      Consider iterating the update, for $\tilde{\mathbf{g}}$ in (18) and $\eta \leftarrow \frac{1}{6L}$,
+      \[
+        \mathbf{x}_{t+1} \leftarrow \mathbf{x}_t - \eta\tilde{\mathbf{g}}(\mathbf{x}_t),
+      \]
+      from $\mathbf{x}_0 \leftarrow \bar{\mathbf{x}}$, and let $\bar{\mathbf{x}}' := \frac{1}{T}\sum_{0 \leq t < T} \mathbf{x}_t$.
+      Then letting $\mathbf{x}^* := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$, if $T \geq \frac{36L}{\mu}$,
+      \[
+        \mathbb{E}\left[f(\bar{\mathbf{x}}') - f(\mathbf{x}^*)\right] \leq \frac{3}{4}(f(\bar{\mathbf{x}}) - f(\mathbf{x}^*)).
+      \]
+    context: "One epoch of SVRG reduces function error by a constant factor $3/4$; recursively applying gives linear convergence of the stochastic variance reduction algorithm (Theorem 3)."
+
+  - type: theorem
+    number: "3"
+    name: "Stochastic variance reduction"
+    statement: |
+      Let $\mathbf{x}_0 \in \mathbb{R}^d$, let $f(\mathbf{x}) = \frac{1}{n}\sum_{i \in [n]} f_i(\mathbf{x})$ where each
+      $f_i : \mathbb{R}^d \to \mathbb{R}$ is $L$-smooth and convex, and $f$ is $\mu$-strongly convex.
+      Let $\kappa := \frac{L}{\mu}$ and $\epsilon > 0$. Consider the following algorithm, initialized
+      from $\mathbf{x}_0 \leftarrow \bar{\mathbf{x}}_0$ and for $0 \leq k < K$:
+      1. Call the algorithm in Lemma 10 for $\lceil 36\kappa \rceil$ iterations, with $\bar{\mathbf{x}} \leftarrow \bar{\mathbf{x}}_k$.
+      2. Set $\bar{\mathbf{x}}_{k+1}$ to the output, and update $k \leftarrow k+1$.
+
+      Then letting $\mathbf{x}^* := \operatorname{argmin}_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})$, if
+      $K \geq \log_4\!\left(\frac{f(\mathbf{x}_0) - f(\mathbf{x}^*)}{\epsilon}\right)$, we have
+      \[
+        \mathbb{E}\left[f(\bar{\mathbf{x}}_K) - f(\mathbf{x}^*)\right] \leq \epsilon.
+      \]
+    context: "SVRG algorithm for empirical risk minimization; achieves linear convergence in $O((n + \kappa) \cdot \mathcal{T}_{\mathrm{grad}})$ total gradient query cost, dramatically improving over the $O(n\kappa \cdot \mathcal{T}_{\mathrm{grad}})$ cost of gradient descent."

@@ -1,0 +1,372 @@
+source: "Part4_main.pdf"
+lecture_number: 4
+title: "CS395T: Continuous Algorithms, Part IV — Minimax Optimization"
+items:
+  - type: definition
+    number: "1"
+    name: "Convex-concave"
+    statement: |
+      We say a function $f : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}$ is convex-concave if $\mathcal{X}$,
+      $\mathcal{Y}$ are convex, $f(\cdot, \bar{\mathbf{y}})$ is convex in $\mathbf{x} \in \mathcal{X}$ for any
+      fixed $\bar{\mathbf{y}} \in \mathcal{Y}$, and $f(\bar{\mathbf{x}}, \cdot)$ is concave in
+      $\mathbf{y} \in \mathcal{Y}$ for any fixed $\bar{\mathbf{x}} \in \mathcal{X}$.
+    context: "The main function class for minimax theorems. Strong duality holds under this condition when either domain is compact (Sion) or coercivity holds (ET99)."
+
+  - type: definition
+    number: "2"
+    name: "Monotone operator"
+    statement: |
+      We say operator $\mathbf{g} : \mathcal{Z} \to \mathbb{R}^d$ is monotone if
+      \[
+        \langle \mathbf{g}(\mathbf{z}) - \mathbf{g}(\mathbf{z}'), \mathbf{z} - \mathbf{z}' \rangle \geq 0
+        \quad \text{for all } \mathbf{z}, \mathbf{z}' \in \mathcal{Z}.
+      \]
+      We say $\mathbf{g}$ is $m$-strongly monotone with respect to $h : \mathcal{Z} \to \mathbb{R}$,
+      or $m$-strongly monotone in $h$, if
+      \[
+        \langle \mathbf{g}(\mathbf{z}) - \mathbf{g}(\mathbf{z}'), \mathbf{z} - \mathbf{z}' \rangle
+        \geq m \langle \mathbf{h}(\mathbf{z}) - \mathbf{h}(\mathbf{z}'), \mathbf{z} - \mathbf{z}' \rangle
+        \quad \text{for all } \mathbf{z}, \mathbf{z}' \in \mathcal{Z}.
+      \]
+    context: "Generalizes convexity to operators. Monotonicity of $g = \nabla f$ is equivalent to convexity of $f$. Used to unify convex minimization and minimax optimization as variational inequality problems."
+
+  - type: definition
+    number: "3"
+    name: "Relative Lipschitzness"
+    statement: |
+      Let $\mathcal{Z} \subseteq \mathbb{R}^d$, let $\mathbf{g} : \mathcal{Z} \to \mathbb{R}^d$ be an operator,
+      and let $\varphi : \mathcal{Z} \to \mathbb{R}$ be a convex, differentiable function. We say
+      $\mathbf{g}$ is $\lambda$-relatively Lipschitz with respect to $\varphi$, or
+      $\lambda$-relatively Lipschitz in $\varphi$, if for any $\mathbf{z}, \mathbf{w}, \mathbf{u} \in \mathcal{Z}$,
+      \[
+        \langle \mathbf{g}(\mathbf{w}) - \mathbf{g}(\mathbf{z}), \mathbf{w} - \mathbf{u} \rangle
+        \leq \lambda \left( D_\varphi(\mathbf{w} \| \mathbf{z}) + D_\varphi(\mathbf{u} \| \mathbf{w}) \right).
+      \]
+    context: "Assumption enabling the improved $O(1/T)$ mirror prox convergence rate (Theorem 1) rather than $O(1/\sqrt{T})$ from Proposition 1. Weaker than standard Lipschitzness combined with strong convexity of $\varphi$."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathcal{Z} \subseteq \mathbb{R}^d$ be convex, let $\varphi : \mathcal{Z} \to \mathbb{R}$ be
+      1-strongly convex in $\|\cdot\|$ and of Legendre type, and let $\mathbf{g} : \mathcal{Z} \to \mathbb{R}^d$
+      satisfy $\|\mathbf{g}(\mathbf{z})\|_* \leq L$ for all $\mathbf{z} \in \mathcal{Z}$.
+      Consider iterating the update
+      \[
+        \mathbf{z}_{t+1} = \operatorname{argmin}_{\mathbf{z} \in \mathcal{Z}}
+        \left\{ \langle \eta \mathbf{g}(\mathbf{z}_t), \mathbf{z} \rangle + D_\varphi(\mathbf{z} \| \mathbf{z}_t) \right\},
+        \quad 0 \leq t < T,
+      \]
+      from $\mathbf{z}_0 \in \mathcal{Z}$ with $\eta > 0$. Then for any $\mathbf{z}^* \in \mathcal{Z}$
+      with $D_\varphi(\mathbf{z}^* \| \mathbf{z}_0) \leq \Theta$,
+      \[
+        \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle
+        \leq \frac{D_\varphi(\mathbf{z}^* \| \mathbf{z}_0)}{\eta T} + \frac{\eta L^2}{2}
+        \leq \frac{\sqrt{2\Theta} L}{\sqrt{T}}
+        \quad \text{for } \eta \leftarrow \frac{\sqrt{2\Theta}}{L\sqrt{T}}.
+      \]
+      Moreover, if $\tilde{\mathbf{g}} : \mathcal{Z} \to \mathbb{R}^d$ satisfies $\mathbb{E}\tilde{\mathbf{g}}(\mathbf{z}) = \mathbf{g}(\mathbf{z})$
+      and $\mathbb{E}\|\tilde{\mathbf{g}}(\mathbf{z})\|_*^2 \leq L^2$ for all $\mathbf{z} \in \mathcal{Z}$,
+      iterating the update with $\tilde{\mathbf{g}}$ in place of $\mathbf{g}$ yields
+      \[
+        \mathbb{E}\left[ \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle \right]
+        \leq \frac{D_\varphi(\mathbf{z}^* \| \mathbf{z}_0)}{\eta T} + \frac{\eta L^2}{2}
+        \leq \frac{\sqrt{2\Theta} L}{\sqrt{T}}
+        \quad \text{for } \eta \leftarrow \frac{\sqrt{2\Theta}}{L\sqrt{T}}.
+      \]
+    context: "Mirror descent applied to a general operator $\mathbf{g}$. Combined with Lemma 1 (which relates $\langle \mathbf{g}, \mathbf{z} - \mathbf{z}^* \rangle$ to duality gap), this directly gives $O(1/\sqrt{T})$ duality gap bounds for convex-concave minimax problems."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle
+          \leq \frac{D_\varphi(\mathbf{z}^* \| \mathbf{z}_0)}{\eta T} + \frac{\eta L^2}{2}
+          \leq \frac{\sqrt{2\Theta} L}{\sqrt{T}}
+          \quad \text{for } \eta \leftarrow \frac{\sqrt{2\Theta}}{L\sqrt{T}}.
+        description: "Deterministic convergence bound for mirror descent. Used directly via Lemma 1 to get duality gap guarantees."
+      - label: "(4)"
+        content: |
+          \mathbb{E}\left[ \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle \right]
+          \leq \frac{D_\varphi(\mathbf{z}^* \| \mathbf{z}_0)}{\eta T} + \frac{\eta L^2}{2}
+          \leq \frac{\sqrt{2\Theta} L}{\sqrt{T}}
+          \quad \text{for } \eta \leftarrow \frac{\sqrt{2\Theta}}{L\sqrt{T}}.
+        description: "Stochastic version of (3). Applies when using an unbiased estimator $\tilde{\mathbf{g}}$ with bounded second moment."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Let $f : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}$ be convex-concave and differentiable.
+      Define the operator
+      \[
+        \mathbf{g}(\mathbf{x}, \mathbf{y}) := \left( \nabla_\mathbf{x} f(\mathbf{x}, \mathbf{y}),\,
+        -\nabla_\mathbf{y} f(\mathbf{x}, \mathbf{y}) \right)
+        \quad \text{for all } (\mathbf{x}, \mathbf{y}) \in \mathcal{X} \times \mathcal{Y}.
+      \]
+      Then for any $T \in \mathbb{N}$ and $\{\mathbf{z}_t := (\mathbf{x}_t, \mathbf{y}_t)\}_{0 \leq t < T}
+      \subset \mathcal{X} \times \mathcal{Y}$, letting
+      $(\bar{\mathbf{x}}, \bar{\mathbf{y}}) := \frac{1}{T} \sum_{0 \leq t < T} \mathbf{z}_t$,
+      \[
+        \mathrm{Gap}(\bar{\mathbf{x}}, \bar{\mathbf{y}})
+        \leq \sup_{\mathbf{z}^* \in \mathcal{X} \times \mathcal{Y}}
+        \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle.
+      \]
+    context: "Bridges Proposition 1 (which bounds $\langle \mathbf{g}, \mathbf{z} - \mathbf{z}^* \rangle$) to the duality gap. Together they give algorithmic duality gap bounds for minimax problems."
+    proof_notes:
+      - label: "(6)"
+        content: |
+          \langle \mathbf{g}(\mathbf{z}), \mathbf{z} - \mathbf{z}' \rangle
+          = \langle \nabla_\mathbf{x} f(\mathbf{x}, \mathbf{y}), \mathbf{x} - \mathbf{x}' \rangle
+          - \langle \nabla_\mathbf{y} f(\mathbf{x}, \mathbf{y}), \mathbf{y} - \mathbf{y}' \rangle
+          \geq \left( f(\mathbf{x}, \mathbf{y}) - f(\mathbf{x}', \mathbf{y}) \right)
+          - \left( f(\mathbf{x}, \mathbf{y}) - f(\mathbf{x}, \mathbf{y}') \right)
+          = f(\mathbf{x}, \mathbf{y}') - f(\mathbf{x}', \mathbf{y}).
+        description: "Key inequality relating inner product with $\mathbf{g}$ to function values. Uses convexity in $\mathbf{x}$ and concavity in $\mathbf{y}$. The crux step connecting mirror descent iterates to duality gap."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $f : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}$ be convex-concave and differentiable,
+      and let $\mathbf{g}$ be defined as in (5). Then $\mathbf{g}$ is monotone, and $\mathbf{z}^*$
+      solves the VI in $\mathbf{g}$ iff $\mathrm{Gap}(\mathbf{z}^*) = 0$.
+    context: "Connects the variational inequality framework to minimax saddle points. A point is a saddle point iff it is a VI solution for the natural operator $\mathbf{g}$."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      If $g = \nabla f$ and $h = \nabla \varphi$ for differentiable, convex $f : \mathcal{Z} \to \mathbb{R}$
+      and $\varphi : \mathcal{Z} \to \mathbb{R}$, and $f$ is $\mu$-relatively strongly convex in
+      $\varphi$ (Definition 2, Part II), then $g$ is $\mu$-strongly monotone in $h$.
+    context: "Connects relative strong convexity of $f$ to strong monotonicity of $\nabla f$. Used to apply strongly monotone mirror prox (Theorem 2) from relative strong convexity assumptions."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^n$ and $\mathcal{Y} \subseteq \mathbb{R}^m$, and let
+      $\|\cdot\|_\mathcal{X} : \mathcal{X} \to \mathbb{R}$ and $\|\cdot\|_\mathcal{Y} : \mathcal{Y} \to \mathbb{R}$
+      be norms. Then $\|\cdot\| : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}$ is a norm, where
+      \[
+        \|(\mathbf{x}, \mathbf{y})\| := \sqrt{\|\mathbf{x}\|_\mathcal{X}^2 + \|\mathbf{y}\|_\mathcal{Y}^2}.
+      \]
+      Moreover, the dual norm to the norm defined in (13) is, for $\mathbf{g} \in \mathbb{R}^n$ and
+      $\mathbf{h} \in \mathbb{R}^m$,
+      \[
+        \|(\mathbf{g}, \mathbf{h})\|_* = \sqrt{\|\mathbf{g}\|_{\mathcal{X},*}^2 + \|\mathbf{h}\|_{\mathcal{Y},*}^2}.
+      \]
+    context: "Establishes that product-space norms combine via $\ell_2$ of component norms, and duals combine the same way. Used in Lemma 5 to bound $\|\mathbf{g}(\mathbf{z})\|_*$ for the bilinear operator over product spaces."
+    proof_notes:
+      - label: "(13)"
+        content: |
+          \|(\mathbf{x}, \mathbf{y})\| := \sqrt{\|\mathbf{x}\|_\mathcal{X}^2 + \|\mathbf{y}\|_\mathcal{Y}^2}.
+        description: "Definition of the product norm. The natural norm on $\mathcal{X} \times \mathcal{Y}$ combining component norms via $\ell_2$."
+      - label: "(14)"
+        content: |
+          \|(\mathbf{g}, \mathbf{h})\|_* = \sqrt{\|\mathbf{g}\|_{\mathcal{X},*}^2 + \|\mathbf{h}\|_{\mathcal{Y},*}^2}.
+        description: "Dual of the product norm. Allows bounding $\|\mathbf{g}(\mathbf{z})\|_*$ via dual norms of each component separately."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{m \times n}$, and let $\|\cdot\|_\mathcal{X} = \|\cdot\|_p$ and
+      $\|\cdot\|_\mathcal{Y} = \|\cdot\|_q$ be norms over $\mathcal{X} \subseteq \mathbb{B}_{\|\cdot\|_p}(1)$,
+      $\mathcal{Y} \subseteq \mathbb{B}_{\|\cdot\|_q}(1)$ respectively, for $p, q \geq 1$.
+      Let $p^*, q^* \geq 1$ satisfy $\frac{1}{p} + \frac{1}{p^*} = 1$, $\frac{1}{q} + \frac{1}{q^*} = 1$.
+      Then defining $\|\cdot\|$ and $\|\cdot\|_*$ as in (14), and letting
+      $\mathbf{g}(\mathbf{x}, \mathbf{y}) := (\mathbf{A}^\top \mathbf{y}, -\mathbf{A}\mathbf{x})$, we have
+      \[
+        \sup_{\mathbf{z} \in \mathcal{X} \times \mathcal{Y}} \|\mathbf{g}(\mathbf{z})\|_* \leq \sqrt{2} \|\mathbf{A}\|_{p \to q^*}.
+      \]
+    context: "Bounds the dual-norm Lipschitz constant of the bilinear operator in terms of the matrix operator norm. Applied in Corollary 1 to obtain runtime bounds for matrix games. The $\sqrt{2}$ factor comes from the $\ell_2$ combination of dual norms."
+
+  - type: fact
+    number: "1"
+    name: ""
+    statement: |
+      Defining $\mathbf{g}$ as in (11) over $\mathcal{Z} := \mathcal{X} \times \mathcal{Y}$,
+      $\langle \mathbf{g}(\mathbf{z}) - \mathbf{g}(\mathbf{z}'), \mathbf{z} - \mathbf{z}' \rangle = 0$
+      for any $\mathbf{z}, \mathbf{z}' \in \mathcal{Z}$, and
+      \[
+        \frac{1}{T} \sum_{0 \leq t < T} \mathbf{g}(\mathbf{z}_t) = \mathbf{g}(\bar{\mathbf{z}})
+        \quad \text{for } \{\mathbf{z}_t\}_{0 \leq t < T} \subset \mathcal{Z},\
+        \bar{\mathbf{z}} := \frac{1}{T} \sum_{0 \leq t < T} \mathbf{z}_t.
+      \]
+    context: "Special property of bilinear operators: they are linear in $\mathbf{z}$, so the average of operator values equals the operator at the average. This simplifies duality gap computations for matrix games."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Let $\mathbf{x} \in \mathbb{R}^d$ be a random variable and let $\|\cdot\|$ be a norm on
+      $\mathbb{R}^d$. Then
+      \[
+        \mathbb{E} \|\mathbf{x} - \mathbb{E}\mathbf{x}\|^2 \leq 4 \mathbb{E} \|\mathbf{x}\|^2.
+      \]
+    context: "Bounds centered second moments by uncentered second moments. Key tool in the ghost iterate argument (Corollary 2) for handling stochastic minimax problems where $\mathbb{E}[\sup] \neq \sup[\mathbb{E}]$."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      In the setting of Definition 3, suppose $\mathbf{g}$ is $L$-Lipschitz in $\|\cdot\|$, i.e.,
+      \[
+        \|\mathbf{g}(\mathbf{z}) - \mathbf{g}(\mathbf{z}')\|_* \leq L \|\mathbf{z} - \mathbf{z}'\|
+        \quad \text{for all } \mathbf{z}, \mathbf{z}' \in \mathcal{Z},
+      \]
+      and $\varphi$ is $\mu$-strongly convex in $\|\cdot\|$. Then $\mathbf{g}$ is
+      $\frac{L}{\mu}$-relatively Lipschitz with respect to $\varphi$.
+    context: "Sufficient condition for relative Lipschitzness from standard Lipschitzness and strong convexity. Generalizes smooth gradient descent to mirror prox. Applied to matrix games with $\ell_p$-$\ell_q$ geometry."
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      In the setting of Definition 3, suppose $f : \mathcal{Z} \to \mathbb{R}$ is $L$-relatively
+      smooth in $\varphi$ (i.e., $L\varphi - f$ is convex, see Definition 2, Part II).
+      Then $\nabla f$ is $L$-relatively Lipschitz with respect to $\varphi$.
+    context: "Connects relative smoothness of $f$ to relative Lipschitzness of $\nabla f$. Implies Corollary 3 as a special case. Used to show mirror prox applies whenever mirror descent (for smooth objectives) would apply."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{m \times n}$ have $\|\mathbf{A}\|_{\max} := \max_{i \in [m], j \in [n]} |\mathbf{A}_{ij}| \leq L$,
+      and let $\epsilon > 0$. Following notation in (15), there is an algorithm computing
+      $\mathbf{z} := (\mathbf{x}, \mathbf{y}) \in \mathcal{Z}$ satisfying $\mathrm{Gap}(\mathbf{z}) \leq \epsilon$,
+      in time
+      \[
+        O\!\left( \mathrm{nnz}(\mathbf{A}) \cdot \frac{L^2 \log(mn)}{\epsilon^2} \right).
+      \]
+    context: "Stochastic mirror descent bound for matrix games using row/column sampling estimator (17). The $O(1/\epsilon^2)$ rate matches the stochastic lower bound and improves over deterministic Corollary 1 when $\mathbf{A}$ is dense."
+
+  - type: corollary
+    number: "2"
+    name: "Ghost iterates"
+    statement: |
+      In the setting of Proposition 1, suppose $\sup_{\mathbf{z} \in \mathcal{Z}} D_\varphi(\mathbf{z} \| \mathbf{z}_0) \leq \Theta$
+      for $\mathbf{z}_0 \in \mathcal{Z}$. Then iterating the update (2) from $\mathbf{z}_0$ with
+      $\tilde{\mathbf{g}}$ in place of $\mathbf{g}$ yields
+      \[
+        \mathbb{E}\left[ \sup_{\mathbf{z}^* \in \mathcal{Z}} \frac{1}{T} \sum_{0 \leq t < T}
+        \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z}_t - \mathbf{z}^* \rangle \right]
+        \leq \frac{2\sqrt{5\Theta} L}{\sqrt{T}}
+        \quad \text{for } \eta \leftarrow \frac{2\sqrt{\Theta}}{L\sqrt{5T}}.
+      \]
+    context: "Handles the independence issue in stochastic minimax by bounding $\mathbb{E}[\sup_{\mathbf{z}^*} \cdot]$ rather than $\sup_{\mathbf{z}^*} \mathbb{E}[\cdot]$. Uses auxiliary ghost iterates $\{\mathbf{w}_t\}$ that follow the same update but are independent of $\mathbf{z}^*$."
+    proof_notes:
+      - label: "(18)"
+        content: |
+          \langle \eta \mathbf{g}_t, \mathbf{z}_t - \mathbf{z}^* \rangle
+          \leq D_\varphi(\mathbf{z}^* \| \mathbf{z}_t) - D_\varphi(\mathbf{z}^* \| \mathbf{z}_{t+1})
+          + \frac{\eta^2 \|\tilde{\mathbf{g}}_t\|_*^2}{2}
+          + D_\varphi(\mathbf{z}^* \| \mathbf{w}_t) - D_\varphi(\mathbf{z}^* \| \mathbf{w}_{t+1})
+          + \frac{\eta^2 \|\mathbf{v}_t\|_*^2}{2}
+          + \langle \eta \mathbf{v}_t, \mathbf{z}_t - \mathbf{w}_t \rangle.
+        description: "Per-step bound coupling the main iterates $\mathbf{z}_t$ and ghost iterates $\mathbf{w}_t$. The telescoping Bregman terms vanish upon summing; the cross term $\langle \mathbf{v}_t, \mathbf{z}_t - \mathbf{w}_t \rangle$ is bounded via Lemma 6 since $\mathbb{E}\mathbf{v}_t = \mathbf{0}$ conditioned on $\mathbf{z}_t, \mathbf{w}_t$."
+
+  - type: corollary
+    number: "3"
+    name: ""
+    statement: |
+      Let $f : \mathcal{Z} \to \mathbb{R}$ be convex and differentiable. Then $\nabla f$ is
+      1-relatively Lipschitz in $f$.
+    context: "Special case of Lemma 8 with $\varphi = f$ and $L = 1$. Shows that any convex differentiable function's gradient is 1-relatively Lipschitz in the function itself."
+
+  - type: theorem
+    number: "1"
+    name: "Mirror prox"
+    statement: |
+      Let $\mathcal{Z} \subseteq \mathbb{R}^d$ be convex, let $\varphi : \mathcal{Z} \to \mathbb{R}$ be
+      convex and of Legendre type, and let $\mathbf{g} : \mathcal{Z} \to \mathbb{R}^d$ be
+      $\lambda$-relatively Lipschitz with respect to $\varphi$. Consider iterating the update
+      \begin{align*}
+        \mathbf{z}'_t &\leftarrow \operatorname{argmin}_{\mathbf{z} \in \mathcal{Z}}
+        \left\{ \frac{1}{\lambda} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z} \rangle
+        + D_\varphi(\mathbf{z} \| \mathbf{z}_t) \right\}, \\
+        \mathbf{z}_{t+1} &\leftarrow \operatorname{argmin}_{\mathbf{z} \in \mathcal{Z}}
+        \left\{ \frac{1}{\lambda} \langle \mathbf{g}(\mathbf{z}'_t), \mathbf{z} \rangle
+        + D_\varphi(\mathbf{z} \| \mathbf{z}_t) \right\},
+        \quad 0 \leq t < T,
+      \end{align*}
+      from $\mathbf{z}_0 \in \mathcal{Z}$. Then for any $\mathbf{z}^* \in \mathcal{Z}$ with
+      $D_\varphi(\mathbf{z}^* \| \mathbf{z}_0) \leq \Theta$,
+      \[
+        \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{g}(\mathbf{z}'_t), \mathbf{z}'_t - \mathbf{z}^* \rangle
+        \leq \frac{\lambda \Theta}{T}.
+      \]
+    context: "The main mirror prox theorem. Achieves $O(1/T)$ rate (vs $O(1/\sqrt{T})$ for mirror descent) under the relative Lipschitzness assumption. Recovers state-of-the-art $O(\mathrm{nnz}(\mathbf{A}) \cdot L\log(mn)/\epsilon)$ for matrix games, the best known deterministic bound."
+    proof_notes:
+      - label: "(22)"
+        content: |
+          \frac{1}{\lambda} \langle \mathbf{g}(\mathbf{z}'_t), \mathbf{z}'_t - \mathbf{z}^* \rangle
+          \leq D_\varphi(\mathbf{z}^* \| \mathbf{z}_t) - D_\varphi(\mathbf{z}^* \| \mathbf{z}_{t+1})
+          + \frac{1}{\lambda} \langle (\mathbf{g}(\mathbf{z}'_t) - \mathbf{g}(\mathbf{z}_t)),
+          \mathbf{z}'_t - \mathbf{z}_{t+1} \rangle
+          - D_\varphi(\mathbf{z}_{t+1} \| \mathbf{z}'_t) - D_\varphi(\mathbf{z}'_t \| \mathbf{z}_t)
+          \leq D_\varphi(\mathbf{z}^* \| \mathbf{z}_t) - D_\varphi(\mathbf{z}^* \| \mathbf{z}_{t+1}).
+        description: "Per-step telescoping bound. The cross term $\langle \mathbf{g}(\mathbf{z}'_t) - \mathbf{g}(\mathbf{z}_t), \mathbf{z}'_t - \mathbf{z}_{t+1} \rangle$ is absorbed by the Bregman terms via relative Lipschitzness. Summing over $t$ yields the $O(1/T)$ rate."
+
+  - type: theorem
+    number: "2"
+    name: "Strongly monotone mirror prox"
+    statement: |
+      Let $\mathcal{Z} \subseteq \mathbb{R}^d$ be convex, let $\varphi : \mathcal{Z} \to \mathbb{R}$ be
+      convex and of Legendre type, and let $\mathbf{g} : \mathcal{Z} \to \mathbb{R}^d$ be
+      $\lambda$-relatively Lipschitz in $\varphi$ and $m$-strongly monotone in $\nabla\varphi$.
+      Consider iterating the update
+      \begin{align*}
+        \mathbf{z}'_t &\leftarrow \operatorname{argmin}_{\mathbf{z} \in \mathcal{Z}}
+        \left\{ \frac{1}{\lambda} \langle \mathbf{g}(\mathbf{z}_t), \mathbf{z} \rangle
+        + D_\varphi(\mathbf{z} \| \mathbf{z}_t) \right\}, \\
+        \mathbf{z}_{t+1} &\leftarrow \operatorname{argmin}_{\mathbf{z} \in \mathcal{Z}}
+        \left\{ \frac{1}{\lambda} \langle \mathbf{g}(\mathbf{z}'_t), \mathbf{z} \rangle
+        + D_\varphi(\mathbf{z} \| \mathbf{z}_t) + \frac{m}{\lambda} D_\varphi(\mathbf{z} \| \mathbf{z}'_t) \right\},
+        \quad 0 \leq t < T,
+      \end{align*}
+      from $\mathbf{z}_0 \in \mathcal{Z}$. Then if $\mathbf{z}^*$ solves the VI in $\mathbf{g}$,
+      \[
+        D_\varphi(\mathbf{z}^* \| \mathbf{z}_T) \leq \left(1 + \frac{m}{\lambda}\right)^{-T}
+        D_\varphi(\mathbf{z}^* \| \mathbf{z}_0).
+      \]
+    context: "Linear convergence rate for mirror prox when $\mathbf{g}$ is strongly monotone. Analogous to strongly convex gradient descent. The $\mathbf{z}^*$ is deterministic (independent of algorithm randomness), enabling direct duality gap bounds without ghost iterate arguments."
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      There are various generalizations of the matrix game techniques beyond the setting of (12).
+      For example, stochastic mirror descent readily handles composite terms (analogously to
+      Section 5.2, Part II), yielding extensions to nonzero linear terms $\mathbf{b}$, $\mathbf{c}$.
+      In $\ell_p$-$\ell_q$ geometries for $p, q \in (1,2)$ the natural extension of the sampling
+      strategy (17) does not yield uniform bounds, requiring analysis of the bias induced by
+      clipping the gradient operator. Faster stochastic algorithms can be achieved under further
+      structural assumptions via variance reduction or coordinate sampling.
+    context: "Survey of extensions and limitations of the matrix game framework. Useful for understanding scope of applicability of Corollaries 1 and 2."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      Mirror prox (Theorem 1, update (21)) is motivated as a discretization of the ideal proximal
+      point method, which yields a $\frac{1}{T}$ rate of convergence in $T$ iterations (Theorem 1,
+      Part III). The proximal point method repeatedly solves the implicit equation
+      $\mathbf{z}_{t+1} \leftarrow \{\langle \eta g(\mathbf{z}_{t+1}), \mathbf{z} \rangle
+      + D_\varphi(\mathbf{z} \| \mathbf{z}_t)\}$, which is not implementable in general because
+      $\mathbf{z}_{t+1}$ appears in its own definition. The two steps of (21) approximate this
+      via a fixed-point iteration on the gradient operator.
+    context: "Motivates mirror prox as a practical approximation to the proximal point method. Explains why mirror prox achieves the $1/T$ rate of the proximal point method while remaining implementable."
+
+  - type: remark
+    number: "3"
+    name: ""
+    statement: |
+      Mirror prox (Theorem 2) does not extend as straightforwardly to stochastic settings while
+      retaining the $\frac{1}{T}$ rate, because the dependencies induced by the two-stage updates
+      (21), (23) do not play well with the analysis. In certain structured settings, it is possible
+      to design coupled stochastic estimators allowing the convergence analyses in Theorems 1, 2
+      to go through. Because $\mathbf{z}^*$ in Theorem 2 is deterministic (independent of the
+      algorithm), Theorem 2 yields high-accuracy convergence rates, and we can typically directly
+      argue that iterates approximate a saddle point and bound the duality gap accordingly.
+    context: "Important caveat on stochastic mirror prox. The $\mathbf{z}^*$-independence in the strongly monotone case enables high-accuracy bounds without the ghost iterate machinery."
