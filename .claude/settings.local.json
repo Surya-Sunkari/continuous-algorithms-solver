@@ -6,10 +6,15 @@
       "Write",
       "WebFetch",
       "Bash(grep *)",
+      "Bash(grep:*)",
       "Bash(ls *)",
+      "Bash(ls:*)",
       "Bash(cat *)",
+      "Bash(cat:*)",
       "Bash(mkdir *)",
-      "Bash(pdflatex *)"
+      "Bash(mkdir:*)",
+      "Bash(pdflatex *)",
+      "Bash(pdflatex:*)"
     ],
     "defaultMode": "acceptEdits"
   }
