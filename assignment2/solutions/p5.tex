@@ -11,12 +11,12 @@ Since $\mathbf{x}, \mathbf{x}' \in \mathbb{B}(R)$ and $\mathbb{B}(R)$ is convex,
 
 Fix parameters $k = \lceil 12L^2R^2/\alpha^2 \rceil$ and $m = \lceil 48\log(1/\delta) \rceil$.
 
-\textbf{Step 1:} Partition $mk$ samples into $m$ groups of size $k$. For each group $j \in [m]$: draw $t_1, \ldots, t_k \stackrel{\text{i.i.d.}}{\sim} \mathrm{Uniform}[0,1]$, and compute
+Partition $mk$ samples into $m$ groups of size $k$. For each group $j \in [m]$: draw $t_1, \ldots, t_k \stackrel{\text{i.i.d.}}{\sim} \mathrm{Uniform}[0,1]$, and compute
 \[
 \hat{d}_j := \frac{1}{k}\sum_{i=1}^{k} \mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}').
 \]
 
-\textbf{Step 2:} Return $\hat{d} := \mathrm{median}(\hat{d}_1, \ldots, \hat{d}_m)$.
+Return $\hat{d} := \mathrm{median}(\hat{d}_1, \ldots, \hat{d}_m)$.
 
 \medskip
 \textbf{Analysis:}
@@ -54,11 +54,11 @@ The total number of calls to $\mathbf{g}$ is $mk = O\!\left(\frac{L^2R^2}{\alpha
 \begin{proof}
 \textbf{Algorithm:}
 
-\textbf{Step 1:} Run $\mathcal{A}$ independently $k = \lceil 36\log(2/\delta) \rceil$ times, producing candidates $\mathbf{x}_1, \ldots, \mathbf{x}_k \in \mathbb{B}(R)$.
+Run $\mathcal{A}$ independently $k = \lceil 36\log(2/\delta) \rceil$ times, producing candidates $\mathbf{x}_1, \ldots, \mathbf{x}_k \in \mathbb{B}(R)$.
 
-\textbf{Step 2:} For each $i = 2, \ldots, k$, apply the part~(i) estimator with accuracy $\alpha = \epsilon/2$ and failure probability $\delta' = \delta/(2k)$ to estimate $f(\mathbf{x}_i) - f(\mathbf{x}_1)$. Call the result $\hat{d}_i$. Set $\hat{d}_1 = 0$.
+For each $i = 2, \ldots, k$, apply the part~(i) estimator with accuracy $\alpha = \epsilon/2$ and failure probability $\delta' = \delta/(2k)$ to estimate $f(\mathbf{x}_i) - f(\mathbf{x}_1)$. Call the result $\hat{d}_i$. Set $\hat{d}_1 = 0$.
 
-\textbf{Step 3:} Return $\mathbf{x}_{i^*}$ where $i^* = \operatorname{argmin}_{i \in [k]} \hat{d}_i$.
+Return $\mathbf{x}_{i^*}$ where $i^* = \operatorname{argmin}_{i \in [k]} \hat{d}_i$.
 
 \medskip
 \textbf{Call counts:}

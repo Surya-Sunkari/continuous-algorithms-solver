@@ -21,7 +21,7 @@ Writing $\mathbf{w} = \begin{pmatrix} \mathbf{u} \\ \mathbf{v} \end{pmatrix}$ wi
 \begin{proof}
 Write $\mathbf{S} = \sum_{i \in [n]} a_i \mathbf{M}_i$ and $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i$.
 
-\textbf{Step 1:} By part (i), for each $i \in [n]$,
+By part (i), for each $i \in [n]$,
 \[
 \begin{pmatrix} a_i^2 \mathbf{M}_i & a_i \mathbf{M}_i \\ a_i \mathbf{M}_i & \mathbf{M}_i \end{pmatrix} \succeq \mathbf{0}.
 \]
@@ -30,16 +30,16 @@ Summing over $i \in [n]$ (PSD matrices are closed under addition) gives
 \begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{T} \end{pmatrix} \succeq \mathbf{0}.
 \]
 
-\textbf{Step 2:} Since $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i \preceq \mathbf{I}_d$, the matrix $\mathbf{I}_d - \mathbf{T} \succeq \mathbf{0}$. Adding the PSD block matrix
+Since $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i \preceq \mathbf{I}_d$, the matrix $\mathbf{I}_d - \mathbf{T} \succeq \mathbf{0}$. Adding the PSD block matrix
 \[
 \begin{pmatrix} \mathbf{0} & \mathbf{0} \\ \mathbf{0} & \mathbf{I}_d - \mathbf{T} \end{pmatrix} \succeq \mathbf{0}
 \]
-to the result of Step 1 yields
+to the above yields
 \[
 \begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{I}_d \end{pmatrix} \succeq \mathbf{0}.
 \]
 
-\textbf{Step 3:} The bottom-right block $\mathbf{I}_d \succ \mathbf{0}$ is invertible. By the Schur complement characterization (Fact 4, Part VI), the block matrix
+The bottom-right block $\mathbf{I}_d \succ \mathbf{0}$ is invertible. By the Schur complement characterization (Fact 4, Part VI), the block matrix
 \[
 \begin{pmatrix} \mathbf{P} & \mathbf{Q} \\ \mathbf{Q}^T & \mathbf{R} \end{pmatrix} \succeq \mathbf{0} \quad \text{with } \mathbf{R} \succ \mathbf{0} \quad \implies \quad \mathbf{P} - \mathbf{Q}\mathbf{R}^{-1}\mathbf{Q}^T \succeq \mathbf{0}.
 \]

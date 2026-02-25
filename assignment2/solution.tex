@@ -1,0 +1,396 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{subcaption} % only if you want them side-by-side
+\usepackage{float}      % for [H] placement (optional)
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+
+\title{CS 395T Homework 2}
+\author{Surya Sunkari (svs879)}
+\date{February 24, 2026}
+
+\maketitle
+
+\section*{Problem 1}
+
+For each $\lambda > 0$, the function $g_\lambda(\mathbf{x}) := f(\mathbf{x}) + \frac{\lambda}{2}\|\mathbf{x}\|_2^2$ is the sum of a convex function and a $\lambda$-strongly convex function, hence $\lambda$-strongly convex. By Lemma 3 (Part I), $g_\lambda$ has a unique minimizer $\mathbf{x}_\lambda^\star$, and by Lemma 2 (Part I):
+\[
+\nabla f(\mathbf{x}_\lambda^\star) + \lambda \mathbf{x}_\lambda^\star = \mathbf{0}.
+\]
+
+\subsection*{(i)}
+
+\begin{proof}
+Let $\lambda' > \lambda > 0$. Since $\mathbf{x}_\lambda^\star$ minimizes $g_\lambda$ and $\mathbf{x}_{\lambda'}^\star$ minimizes $g_{\lambda'}$:
+\begin{align*}
+f(\mathbf{x}_\lambda^\star) + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 &\leq f(\mathbf{x}_{\lambda'}^\star) + \frac{\lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2, \tag{A} \\
+f(\mathbf{x}_{\lambda'}^\star) + \frac{\lambda'}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 &\leq f(\mathbf{x}_\lambda^\star) + \frac{\lambda'}{2}\|\mathbf{x}_\lambda^\star\|_2^2. \tag{B}
+\end{align*}
+Adding (A) and (B):
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 + \frac{\lambda'}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \frac{\lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 + \frac{\lambda'}{2}\|\mathbf{x}_\lambda^\star\|_2^2.
+\]
+Rearranging:
+\[
+\frac{\lambda' - \lambda}{2}\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \frac{\lambda' - \lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2.
+\]
+Since $\lambda' - \lambda > 0$, dividing both sides gives $\|\mathbf{x}_{\lambda'}^\star\|_2^2 \leq \|\mathbf{x}_\lambda^\star\|_2^2$, hence $\|\mathbf{x}_\lambda^\star\|_2 \geq \|\mathbf{x}_{\lambda'}^\star\|_2$.
+\end{proof}
+
+\subsection*{(ii)}
+
+Take $\lambda_R = \dfrac{2L}{R}$.
+
+\begin{proof}
+The minimality of $\mathbf{x}_\lambda^\star$ gives:
+\[
+f(\mathbf{x}_\lambda^\star) + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq f(\mathbf{0}_d).
+\]
+By Lemma 1 (Part I) applied with $\mathbf{x} = \mathbf{0}_d$ and $\mathbf{x}' = \mathbf{x}_\lambda^\star$:
+\[
+f(\mathbf{x}_\lambda^\star) \geq f(\mathbf{0}_d) + \langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle.
+\]
+Combining these two inequalities:
+\[
+f(\mathbf{0}_d) + \langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle + \frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq f(\mathbf{0}_d).
+\]
+Canceling $f(\mathbf{0}_d)$:
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2^2 \leq -\langle \nabla f(\mathbf{0}_d),\, \mathbf{x}_\lambda^\star \rangle \leq \|\nabla f(\mathbf{0}_d)\|_2 \cdot \|\mathbf{x}_\lambda^\star\|_2 \leq L\|\mathbf{x}_\lambda^\star\|_2, \quad \text{(Cauchy--Schwarz)}
+\]
+where the last step uses $\|\nabla f(\mathbf{0}_d)\|_2 \leq L$. If $\|\mathbf{x}_\lambda^\star\|_2 = 0$, the desired bound $\|\mathbf{x}_\lambda^\star\|_2 \leq R$ holds trivially. Otherwise, dividing both sides by $\|\mathbf{x}_\lambda^\star\|_2 > 0$:
+\[
+\frac{\lambda}{2}\|\mathbf{x}_\lambda^\star\|_2 \leq L \quad \implies \quad \|\mathbf{x}_\lambda^\star\|_2 \leq \frac{2L}{\lambda}.
+\]
+For $\lambda \geq \lambda_R = \frac{2L}{R}$:
+\[
+\|\mathbf{x}_\lambda^\star\|_2 \leq \frac{2L}{\lambda} \leq \frac{2L}{2L/R} = R.
+\]
+\end{proof}
+
+\section*{Problem 2}
+
+\subsection*{(i)}
+
+\begin{proof}
+Since $\mathbf{M} \succ 0$, the bilinear form $\langle \mathbf{u}, \mathbf{v} \rangle_{\mathbf{M}} := \mathbf{u}^\top \mathbf{M} \mathbf{v}$ is a valid inner product on $\mathbb{R}^d$. By definition of the dual norm,
+\[
+\|\mathbf{M}\mathbf{v}\|_* = \max_{\|\mathbf{u}\| \leq 1} \langle \mathbf{u}, \mathbf{M}\mathbf{v} \rangle = \max_{\|\mathbf{u}\| \leq 1} \mathbf{u}^\top \mathbf{M} \mathbf{v}.
+\]
+For any $\mathbf{u}$ with $\|\mathbf{u}\| \leq 1$, Cauchy--Schwarz in $\langle \cdot, \cdot \rangle_{\mathbf{M}}$ gives
+\[
+\mathbf{u}^\top \mathbf{M} \mathbf{v} \leq \sqrt{\mathbf{u}^\top \mathbf{M} \mathbf{u}} \cdot \sqrt{\mathbf{v}^\top \mathbf{M} \mathbf{v}}.
+\]
+By hypothesis, $\mathbf{M}[\mathbf{u}, \mathbf{u}] \leq \|\mathbf{u}\|^2 \leq 1$ and $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$, so
+\[
+\mathbf{u}^\top \mathbf{M} \mathbf{v} \leq \|\mathbf{u}\| \cdot \|\mathbf{v}\| \leq \|\mathbf{v}\|.
+\]
+Taking the maximum over $\|\mathbf{u}\| \leq 1$ yields $\|\mathbf{M}\mathbf{v}\|_* \leq \|\mathbf{v}\|$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+\textbf{($\Rightarrow$)}
+Assume $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$ for all $\mathbf{v} \in \mathbb{R}^d$. Fix $\mathbf{w} \in \mathbb{R}^d$; the case $\mathbf{w} = \mathbf{0}$ is trivial. For any $\mathbf{u}$ with $\|\mathbf{u}\| \leq 1$, write $\langle \mathbf{u}, \mathbf{w} \rangle = \mathbf{u}^\top \mathbf{M}^{1/2} \mathbf{M}^{-1/2} \mathbf{w}$, where $\mathbf{M}^{1/2} \succ 0$ exists since $\mathbf{M} \succ 0$. Then by Cauchy--Schwarz in $\ell_2$:
+\begin{align*}
+\langle \mathbf{u}, \mathbf{w} \rangle &= \langle \mathbf{M}^{1/2}\mathbf{u},\, \mathbf{M}^{-1/2}\mathbf{w} \rangle_2 \\
+&\leq \|\mathbf{M}^{1/2}\mathbf{u}\|_2 \cdot \|\mathbf{M}^{-1/2}\mathbf{w}\|_2 \\
+&= \sqrt{\mathbf{u}^\top \mathbf{M}\, \mathbf{u}} \cdot \sqrt{\mathbf{w}^\top \mathbf{M}^{-1} \mathbf{w}} \\
+&\leq \|\mathbf{u}\| \cdot \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]} \quad \text{(hypothesis: $\mathbf{M}[\mathbf{u}, \mathbf{u}] \leq \|\mathbf{u}\|^2$)} \\
+&\leq \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]}. \quad \text{($\|\mathbf{u}\| \leq 1$)}
+\end{align*}
+Taking the supremum over $\|\mathbf{u}\| \leq 1$:
+\[
+\|\mathbf{w}\|_* \leq \sqrt{\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]},
+\]
+hence $\|\mathbf{w}\|_*^2 \leq \mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}]$.
+
+\bigskip
+
+\textbf{($\Leftarrow$)}
+Assume $\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}] \geq \|\mathbf{w}\|_*^2$ for all $\mathbf{w} \in \mathbb{R}^d$. Fix $\mathbf{v} \in \mathbb{R}^d$; the case $\mathbf{v} = \mathbf{0}$ is trivial. Set $\mathbf{w} = \mathbf{M}\mathbf{v}$:
+\[
+\mathbf{M}^{-1}[\mathbf{w}, \mathbf{w}] = (\mathbf{M}\mathbf{v})^\top \mathbf{M}^{-1}(\mathbf{M}\mathbf{v}) = \mathbf{v}^\top \mathbf{M} \mathbf{v} = \mathbf{M}[\mathbf{v}, \mathbf{v}],
+\]
+so by hypothesis,
+\[
+\mathbf{M}[\mathbf{v}, \mathbf{v}] \geq \|\mathbf{M}\mathbf{v}\|_*^2.
+\]
+By definition of the dual norm, $\mathbf{u} = \mathbf{v}/\|\mathbf{v}\|$ is a feasible point ($\|\mathbf{u}\| = 1$), so
+\[
+\|\mathbf{M}\mathbf{v}\|_* \geq \left\langle \frac{\mathbf{v}}{\|\mathbf{v}\|},\, \mathbf{M}\mathbf{v} \right\rangle = \frac{\mathbf{M}[\mathbf{v}, \mathbf{v}]}{\|\mathbf{v}\|}.
+\]
+Combining:
+\[
+\mathbf{M}[\mathbf{v}, \mathbf{v}] \geq \|\mathbf{M}\mathbf{v}\|_*^2 \geq \frac{(\mathbf{M}[\mathbf{v}, \mathbf{v}])^2}{\|\mathbf{v}\|^2}.
+\]
+Since $\mathbf{M} \succ 0$ and $\mathbf{v} \neq \mathbf{0}$, we have $\mathbf{M}[\mathbf{v}, \mathbf{v}] > 0$. Dividing by $\mathbf{M}[\mathbf{v}, \mathbf{v}]$:
+\[
+1 \geq \frac{\mathbf{M}[\mathbf{v}, \mathbf{v}]}{\|\mathbf{v}\|^2},
+\]
+i.e., $\mathbf{M}[\mathbf{v}, \mathbf{v}] \leq \|\mathbf{v}\|^2$.
+\end{proof}
+
+\section*{Problem 3}
+
+\textbf{Initialization.} Set
+\[
+\mathbf{x}_0 \leftarrow \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}}\, \psi(\mathbf{x}),
+\]
+which depends only on $\psi$ and $\mathcal{X}$.
+
+\begin{proof}
+Fix any $\mathbf{u} \in \mathcal{X}$; we take $\mathbf{u} = \mathbf{x}^\star$ at the end.
+
+Since $\mathbf{x}_{t+1}$ minimizes $\langle \eta \nabla f(\mathbf{x}_t), \mathbf{x}\rangle + \eta\psi(\mathbf{x}) + D_\varphi(\mathbf{x} \| \mathbf{x}_t)$ over $\mathcal{X}$, the first-order optimality condition yields a subgradient $\mathbf{g}_{t+1} \in \partial\psi(\mathbf{x}_{t+1})$ such that for all $\mathbf{x} \in \mathcal{X}$,
+\[
+\langle \eta \nabla f(\mathbf{x}_t) + \eta \mathbf{g}_{t+1} + \nabla\varphi(\mathbf{x}_{t+1}) - \nabla\varphi(\mathbf{x}_t),\; \mathbf{x} - \mathbf{x}_{t+1}\rangle \ge 0.
+\]
+Setting $\mathbf{x} = \mathbf{u}$ and rearranging,
+\begin{align*}
+\eta\langle \nabla f(\mathbf{x}_t) + \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle
+&\le \langle \nabla\varphi(\mathbf{x}_t) - \nabla\varphi(\mathbf{x}_{t+1}),\; \mathbf{x}_{t+1} - \mathbf{u}\rangle \\
+&= D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) - D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t),
+\end{align*}
+where the last equality is the three-point Bregman identity (equation (7) in the proof of Theorem 1, Part III).
+
+By convexity of $f$ (Lemma 1, Part I),
+\[
+f(\mathbf{x}_t) - f(\mathbf{u}) \le \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{u}\rangle = \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_{t+1} - \mathbf{u}\rangle + \langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle.
+\]
+By convexity of $\psi$ and $\mathbf{g}_{t+1} \in \partial\psi(\mathbf{x}_{t+1})$,
+\[
+\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u}) \le \langle \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle.
+\]
+Adding and multiplying by $\eta$,
+\begin{align*}
+\eta\bigl[f(\mathbf{x}_t) - f(\mathbf{u}) + \psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u})\bigr]
+&\le \eta\langle \nabla f(\mathbf{x}_t) + \mathbf{g}_{t+1},\; \mathbf{x}_{t+1} - \mathbf{u}\rangle + \eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle \\
+&\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) - D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) \\
+&\quad + \eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle.
+\end{align*}
+
+By the generalized Cauchy--Schwarz inequality followed by Young's inequality ($ab \le \tfrac{1}{2}a^2 + \tfrac{1}{2}b^2$),
+\[
+\eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle
+\le \eta\|\nabla f(\mathbf{x}_t)\|_* \cdot \|\mathbf{x}_t - \mathbf{x}_{t+1}\|
+\le \frac{1}{2}\|\mathbf{x}_t - \mathbf{x}_{t+1}\|^2 + \frac{\eta^2}{2}\|\nabla f(\mathbf{x}_t)\|_*^2.
+\]
+Since $\varphi$ is $1$-strongly convex in $\|\cdot\|$, Fact 5 (Part III) gives $D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) \ge \tfrac{1}{2}\|\mathbf{x}_t - \mathbf{x}_{t+1}\|^2$. Since $f$ is $L$-Lipschitz in $\|\cdot\|$, Lemma 13 (Part II) gives $\|\nabla f(\mathbf{x}_t)\|_* \le L$. Therefore
+\[
+\eta\langle \nabla f(\mathbf{x}_t),\; \mathbf{x}_t - \mathbf{x}_{t+1}\rangle
+\le D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t) + \frac{\eta^2 L^2}{2}.
+\]
+
+Substituting back, the $D_\varphi(\mathbf{x}_{t+1} \| \mathbf{x}_t)$ terms cancel:
+\[
+\eta\bigl[f(\mathbf{x}_t) - f(\mathbf{u}) + \psi(\mathbf{x}_{t+1}) - \psi(\mathbf{u})\bigr]
+\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) + \frac{\eta^2 L^2}{2}.
+\]
+
+Write $f(\mathbf{x}_t) + \psi(\mathbf{x}_{t+1}) = F(\mathbf{x}_t) + \bigl(\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{x}_t)\bigr)$, so
+\[
+\eta\bigl[F(\mathbf{x}_t) - F(\mathbf{u})\bigr] + \eta\bigl[\psi(\mathbf{x}_{t+1}) - \psi(\mathbf{x}_t)\bigr]
+\le D_\varphi(\mathbf{u} \| \mathbf{x}_t) - D_\varphi(\mathbf{u} \| \mathbf{x}_{t+1}) + \frac{\eta^2 L^2}{2}.
+\]
+
+Set $\mathbf{u} = \mathbf{x}^\star$ and sum over $t = 0, \dots, T-1$. The Bregman terms telescope and the $\psi$ differences telescope:
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr] + \eta\bigl[\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) - D_\varphi(\mathbf{x}^\star \| \mathbf{x}_T) + \frac{\eta^2 T L^2}{2}.
+\]
+Since $D_\varphi(\mathbf{x}^\star \| \mathbf{x}_T) \ge 0$ (Fact 3, Part III),
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr] + \eta\bigl[\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) + \frac{\eta^2 T L^2}{2}.
+\]
+
+By construction, $\mathbf{x}_0 = \operatorname{argmin}_{\mathbf{x} \in \mathcal{X}} \psi(\mathbf{x})$, so $\psi(\mathbf{x}_0) \le \psi(\mathbf{x}_T)$, hence $\psi(\mathbf{x}_T) - \psi(\mathbf{x}_0) \ge 0$. Dropping this nonnegative term,
+\[
+\eta\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) + \frac{\eta^2 T L^2}{2}
+\le \Theta + \frac{\eta^2 T L^2}{2},
+\]
+where the last inequality uses $D_\varphi(\mathbf{x}^\star \| \mathbf{x}_0) \le \sup_{\mathbf{y} \in \mathcal{X}} D_\varphi(\mathbf{x}^\star \| \mathbf{y}) \le \Theta$. Dividing by $\eta T$,
+\[
+\frac{1}{T}\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le \frac{\Theta}{\eta T} + \frac{\eta L^2}{2}.
+\]
+
+Since $F = f + \psi$ is convex (sum of convex functions) and $\bar{\mathbf{x}} = \frac{1}{T}\sum_{t=0}^{T-1}\mathbf{x}_t$,
+\[
+F(\bar{\mathbf{x}}) - F(\mathbf{x}^\star)
+\le \frac{1}{T}\sum_{t=0}^{T-1}\bigl[F(\mathbf{x}_t) - F(\mathbf{x}^\star)\bigr]
+\le \frac{\Theta}{\eta T} + \frac{\eta L^2}{2}. \qedhere
+\]
+\end{proof}
+
+\section*{Problem 4}
+
+\subsection*{(i)}
+
+\begin{proof}
+Define $\mathbf{A} = \begin{pmatrix} a\mathbf{I}_d \\ \mathbf{I}_d \end{pmatrix} \in \mathbb{R}^{2d \times d}$. Then
+\[
+\mathbf{A}\mathbf{M}\mathbf{A}^T = \begin{pmatrix} a\mathbf{I}_d \\ \mathbf{I}_d \end{pmatrix} \mathbf{M} \begin{pmatrix} a\mathbf{I}_d & \mathbf{I}_d \end{pmatrix} = \begin{pmatrix} a^2\mathbf{M} & a\mathbf{M} \\ a\mathbf{M} & \mathbf{M} \end{pmatrix}.
+\]
+For any $\mathbf{w} \in \mathbb{R}^{2d}$,
+\[
+\mathbf{w}^T (\mathbf{A}\mathbf{M}\mathbf{A}^T) \mathbf{w} = (\mathbf{A}^T \mathbf{w})^T \mathbf{M} (\mathbf{A}^T \mathbf{w}) \geq 0 \quad \text{(since } \mathbf{M} \succeq \mathbf{0}\text{)}
+\]
+so $\mathbf{A}\mathbf{M}\mathbf{A}^T \succeq \mathbf{0}$ by the spectral characterization of PSD matrices (Theorem 4, Part VI).
+
+Writing $\mathbf{w} = \begin{pmatrix} \mathbf{u} \\ \mathbf{v} \end{pmatrix}$ with $\mathbf{u}, \mathbf{v} \in \mathbb{R}^d$, we have $\mathbf{A}^T \mathbf{w} = a\mathbf{u} + \mathbf{v}$, so the quadratic form equals $(a\mathbf{u} + \mathbf{v})^T \mathbf{M} (a\mathbf{u} + \mathbf{v}) \geq 0$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Write $\mathbf{S} = \sum_{i \in [n]} a_i \mathbf{M}_i$ and $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i$.
+
+By part (i), for each $i \in [n]$,
+\[
+\begin{pmatrix} a_i^2 \mathbf{M}_i & a_i \mathbf{M}_i \\ a_i \mathbf{M}_i & \mathbf{M}_i \end{pmatrix} \succeq \mathbf{0}.
+\]
+Summing over $i \in [n]$ (PSD matrices are closed under addition) gives
+\[
+\begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{T} \end{pmatrix} \succeq \mathbf{0}.
+\]
+
+Since $\mathbf{T} = \sum_{i \in [n]} \mathbf{M}_i \preceq \mathbf{I}_d$, the matrix $\mathbf{I}_d - \mathbf{T} \succeq \mathbf{0}$. Adding the PSD block matrix
+\[
+\begin{pmatrix} \mathbf{0} & \mathbf{0} \\ \mathbf{0} & \mathbf{I}_d - \mathbf{T} \end{pmatrix} \succeq \mathbf{0}
+\]
+to the above yields
+\[
+\begin{pmatrix} \sum_{i \in [n]} a_i^2 \mathbf{M}_i & \mathbf{S} \\ \mathbf{S} & \mathbf{I}_d \end{pmatrix} \succeq \mathbf{0}.
+\]
+
+The bottom-right block $\mathbf{I}_d \succ \mathbf{0}$ is invertible. By the Schur complement characterization (Fact 4, Part VI), the block matrix
+\[
+\begin{pmatrix} \mathbf{P} & \mathbf{Q} \\ \mathbf{Q}^T & \mathbf{R} \end{pmatrix} \succeq \mathbf{0} \quad \text{with } \mathbf{R} \succ \mathbf{0} \quad \implies \quad \mathbf{P} - \mathbf{Q}\mathbf{R}^{-1}\mathbf{Q}^T \succeq \mathbf{0}.
+\]
+Applying this with $\mathbf{P} = \sum_{i \in [n]} a_i^2 \mathbf{M}_i$, $\mathbf{Q} = \mathbf{S}$, and $\mathbf{R} = \mathbf{I}_d$:
+\[
+\sum_{i \in [n]} a_i^2 \mathbf{M}_i - \mathbf{S} \cdot \mathbf{I}_d^{-1} \cdot \mathbf{S} = \sum_{i \in [n]} a_i^2 \mathbf{M}_i - \mathbf{S}^2 \succeq \mathbf{0}.
+\]
+This is precisely $\left(\sum_{i \in [n]} a_i \mathbf{M}_i\right)^2 \preceq \sum_{i \in [n]} a_i^2 \mathbf{M}_i$.
+\end{proof}
+
+\section*{Problem 5}
+\subsection*{(i)}
+
+\begin{proof}
+\textbf{Algorithm:}
+By the Fundamental Theorem of Calculus, for $\mathbf{x}_t := (1-t)\mathbf{x}' + t\mathbf{x}$:
+\[
+f(\mathbf{x}) - f(\mathbf{x}') = \int_0^1 \nabla f(\mathbf{x}_t)^\top (\mathbf{x} - \mathbf{x}')\,dt = \mathbb{E}_{t \sim \mathrm{Uniform}[0,1]}\bigl[\nabla f(\mathbf{x}_t)^\top (\mathbf{x} - \mathbf{x}')\bigr].
+\]
+Since $\mathbf{x}, \mathbf{x}' \in \mathbb{B}(R)$ and $\mathbb{B}(R)$ is convex, $\mathbf{x}_t \in \mathbb{B}(R)$ for all $t \in [0,1]$, so $\mathbf{g}(\mathbf{x}_t)$ is well-defined. We use a \emph{median-of-means} estimator.
+
+Fix parameters $k = \lceil 12L^2R^2/\alpha^2 \rceil$ and $m = \lceil 48\log(1/\delta) \rceil$.
+
+Partition $mk$ samples into $m$ groups of size $k$. For each group $j \in [m]$: draw $t_1, \ldots, t_k \stackrel{\text{i.i.d.}}{\sim} \mathrm{Uniform}[0,1]$, and compute
+\[
+\hat{d}_j := \frac{1}{k}\sum_{i=1}^{k} \mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}').
+\]
+
+Return $\hat{d} := \mathrm{median}(\hat{d}_1, \ldots, \hat{d}_m)$.
+
+\medskip
+\textbf{Analysis:}
+Define $Z_i := \mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}')$ for a single sample. Since $\mathbb{E}[\mathbf{g}(\mathbf{x}_{t_i})] = \nabla f(\mathbf{x}_{t_i})$:
+\[
+\mathbb{E}[Z_i \mid t_i] = \nabla f(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}'),
+\]
+so by the tower rule and the integral representation, $\mathbb{E}[Z_i] = f(\mathbf{x}) - f(\mathbf{x}')$.
+
+For the variance, by Cauchy--Schwarz:
+\[
+\mathbb{E}[Z_i^2] = \mathbb{E}\bigl[(\mathbf{g}(\mathbf{x}_{t_i})^\top (\mathbf{x} - \mathbf{x}'))^2\bigr] \leq \mathbb{E}\bigl[\|\mathbf{g}(\mathbf{x}_{t_i})\|_2^2\bigr] \cdot \|\mathbf{x} - \mathbf{x}'\|_2^2 \leq L^2 \cdot (2R)^2 = 4L^2R^2,
+\]
+where we used $\|\mathbf{x} - \mathbf{x}'\|_2 \leq 2R$ since both points lie in $\mathbb{B}(R)$. Thus $\mathrm{Var}(Z_i) \leq 4L^2R^2$.
+
+Each group mean $\hat{d}_j$ satisfies $\mathbb{E}[\hat{d}_j] = f(\mathbf{x}) - f(\mathbf{x}')$ and
+\[
+\mathrm{Var}(\hat{d}_j) \leq \frac{4L^2R^2}{k} \leq \frac{4L^2R^2}{12L^2R^2/\alpha^2} = \frac{\alpha^2}{3}.
+\]
+By Chebyshev's inequality (Fact 1, Part VI):
+\[
+\Pr\bigl[|\hat{d}_j - (f(\mathbf{x}) - f(\mathbf{x}'))| \geq \alpha\bigr] \leq \frac{\mathrm{Var}(\hat{d}_j)}{\alpha^2} \leq \frac{1}{3}.
+\]
+So each group mean is $\alpha$-accurate with probability $\geq 2/3$. Let $S := \#\{j : |\hat{d}_j - (f(\mathbf{x})-f(\mathbf{x}'))| \leq \alpha\}$. Then $\mathbb{E}[S] \geq 2m/3$. The median $\hat{d}$ fails only if fewer than $m/2$ groups succeed, i.e., $S < m/2$. By a standard Chernoff bound (Theorem 3, Part VI) applied to the $m$ independent Bernoulli variables $\mathbf{1}[|\hat{d}_j - (f(\mathbf{x})-f(\mathbf{x}'))| \leq \alpha]$, each with success probability $\geq 2/3$:
+\[
+\Pr\bigl[S < m/2\bigr] \leq \Pr\bigl[S < (1 - 1/4) \cdot 2m/3\bigr] \leq \exp\!\left(-\frac{(1/4)^2 \cdot 2m/3}{2}\right) = \exp\!\left(-\frac{m}{48}\right) \leq \delta,
+\]
+for $m \geq 48\log(1/\delta)$, which is satisfied by $m = \lceil 48\log(1/\delta) \rceil$.
+
+The total number of calls to $\mathbf{g}$ is $mk = O\!\left(\frac{L^2R^2}{\alpha^2}\log\frac{1}{\delta}\right)$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+\textbf{Algorithm:}
+
+Run $\mathcal{A}$ independently $k = \lceil 36\log(2/\delta) \rceil$ times, producing candidates $\mathbf{x}_1, \ldots, \mathbf{x}_k \in \mathbb{B}(R)$.
+
+For each $i = 2, \ldots, k$, apply the part~(i) estimator with accuracy $\alpha = \epsilon/2$ and failure probability $\delta' = \delta/(2k)$ to estimate $f(\mathbf{x}_i) - f(\mathbf{x}_1)$. Call the result $\hat{d}_i$. Set $\hat{d}_1 = 0$.
+
+Return $\mathbf{x}_{i^*}$ where $i^* = \operatorname{argmin}_{i \in [k]} \hat{d}_i$.
+
+\medskip
+\textbf{Call counts:}
+\begin{itemize}
+\item $\mathcal{A}$ is called $k = O(\log(1/\delta))$ times.
+\item Each of the $k - 1$ comparisons calls $\mathbf{g}$ a total of $O\!\left(\frac{L^2R^2}{(\epsilon/2)^2}\log\frac{2k}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\log\frac{\log(1/\delta)}{\delta}\right)$ times. Over all comparisons:
+\[
+(k-1) \cdot O\!\left(\frac{L^2R^2}{\epsilon^2}\log\frac{k}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\cdot\log\frac{1}{\delta}\cdot\log\frac{\log(1/\delta)}{\delta}\right) = O\!\left(\frac{L^2R^2}{\epsilon^2}\cdot\operatorname{polylog}\frac{1}{\delta}\right).
+\]
+\end{itemize}
+
+\textbf{Correctness:}
+Define the following events.
+
+$E_1$: at least $k/3$ of the candidates satisfy $f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon$.
+
+By Markov's inequality (Fact 1, Part VI), for each $i$:
+\[
+\Pr\bigl[f(\mathbf{x}_i) - f(\mathbf{x}^\star) > 2\epsilon\bigr] \leq \frac{\mathbb{E}[f(\mathbf{x}_i) - f(\mathbf{x}^\star)]}{2\epsilon} \leq \frac{\epsilon}{2\epsilon} = \frac{1}{2}.
+\]
+So each candidate is good (i.e., $f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon$) independently with probability $\geq 1/2$. Let $G = \sum_{i=1}^k \mathbf{1}[f(\mathbf{x}_i) - f(\mathbf{x}^\star) \leq 2\epsilon]$. Then $\mathbb{E}[G] \geq k/2$. By the Chernoff bound (Theorem 3, Part VI) with $\epsilon' = 1/3$:
+\[
+\Pr\bigl[G < k/3\bigr] = \Pr\bigl[G < (1-1/3) \cdot k/2\bigr] \leq \exp\!\left(-\frac{(1/3)^2 \cdot k/2}{2}\right) = \exp\!\left(-\frac{k}{36}\right).
+\]
+For $k \geq 36\log(2/\delta)$, we get $\Pr[E_1^c] \leq \delta/2$, which is satisfied by $k = \lceil 36\log(2/\delta) \rceil$.
+
+$E_2$: all $k-1$ estimates satisfy $|\hat{d}_i - (f(\mathbf{x}_i) - f(\mathbf{x}_1))| \leq \epsilon/2$.
+
+By part~(i), each estimate fails with probability $\leq \delta' = \delta/(2k)$. By a union bound over $k-1 < k$ comparisons:
+\[
+\Pr[E_2^c] \leq (k-1) \cdot \frac{\delta}{2k} < \frac{\delta}{2}.
+\]
+
+On the event $E_1 \cap E_2$, which holds with probability $\geq 1 - \delta$:
+there exists a good candidate $j$ with $f(\mathbf{x}_j) - f(\mathbf{x}^\star) \leq 2\epsilon$. Since $i^* = \operatorname{argmin}_i \hat{d}_i$:
+\[
+\hat{d}_{i^*} \leq \hat{d}_j.
+\]
+By the accuracy guarantee on $E_2$:
+\begin{align*}
+f(\mathbf{x}_{i^*}) - f(\mathbf{x}_1) &\leq \hat{d}_{i^*} + \frac{\epsilon}{2} \leq \hat{d}_j + \frac{\epsilon}{2} \leq \bigl(f(\mathbf{x}_j) - f(\mathbf{x}_1)\bigr) + \frac{\epsilon}{2} + \frac{\epsilon}{2} \\
+&= f(\mathbf{x}_j) - f(\mathbf{x}_1) + \epsilon.
+\end{align*}
+Therefore:
+\[
+f(\mathbf{x}_{i^*}) \leq f(\mathbf{x}_j) + \epsilon \leq f(\mathbf{x}^\star) + 2\epsilon + \epsilon = f(\mathbf{x}^\star) + 3\epsilon. \qedhere
+\]
+\end{proof}
+
+\end{document}
