@@ -64,6 +64,7 @@ FORMATTING RULES (from example.tex, if available — follow EXACTLY):
 - Use align* for multi-line math, \[...\] for single display math
 - Use \textbf{Case N:} for case analysis
 - Use \textbf{Claim:} when stating intermediate claims
+- Do NOT use numbered step headers like \textbf{Step 1:} or \textbf{Step 2: Description.}, let the proof flow as continuous prose with natural paragraph breaks
 - Cite theorems as "By Theorem X.Y (Lecture Z)"
 - Cite proof-internal results explicitly: "by equation (3) in the proof of Lemma X.Y (Lecture Z)" or "by the bound established at Line 4 of the proof of Theorem X.Y (Lecture Z)"
 - Never silently reuse a result from inside a proof — always cite the specific label or line
@@ -145,7 +146,7 @@ REFERENCE PATTERNS (from example.tex, if available):
 - \begin{proof}...\end{proof} for proofs
 - align* for multi-line math
 - \[...\] for display math (NEVER $$...$$)
-- \textbf{} for structural labels
+- \textbf{} for structural labels (e.g. \textbf{Case 1:}, \textbf{Claim:}) but NOT numbered step headers like \textbf{Step N:}
 - \bigskip\noindent\textit{Counterexample.} for counterexamples
 - Parenthetical justifications in math: \quad \text{(reason)}
 
