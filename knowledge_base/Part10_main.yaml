@@ -1,0 +1,246 @@
+source: "Part10_main.pdf"
+lecture_number: 10
+title: "CS395T: Continuous Algorithms, Part X — Interior-point methods"
+items:
+  - type: definition
+    number: "1"
+    name: "Self-concordance in R"
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}$ be convex and open, and let $\varphi : \mathcal{X} \to \mathbb{R}$ be
+      three-times differentiable and a barrier function. We say $\varphi$ is a self-concordant
+      barrier for $\mathcal{X}$ if
+      \[
+        |\varphi'''(x)| \leq 2 \left(\varphi''(x)\right)^{\frac{3}{2}} \quad \text{for all } x \in \mathcal{X}.
+      \]
+    context: "One-dimensional definition of self-concordance; the multivariate extension is Definition 2. Used to verify self-concordance of specific barrier functions such as $\varphi(x) = -\log(x)$ on $\mathbb{R}_{>0}$."
+    proof_notes:
+      - label: "(1)"
+        content: |
+          For $\varphi(x) = -\log(x)$ on $\mathcal{X} = \mathbb{R}_{>0}$:
+          $|\varphi'''(x)| = \left|\frac{2}{x^3}\right|$, $\quad \varphi''(x) = \frac{1}{x^2}$.
+        description: "Verifies that $-\log(x)$ is a self-concordant barrier for $\mathbb{R}_{>0}$, which is the base case used in Lemma 6 to build the log-barrier for polytopes."
+
+  - type: definition
+    number: "2"
+    name: "Self-concordance"
+    statement: |
+      Let $\mathcal{X} \subseteq \mathbb{R}^d$ be convex and open, and let $\varphi : \mathcal{X} \to \mathbb{R}$ be
+      three-times differentiable and a barrier function. Letting $\mathbf{T}(\mathbf{x}) := \nabla^3 \varphi(\mathbf{x})$
+      and $\mathbf{H}(\mathbf{x}) := \nabla^2 \varphi(\mathbf{x})$ for notational simplicity, we say $\varphi$ is a
+      self-concordant barrier for $\mathcal{X}$ if
+      \[
+        -2 \|\mathbf{v}\|_{\mathbf{H}(\mathbf{x})} \mathbf{H}(\mathbf{x}) \preceq \mathbf{T}(\mathbf{x})[\mathbf{v}, \cdot, \cdot] \preceq 2 \|\mathbf{v}\|_{\mathbf{H}(\mathbf{x})} \mathbf{H}(\mathbf{x})
+        \quad \text{for all } \mathbf{x} \in \mathcal{X},\ \mathbf{v} \in \mathbb{R}^d.
+      \]
+    context: "The fundamental multivariate definition of self-concordance. All subsequent lemmas and theorems in the lecture use this definition. Implies the Hessian is multiplicatively stable in Dikin ellipses."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of Definition 2, $\varphi$ is a self-concordant barrier for $\mathcal{X}$ iff for all
+      $\mathbf{v} \in \mathbb{R}^d$, $\mathbf{x} \in \mathcal{X}$, the restriction
+      $\varphi_{\mathbf{v},\mathbf{x}}(t) = \varphi(\mathbf{x} + t\mathbf{v})$ is self-concordant for all
+      $t \in \mathbb{R}$ such that $\mathbf{x} + t\mathbf{v} \in \mathcal{X}$.
+    context: "Provides an equivalent one-dimensional characterization of multivariate self-concordance. Used to reduce verification of self-concordance to one-dimensional restrictions."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathcal{X}, \mathcal{X}' \subseteq \mathbb{R}^d$ be convex and open, and let $\varphi, \phi$ be three-times
+      differentiable barrier functions for $\mathcal{X}, \mathcal{X}'$ respectively.
+      \begin{enumerate}
+        \item If $\varphi, \phi$ are self-concordant barriers for $\mathcal{X}, \mathcal{X}'$ respectively, then
+        $\varphi + \phi$ is a self-concordant barrier for $\mathcal{X} \cap \mathcal{X}'$.
+        \item If $\varphi$ is a self-concordant barrier for $\mathcal{X}$, for any $\mathbf{A} \in \mathbb{R}^{d \times n}$,
+        $\mathbf{b} \in \mathbb{R}^d$, the function $\varphi_{\mathbf{A},\mathbf{b}}(\mathbf{y}) := \varphi(\mathbf{A}\mathbf{y} + \mathbf{b})$
+        is a self-concordant barrier for $\mathcal{Y} := \{\mathbf{y} \in \mathbb{R}^n \mid \mathbf{A}\mathbf{y} + \mathbf{b} \in \mathcal{X}\}$.
+      \end{enumerate}
+    context: "Composition properties for self-concordant barriers: closed under addition (intersection of domains) and affine precomposition. Used in the proof of Lemma 6 to build the polytope log-barrier."
+
+  - type: definition
+    number: "3"
+    name: "Dikin ellipse"
+    statement: |
+      Let $\varphi$ be a self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$, and let
+      $r \geq 0$. The Dikin ellipse at $\mathbf{x} \in \mathcal{X}$ is defined by
+      \[
+        \mathcal{E}_{\mathbf{x}}(r) := \{\mathbf{y} \in \mathcal{X} \mid \|\mathbf{y} - \mathbf{x}\|_{\mathbf{x}} \leq r\},
+      \]
+      where $\|\cdot\|_{\mathbf{x}} := \|\cdot\|_{\mathbf{H}(\mathbf{x})}$ is the local norm induced by the Hessian $\mathbf{H}(\mathbf{x}) = \nabla^2\varphi(\mathbf{x})$.
+    context: "The local neighborhood around $\mathbf{x}$ in the geometry induced by $\varphi$. Interiors of all Dikin ellipses $\mathcal{E}_{\mathbf{x}}(1)$ are contained in $\mathcal{X}$. Central to the analysis of Newton's method."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      Let $\varphi$ be a self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$. If
+      $\|\mathbf{y} - \mathbf{x}\|_{\mathbf{x}} < 1$, then
+      \[
+        \left(1 - \|\mathbf{y} - \mathbf{x}\|_{\mathbf{x}}\right)^2 \mathbf{H}(\mathbf{x}) \preceq \mathbf{H}(\mathbf{y}) \preceq
+        \frac{1}{\left(1 - \|\mathbf{y} - \mathbf{x}\|_{\mathbf{x}}\right)^2} \mathbf{H}(\mathbf{x}).
+      \]
+    context: "Multiplicative Hessian stability within Dikin ellipses. This is the key local regularity property of self-concordant barriers; used in the proofs of Lemma 7 (Newton step stability) and Proposition 1 (Newton's method convergence)."
+    proof_notes:
+      - label: "(2)"
+        content: |
+          With $\mathbf{v} := \mathbf{y} - \mathbf{x}$, $\mathbf{x}_t := \mathbf{x} + t\mathbf{v}$, and $\phi(t) := \|\mathbf{v}\|^2_{\mathbf{x}_t}$,
+          self-concordance gives
+          $|\phi'(t)| = |\mathbf{T}(\mathbf{x}_t)[\mathbf{v}, \mathbf{v}, \mathbf{v}]| \leq 2\|\mathbf{v}\|^3_{\mathbf{x}_t} = 2\phi(t)^{\frac{3}{2}}$.
+        description: "The one-dimensional ODE bound used to derive the multiplicative Hessian stability; also the template for analogous derivative bounds throughout the proof."
+
+  - type: definition
+    number: "4"
+    name: "$\\nu$-self-concordance"
+    statement: |
+      In the setting of Definition 2, for $\nu \geq 0$, we say $\varphi$ is a $\nu$-self-concordant
+      barrier for $\mathcal{X}$ if it is a self-concordant barrier for $\mathcal{X}$, and
+      \[
+        \left(\nabla\varphi(\mathbf{x})\right)\left(\nabla\varphi(\mathbf{x})\right)^\top \preceq \nu \mathbf{H}(\mathbf{x})
+        \quad \text{for all } \mathbf{x} \in \mathcal{X}.
+      \]
+      Equivalently (when $\mathbf{H}(\mathbf{x})$ is full rank),
+      \[
+        \|\nabla\varphi(\mathbf{x})\|_{\mathbf{x},*} \leq \sqrt{\nu} \quad \text{for all } \mathbf{x} \in \mathcal{X}.
+      \]
+    context: "Parameterizes a bound on the gradient norm of the barrier over the entire domain. The $\nu$ parameter controls the number of iterations in interior-point methods (Theorem 1) and the perturbation limit in Lemma 4."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      Let $\varphi$ be a $\nu$-self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$.
+      If $\mathbf{v} \in \mathbb{R}^d$, $\mathbf{x} \in \mathcal{X}$ satisfy $\langle \nabla\varphi(\mathbf{x}), \mathbf{v} \rangle > 0$,
+      then for all $t \geq \frac{\nu}{\langle \nabla\varphi(\mathbf{x}), \mathbf{v} \rangle}$, we have
+      $\mathbf{x} + t\mathbf{v} \notin \mathcal{X}$.
+    context: "Bounds how far one can travel from $\mathbf{x}$ in direction $\mathbf{v}$ (in the gradient direction) before leaving $\mathcal{X}$. Shows that $\nu$ measures the effective size of $\mathcal{X}$ in the direction of $\nabla\varphi(\mathbf{x})$."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      Let $\mathcal{X}, \mathcal{X}' \subseteq \mathbb{R}^d$ be convex and open, and let $\varphi, \phi$ be three-times
+      differentiable barrier functions for $\mathcal{X}, \mathcal{X}'$ respectively.
+      \begin{enumerate}
+        \item If $\varphi, \phi$ are $\nu$-self-concordant and $\mu$-self-concordant barriers for
+        $\mathcal{X}, \mathcal{X}'$ respectively, then $\varphi + \phi$ is a $(\nu + \mu)$-self-concordant
+        barrier for $\mathcal{X} \cap \mathcal{X}'$.
+        \item If $\varphi$ is a $\nu$-self-concordant barrier for $\mathcal{X}$, for any
+        $\mathbf{A} \in \mathbb{R}^{d \times n}$, $\mathbf{b} \in \mathbb{R}^d$, the function
+        $\varphi_{\mathbf{A},\mathbf{b}}(\mathbf{y}) := \varphi(\mathbf{A}\mathbf{y} + \mathbf{b})$ is a $\nu$-self-concordant
+        barrier for $\mathcal{Y} := \{\mathbf{y} \in \mathbb{R}^n \mid \mathbf{A}\mathbf{y} + \mathbf{b} \in \mathcal{X}\}$.
+      \end{enumerate}
+    context: "Composition properties for $\\nu$-self-concordant barriers, extending Lemma 2. Used in the proof of Lemma 6 to establish the $n$-self-concordance parameter for the polytope log-barrier."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ have rows $\{\mathbf{a}_i\}_{i \in [n]}$, let $\mathbf{b} \in \mathbb{R}^n$,
+      and define the polytope $\mathcal{X} := \{\mathbf{x} \mid \mathbf{A}\mathbf{x} < \mathbf{b}\}$. Then $\varphi$ is an
+      $n$-self-concordant barrier for $\mathcal{X}$, where
+      \[
+        \varphi(\mathbf{x}) := -\sum_{i \in [n]} \log\!\left(b_i - \mathbf{a}_i^\top \mathbf{x}\right).
+      \]
+    context: "The log-barrier for polytopes is $n$-self-concordant, where $n$ is the number of constraints. This is the barrier used in the interior-point method for linear programming (Section 4); combined with Theorem 1 gives $O(\sqrt{n}\log(t_0/\epsilon))$ iteration complexity."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          $\varphi(\mathbf{x}) := -\sum_{i \in [n]} \log\!\left(b_i - \mathbf{a}_i^\top \mathbf{x}\right)$.
+        description: "The explicit formula for the log-barrier; also used for direct Hessian and gradient calculations in equation (4)."
+      - label: "(4)"
+        content: |
+          $\nabla\varphi(\mathbf{x}) = \mathbf{A}^\top \mathbf{S}_{\mathbf{x}}^{-1} \mathbf{1}_n, \quad
+          \nabla^2\varphi(\mathbf{x}) = \mathbf{A}^\top \mathbf{S}_{\mathbf{x}}^{-2} \mathbf{A}$,
+          where $\mathbf{s}_{\mathbf{x}} := \mathbf{b} - \mathbf{A}\mathbf{x}$, $\mathbf{S} := \mathbf{diag}(s_x)$.
+        description: "Closed-form gradient and Hessian of the polytope log-barrier in terms of the slack variables $\mathbf{s}_{\mathbf{x}} = \mathbf{b} - \mathbf{A}\mathbf{x}$. Used in Section 4 to implement each Newton step of the interior-point method."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      Let $\varphi$ be a self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$. If
+      $\mathbf{x} \in \mathcal{X}$ has $\|\nabla\varphi(\mathbf{x})\|_{\mathbf{x},*} \leq \Delta$, then letting $\mathbf{x}'$ be
+      defined as in equation (5) (Newton step with $\eta = 1$), if $\eta\Delta < 1$,
+      \[
+        (1 - \eta\Delta)^2 \mathbf{H}(\mathbf{x}) \preceq \mathbf{H}(\mathbf{x}_\lambda) \preceq
+        \frac{1}{(1-\eta\Delta)^2} \mathbf{H}(\mathbf{x}),
+      \]
+      where $\mathbf{x}_\lambda := (1-\lambda)\mathbf{x} + \lambda\mathbf{x}'$ for all $\lambda \in [0,1]$.
+    context: "Hessian stability along a Newton step: if the Newton decrement is small, the Hessian does not change much along the step. Used as the key tool in Proposition 1 to analyze Newton's method convergence."
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      Let $\varphi : \mathcal{X} \to \mathbb{R}$ be twice-differentiable, where $\mathcal{X} \subseteq \mathbb{R}^d$ is
+      convex. Let $\mathbf{H} \in \mathbb{S}_{\succeq 0}^{d \times d}$ and $\mathbf{x} \in \mathbb{R}^d$, and suppose
+      $\nabla\varphi(\mathbf{y}) \in \text{Span}(\mathbf{H})$ for all $\mathbf{y} \in \mathcal{X}$. Defining
+      $\mathbf{x}_\lambda := \mathbf{x} - \lambda\eta\mathbf{H}^\dagger\nabla\varphi(\mathbf{x})$ for all
+      $\lambda \in [0,1]$ and some $\eta > 0$, suppose that for $0 < \mu \leq L$,
+      \[
+        \mathbf{x}_\lambda \in \mathcal{X}, \quad \mu\mathbf{H} \preceq \nabla^2\varphi(\mathbf{x}_\lambda) \preceq L\mathbf{H},
+        \quad \text{for all } \lambda \in [0,1].
+      \]
+      Then, for $\mathbf{x}' := \mathbf{x} - \eta\mathbf{H}^\dagger\nabla\varphi(\mathbf{x})$,
+      \[
+        \|\nabla\varphi(\mathbf{x}')\|_{\mathbf{H}^\dagger} \leq \max\!\left(|1-\eta\mu|,|1-\eta L|\right)\|\nabla\varphi(\mathbf{x})\|_{\mathbf{H}^\dagger}.
+      \]
+    context: "General gradient-norm contraction lemma for a preconditioned gradient step when the Hessian is multiplicatively bounded by a fixed matrix $\\mathbf{H}$. Combined with Lemma 7 to yield Proposition 1."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\varphi$ be a $\nu$-self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$ and for
+      $\nu > 0$. If $\mathbf{x} \in \mathcal{X}$ has $\|\nabla\varphi(\mathbf{x})\|_{\mathbf{x},*} \leq \Delta < \frac{1}{5}$,
+      then letting $\mathbf{x}'$ be defined as in equation (5) with $\eta = 1$, we have
+      \[
+        \|\nabla\varphi(\mathbf{x}')\|_{\mathbf{x}',*} \leq 4\Delta^2.
+      \]
+    context: "Quadratic convergence of Newton's method for self-concordant barriers: each step squares the Newton decrement when it is already small (below $1/5$). Used as the inner loop subroutine in Theorem 1."
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      Proposition 1 gives one way to use stability of the Hessian of a convex function to bound
+      the progress of Newton's method (equation (5)). This is a multiplicative counterpart to the
+      developments in Section 2, Part V, which leveraged additive stability (Lipschitzness) of the
+      Hessian.
+    context: "Conceptual comparison: self-concordance gives multiplicative Hessian stability (local geometry), whereas Lipschitz Hessian (Part V) gives additive stability (global geometry)."
+
+  - type: theorem
+    number: "1"
+    name: "Path following interior-point method"
+    statement: |
+      Let $\varphi$ be a $\nu$-self-concordant barrier for convex, open $\mathcal{X} \subseteq \mathbb{R}^d$ where
+      $\nu \geq 1$. Suppose that we have $\mathbf{x}_0 \in \mathcal{X}$, $t_0 \in \mathbb{R}_{>0}$ such that
+      \[
+        \frac{1}{t_0}\|\mathbf{c}\|_{\mathbf{x}_0,*} + \|\nabla\varphi(\mathbf{x}_0)\|_{\mathbf{x}_0,*} \leq \frac{1}{16}.
+      \]
+      Then for any $\epsilon > 0$, we can compute a point $\hat{\mathbf{x}}$ such that
+      \[
+        \|\mathbf{c} + \epsilon\nabla\varphi(\hat{\mathbf{x}})\|_{\hat{\mathbf{x}}} \leq \epsilon,
+      \]
+      using $T$ evaluations to $\nabla\varphi$ and $\nabla^2\varphi$, and $T$ linear system solves in
+      $d \times d$ matrices, for
+      \[
+        T = O\!\left(\sqrt{\nu}\log\frac{t_0}{\epsilon}\right).
+      \]
+    context: "Main iteration complexity result for path-following interior-point methods. Applied to linear programming over a polytope via the log-barrier of Lemma 6 ($\\nu = n$), giving $O(\\sqrt{n}\\log(t_0/\\epsilon))$ iterations."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      The path following interior-point method described in Theorem 1 is sometimes called a
+      \emph{short step interior-point method}, because it chooses a small update to the $t$ parameter
+      in each iteration to maintain approximate centrality (i.e., a Newton decrement of constant
+      size). There are other frameworks for designing interior-point methods which can perform
+      better in practice, by exploiting the fact that the worst-case analysis of how approximate
+      centrality measures change need not apply in every iteration, so one can sometimes make more
+      progress by using a more adaptive algorithm. Examples include long step, predictor-corrector,
+      and potential reduction interior-point methods.
+    context: "Contextualizes Theorem 1 within the broader landscape of interior-point method variants; distinguishes short-step from long-step and predictor-corrector methods."

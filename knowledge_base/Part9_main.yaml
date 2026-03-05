@@ -1,0 +1,369 @@
+source: "Part9_main.pdf"
+lecture_number: 9
+title: "CS395T: Continuous Algorithms, Part IX — Linear Regression"
+items:
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      Two observations about matrix multiplication:
+      (1) Given an algorithm which can multiply two $d \times d$ matrices in time $O(d^\omega)$,
+      it is straightforward to multiply a $d \times n$ matrix $\mathbf{A}$ by an $n \times d$
+      matrix $\mathbf{B}$ in time $O(nd^{\omega-1})$ by tiling each $n \times d$ matrix with
+      $\approx \frac{n}{d}$ square matrices and applying the $d^\omega$ time algorithm to each
+      block separately.
+      (2) We can use matrix multiplication to invert a full-rank $d \times d$ matrix $\mathbf{A}$
+      in time $O(d^\omega)$. Using the Schur complement formula
+      \[
+        \mathbf{A} = \begin{pmatrix} \mathbf{A}_{11} & \mathbf{A}_{12} \\ \mathbf{A}_{21} & \mathbf{A}_{22} \end{pmatrix}
+        \implies
+        \mathbf{A}^{-1} = \begin{pmatrix} \mathbf{S}^{-1} & -\mathbf{S}^{-1}\mathbf{A}_{12}\mathbf{A}_{22}^{-1} \\ -\mathbf{A}_{22}^{-1}\mathbf{A}_{21}\mathbf{S}^{-1} & \mathbf{A}_{22}^{-1} + \mathbf{A}_{22}^{-1}\mathbf{A}_{21}\mathbf{S}^{-1}\mathbf{A}_{12}\mathbf{A}_{22}^{-1} \end{pmatrix},
+      \]
+      where $\mathbf{S} := \mathbf{A}_{11} - \mathbf{A}_{12}\mathbf{A}_{22}^{-1}\mathbf{A}_{21}$,
+      giving the recursion $\mathcal{I}(d) = 2\mathcal{I}\!\left(\frac{d}{2}\right) + O\!\left(\left(\frac{d}{2}\right)^\omega\right)$,
+      which yields $\mathcal{I}(d) = O(d^\omega)$ for $\omega > 2$.
+    context: "Used to justify that inverting a $d \times d$ matrix and multiplying an $n \times d$ matrix by a $d \times d$ matrix can both be done in $O(nd^{\omega-1})$ time, motivating the search for preconditioners to avoid forming $\mathbf{A}^\top\mathbf{A}$ explicitly."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ be full-rank with $n \ge d$, and let
+      $\mathbf{P} \in \mathbb{S}_{\succ 0}^{d \times d}$ satisfy $\mathbf{K} \preceq \mathbf{P} \preceq \kappa \mathbf{K}$,
+      where $\mathbf{K} := \mathbf{A}^\top \mathbf{A}$. Let $\mathbf{x} \in \mathbb{R}^d$, and let
+      $\mathbf{x}^\star \in \mathbb{R}^d$ minimize (1). Then if
+      $\mathbf{x}' \leftarrow \mathbf{x} - \mathbf{P}^{-1}(\mathbf{K}\mathbf{x} - \mathbf{A}^\top\mathbf{b})$,
+      \[
+        \|\mathbf{x}' - \mathbf{x}^\star\|_{\mathbf{P}} \le \left(1 - \frac{1}{\kappa}\right)\|\mathbf{x} - \mathbf{x}^\star\|_{\mathbf{P}}.
+      \]
+    context: "The core convergence guarantee for preconditioned gradient descent on the least-squares objective. If $\mathbf{P} \approx \mathbf{A}^\top\mathbf{A}$ spectrally with condition number $\kappa$, then $O(\kappa \log \frac{n}{\epsilon})$ iterations suffice to find an $\epsilon$-approximate solution."
+    proof_notes:
+      - label: "Key reduction"
+        content: |
+          \mathbf{x}' - \mathbf{x}^\star = (\mathbf{I}_d - \mathbf{P}^{-1}\mathbf{K})(\mathbf{x} - \mathbf{x}^\star)
+        description: "Reduces the distance-decrease claim to showing $(\mathbf{I}_d - \mathbf{P}^{-1}\mathbf{K})^\top \mathbf{P}(\mathbf{I}_d - \mathbf{P}^{-1}\mathbf{K}) \preceq (1 - \frac{1}{\kappa})^2 \mathbf{P}$."
+      - label: "Expansion"
+        content: |
+          (\mathbf{I}_d - \mathbf{K}\mathbf{P}^{-1})\mathbf{P}(\mathbf{I}_d - \mathbf{P}^{-1}\mathbf{K})
+          = \mathbf{P}^{\frac{1}{2}}\!\left(\mathbf{I}_d - \mathbf{P}^{-\frac{1}{2}}\mathbf{K}\mathbf{P}^{-\frac{1}{2}}\right)^2\!\mathbf{P}^{\frac{1}{2}}
+          \preceq \left(1 - \frac{1}{\kappa}\right)^2 \mathbf{P}
+        description: "The final PSD inequality follows because the assumption $\mathbf{K} \preceq \mathbf{P} \preceq \kappa\mathbf{K}$ implies $\frac{1}{\kappa}\mathbf{I}_d \preceq \mathbf{P}^{-\frac{1}{2}}\mathbf{K}\mathbf{P}^{-\frac{1}{2}} \preceq \mathbf{I}_d$."
+
+  - type: definition
+    number: "1"
+    name: "Oblivious Subspace Embedding (OSE)"
+    statement: |
+      Let $m, n, d \in \mathbb{N}$ with $n \ge d$. We say that a random matrix
+      $\mathbf{\Pi} \in \mathbb{R}^{m \times n}$ is a $(d, \epsilon, \delta)$-oblivious subspace
+      embedding (OSE) if for every fixed $\mathbf{U} \in \mathbb{R}^{n \times d}$ with orthonormal
+      columns,
+      \[
+        \left\|\mathbf{U}^\top \mathbf{\Pi}^\top \mathbf{\Pi} \mathbf{U} - \mathbf{I}_d\right\|_{\mathrm{op}} \le \epsilon,
+      \]
+      with probability $\ge 1 - \delta$ over the randomness of $\mathbf{\Pi}$, independent of $\mathbf{U}$.
+    context: "An OSE approximately preserves all norms of vectors in any fixed $d$-dimensional subspace of $\mathbb{R}^n$. Used to build a preconditioner $\mathbf{P} = \frac{1}{1-\epsilon}\mathbf{A}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{A}$ for Lemma 1."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{\Pi} \in \mathbb{R}^{m \times n}$ be a $(d, \epsilon, \delta)$-OSE. For all
+      full-rank $\mathbf{A} \in \mathbb{R}^{n \times d}$ with $n \ge d$, with probability
+      $\ge 1 - \delta$, we have
+      \[
+        (1-\epsilon)\mathbf{A}^\top\mathbf{A} \preceq \mathbf{A}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{A} \preceq (1+\epsilon)\mathbf{A}^\top\mathbf{A}.
+      \]
+    context: "If $\mathbf{\Pi}$ is an OSE, then $\mathbf{P} = \frac{1}{1-\epsilon}\mathbf{A}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{A}$ satisfies the preconditioner condition in Lemma 1 with $\kappa = \frac{1+\epsilon}{1-\epsilon}$. Enables replacing $\mathbf{A}^\top\mathbf{A}$ with a compressed sketch for preconditioning."
+    proof_notes:
+      - label: "SVD reduction"
+        content: |
+          (1-\epsilon)\mathbf{U}^\top\mathbf{U} \preceq \mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} \preceq (1+\epsilon)\mathbf{U}^\top\mathbf{U}
+          \implies (1-\epsilon)\mathbf{V}\mathbf{\Sigma}\mathbf{U}^\top\mathbf{U}\mathbf{\Sigma}\mathbf{V}^\top \preceq \mathbf{V}\mathbf{\Sigma}\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U}\mathbf{\Sigma}\mathbf{V}^\top \preceq (1+\epsilon)\mathbf{V}\mathbf{\Sigma}\mathbf{U}^\top\mathbf{U}\mathbf{\Sigma}\mathbf{V}^\top
+          \implies (1-\epsilon)\mathbf{A}^\top\mathbf{A} \preceq \mathbf{A}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{A} \preceq (1+\epsilon)\mathbf{A}^\top\mathbf{A}
+        description: "Derives the spectral approximation of $\mathbf{A}^\top\mathbf{A}$ from the OSE condition applied to $\mathbf{U}$ (the left singular matrix of $\mathbf{A}$) by conjugating with $\mathbf{\Sigma}\mathbf{V}^\top$."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      Let $S := \{\mathbf{x} \in \mathbb{R}^d \mid \|\mathbf{x}\|_2 = 1\}$ be the surface of the
+      unit ball in $\mathbb{R}^d$, and let $\epsilon \in (0, 1)$. There exists $N \subset S$ with
+      $|N| \le (1 + \frac{2}{\epsilon})^d$ such that
+      \[
+        \max_{\mathbf{x} \in S} \min_{\mathbf{v} \in N} \|\mathbf{v} - \mathbf{x}\|_2 \le \epsilon.
+      \]
+    context: "Constructs a finite $\epsilon$-net of the unit sphere with at most $(1 + 2/\epsilon)^d$ points. Used to reduce an OSE condition over all unit vectors to a union bound over a finite net."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          \max_{\mathbf{x} \in S} \min_{\mathbf{v} \in N} \|\mathbf{v} - \mathbf{x}\|_2 \le \epsilon
+        description: "The $\epsilon$-net covering property; the size bound follows by a volume argument comparing balls of radius $\epsilon/2$ centered at net points to the ball of radius $1 + \epsilon/2$."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      In the notation of Lemma 3, let $N \subset S$ satisfy (5) for $\epsilon \le \frac{1}{3}$.
+      For all $\mathbf{M} \in \mathbb{S}^{d \times d}$,
+      \[
+        \|\mathbf{M}\|_{\mathrm{op}} \le \frac{1}{1 - 2\epsilon - \epsilon^2} \max_{\mathbf{v} \in N} |\mathbf{v}^\top \mathbf{M} \mathbf{v}|.
+      \]
+    context: "Reduces bounding the operator norm of a symmetric matrix to maximizing a quadratic form over a finite $\epsilon$-net. Combined with Lemma 3, allows union bounds over finitely many vectors when verifying the OSE condition."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{\Pi} \in \mathbb{R}^{m \times n}$ have i.i.d. entries $\sim \mathcal{N}(0, \frac{1}{m})$.
+      Then $\mathbf{\Pi}$ is a $(d, \epsilon, \delta)$-OSE for
+      \[
+        m = O\!\left(\frac{d + \log(\frac{1}{\delta})}{\epsilon^2}\right).
+      \]
+    context: "Existence proof for dense Gaussian OSEs. Shows $\approx d$ rows in $\mathbf{\Pi}$ suffice. Not directly practical since computing $\mathbf{\Pi}\mathbf{A}$ costs $\approx nd^{\omega-1}$, motivating sparse OSEs."
+
+  - type: proposition
+    number: "2"
+    name: ""
+    statement: |
+      Let $\{\tau_{ij}\}_{i \in [m], j \in [n]}$ be $\{0,1\}$-valued random variables such that
+      for all $j \in [n]$, exactly one $\tau_{ij} = 1$ uniformly at random, and $\tau_{ij}$ is
+      independent of $\tau_{i'j'}$ for all $j \ne j'$. Further, let
+      $\{\sigma_{ij}\}_{i \in [m], j \in [n]} \sim_{\mathrm{unif}} \{-1, 1\}$ i.i.d. Then for
+      $\delta, \epsilon \in (0,1)$, if
+      \[
+        m \ge \frac{2d^2}{\delta \epsilon^2},
+      \]
+      the random matrix $\mathbf{\Pi} \in \{-1, 0, 1\}^{m \times n}$ with
+      $\mathbf{\Pi}_{ij} = \tau_{ij}\sigma_{ij}$ for all $i \in [n]$, $j \in [m]$ is a
+      $(d, \epsilon, \delta)$-OSE.
+    context: "Constructs a sparse OSE where each column has exactly one nonzero entry. Key advantage: $\mathbf{\Pi}\mathbf{A}$ can be computed in $O(\mathrm{nnz}(\mathbf{A}))$ time by summing rows. Requires $m \approx d^2$ rows."
+    proof_notes:
+      - label: "(6)"
+        content: |
+          \left[\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d\right]_{ij}
+          = \sum_{r \in [m]} \sum_{\substack{s,t \in [n] \\ s \ne t}} \tau_{rs}\tau_{rt}\sigma_{rs}\sigma_{rt} \mathbf{u}^i_s \mathbf{u}^j_t
+        description: "Explicit formula for the $(i,j)$ entry of $\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d$ after orthonormality cancellation; the starting point for bounding $\|\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d\|_{\mathrm{op}}^2$ via its squared Frobenius norm."
+      - label: "(7)"
+        content: |
+          \mathbb{E}\!\left[\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d\right]_{ii}^2
+          = \frac{2}{m} \sum_{\substack{s,t \in [n] \\ s \ne t}} (\mathbf{u}^i_s \mathbf{u}^i_t)^2
+          \le \frac{2}{m}\|\mathbf{u}^i\|_2^4
+        description: "Diagonal variance bound for the $i = j$ case of (6); factor 2 arises since $(s,t)$ and $(t,s)$ both contribute."
+      - label: "(8)"
+        content: |
+          \mathbb{E}\!\left[\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d\right]_{ij}^2
+          = \frac{1}{m}\sum_{\substack{s,t \in [n] \\ s \ne t}}\!\left(\left(\mathbf{u}^i_s \mathbf{u}^j_t\right)^2 + \left(\mathbf{u}^i_s \mathbf{u}^i_t \mathbf{u}^j_s \mathbf{u}^j_t\right)\right)
+          \le \frac{1}{m}\|\mathbf{u}^i\|_2^2\|\mathbf{u}^j\|_2^2
+        description: "Off-diagonal variance bound ($i \ne j$) for (6); used together with (7) to bound $\mathbb{E}\|\mathbf{U}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{U} - \mathbf{I}_d\|_F^2 \le \frac{2d^2}{m}$, completing the proof via Markov."
+
+  - type: theorem
+    number: "1"
+    name: "Linear regression via OSEs"
+    statement: |
+      Let $\epsilon, \delta \in (0,1)$, $\mathbf{b} \in \mathbb{R}^n$, and let
+      $\mathbf{A} \in \mathbb{R}^{n \times d}$ be full-rank. There is an algorithm which computes
+      $\hat{\mathbf{x}} \in \mathbb{R}^d$ satisfying
+      \[
+        \|\hat{\mathbf{x}} - \mathbf{x}^\star\|_{\mathbf{A}^\top\mathbf{A}} \le \epsilon\|\mathbf{x}^\star\|_{\mathbf{A}^\top\mathbf{A}},
+        \quad \text{for } \mathbf{x}^\star := (\mathbf{A}^\top\mathbf{A})^{-1}\mathbf{A}^\top\mathbf{b},
+      \]
+      with probability $\ge 1 - \delta$ in time
+      \[
+        O\!\left((\mathrm{nnz}(\mathbf{A}) + d^2)\log\!\left(\frac{1}{\epsilon}\right)\log\!\left(\frac{1}{\delta}\right) + d^{\omega+1}\log\!\left(\frac{1}{\delta}\right)\right).
+      \]
+    context: "Main algorithmic result of Section 2. Uses a sparse OSE (Proposition 2) with $m = O(d^2)$ rows to build a preconditioner $\mathbf{P} = 2\mathbf{A}^\top\mathbf{\Pi}^\top\mathbf{\Pi}\mathbf{A}$, invert it in $O(d^{\omega+1})$ time, then run $O(\kappa \log \frac{n}{\epsilon})$ preconditioned gradient steps each costing $O(\mathrm{nnz}(\mathbf{A}) + d^2)$."
+    proof_notes:
+      - label: "Algorithm outline"
+        content: |
+          \mathbf{x}_0 \leftarrow \mathbf{0}_d, \quad \mathbf{x}_{t+1} \leftarrow \mathbf{x}_t - \mathbf{P}^{-1}\!\left(\mathbf{A}^\top\mathbf{A}\mathbf{x}_t - \mathbf{A}^\top\mathbf{b}\right) \quad \forall\, t \ge 0
+        description: "Preconditioned gradient descent iterates for $T = O(\kappa \log \frac{n}{\epsilon})$ steps; evaluate $\|\mathbf{A}\hat{\mathbf{x}} - \mathbf{b}\|_2^2$ for each output and take the best."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      Theorem 1 establishes a strong baseline for linear regression. The solution (3) can be
+      obtained in time $\approx \mathrm{nnz}(\mathbf{A}) + d^{\omega+1}$ (omitting logarithmic
+      factors). The row count of $\approx d^2$ in Proposition 2 is tight for 1-sparse columns
+      ($\Omega(d^2)$ rows are necessary [NN13b]). Using $s$-sparse columns with $s = O(\log_b(d/\delta)/\epsilon)$
+      and $m = O(bd\log(d/\delta)/\epsilon^2)$ (OSNAPs [Coh16]) achieves $s = O(1)$ and
+      $m = O(d\log^{1+c}(d/\delta))$ for $\epsilon = \Theta(1)$, improving Theorem 1's runtime to
+      $\approx \mathrm{nnz}(\mathbf{A}) + d^\omega$. [CSWZ23] gave a distribution over $\mathbf{\Pi}$
+      that is a $(d, \Theta(1), \Theta(1))$-OSE, $\mathbf{\Pi}$ has $O(d)$ rows, and can be applied
+      in time $O(\mathrm{nnz}(\mathbf{A}) + d^\omega)$, essentially closing the question.
+    context: "Summarizes the state-of-the-art on OSE row counts and the resulting linear regression runtimes, noting that the $\log$ factors in Theorem 1 have since been removed."
+
+  - type: definition
+    number: "2"
+    name: "Leverage scores"
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ for $n \ge d$ have rows $\{\mathbf{a}_i\}_{i \in [n]} \subset \mathbb{R}^d$.
+      We let
+      \[
+        \tau_i(\mathbf{A}) := \mathbf{a}_i^\top (\mathbf{A}^\top\mathbf{A})^\dagger \mathbf{a}_i
+      \]
+      be the leverage score of the $i^{\mathrm{th}}$ row of $\mathbf{A}$.
+    context: "Measures the relative importance of each row in composing the spectrum of $\mathbf{A}^\top\mathbf{A}$. Used to define sampling probabilities for spectral sparsification. A row with leverage score 1 is orthogonal to all other rows; a row with score 0 is in the span of others."
+
+  - type: remark
+    number: "3"
+    name: ""
+    statement: |
+      One significant potential advantage of the preconditioner choice
+      $\mathbf{P} = \mathbf{A}^\top\mathbf{W}\mathbf{A} = \sum_{i \in [n]} w_i \mathbf{a}_i \mathbf{a}_i^\top$
+      (for diagonal $\mathbf{W} = \mathbf{diag}(\mathbf{w}) \in \mathbb{S}_{\ge 0}^{n \times n}$)
+      is that it approximates $\mathbf{A}^\top\mathbf{A}$ with $\mathbf{B}^\top\mathbf{B}$ for
+      $\mathbf{B} = \mathbf{W}^{1/2}\mathbf{A}$, which preserves the row structure of $\mathbf{A}$
+      (e.g., sparsity patterns and more). This is desirable because sparse linear system solvers
+      can exploit sparsity via careful choice of "pivot orders," affecting the order in which rows
+      are eliminated.
+    context: "Motivates spectral sparsification preconditioners: by reweighting rows of $\mathbf{A}$ rather than applying a dense embedding, the preconditioner $\mathbf{P}$ preserves structural properties (sparsity, graph Laplacian structure, etc.) that faster linear system solvers can exploit."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      In the notation of Definition 2, the following properties hold.
+      1. $\sum_{i \in [n]} \tau_i(\mathbf{A}) = \mathrm{rank}(\mathbf{A})$.
+      2. $\tau_i(\mathbf{A}) \in [0,1]$ for all $i \in [n]$.
+    context: "Basic properties of leverage scores. Property 1 gives a global budget: the sum of leverage scores equals the rank. Property 2 bounds each individual score, ensuring they form a valid (sub-)probability distribution after normalization."
+    proof_notes:
+      - label: "Property 1 proof"
+        content: |
+          \sum_{i \in [n]} \tau_i(\mathbf{A})
+          = \sum_{i \in [n]} \langle \mathbf{a}_i \mathbf{a}_i^\top, (\mathbf{A}^\top\mathbf{A})^\dagger \rangle
+          = \langle \mathbf{A}^\top\mathbf{A}, (\mathbf{A}^\top\mathbf{A})^\dagger \rangle
+          = \dim(\mathrm{Span}(\mathbf{A}))
+        description: "Trace inner product identity: $\sum_i \tau_i(\mathbf{A}) = \mathrm{tr}((\mathbf{A}^\top\mathbf{A})^\dagger \mathbf{A}^\top\mathbf{A}) = \mathrm{rank}(\mathbf{A})$."
+      - label: "(10)"
+        content: |
+          \|\mathbf{v}_i\|_2^2 = \left\|(\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}\mathbf{a}_i\right\|_2^2 = \tau_i(\mathbf{A}),
+          \quad \sum_{i \in [n]} \mathbf{v}_i \mathbf{v}_i^\top = (\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}\mathbf{A}^\top\mathbf{A}(\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}
+        description: "Identifies $\tau_i(\mathbf{A})$ as the squared norm of the isotropically-normalized row $\mathbf{v}_i = (\mathbf{A}^\top\mathbf{A})^\dagger \mathbf{a}_i$ (well, $\mathbf{v}_i = (\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}\mathbf{a}_i$ actually gives $\|\mathbf{v}_i\|_2^2 = \tau_i$); the sum of outer products gives the projection matrix onto $\mathrm{Span}(\mathbf{A}^\top)$."
+
+  - type: proposition
+    number: "3"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ have rows $\{\mathbf{a}_i\}_{i \in [n]} \subset \mathbb{R}^d$,
+      and let $\boldsymbol{\tau} \in \mathbb{R}_{\ge 0}^n$ have $\boldsymbol{\tau}_i = \tau_i(\mathbf{A})$ for all
+      $i \in [n]$. Define $\mathbf{p} = \frac{\boldsymbol{\tau}}{\|\boldsymbol{\tau}\|_1} \in \Delta^n$, and for
+      $K \in \mathbb{N}$, let
+      \[
+        \mathbf{P} := \sum_{k \in [K]} \frac{1}{K\mathbf{p}_{i_k}} \mathbf{a}_{i_k}\mathbf{a}_{i_k}^\top, \quad \text{for } i_k \sim \mathbf{p},
+      \]
+      i.i.d. for all $k \in [K]$. Then for $\epsilon, \delta \in (0,1)$, if
+      $K \ge \frac{3 \cdot \mathrm{rank}(\mathbf{A})}{\epsilon^2}\log\!\left(\frac{2d}{\delta}\right)$,
+      with probability $\ge 1 - \delta$,
+      \[
+        (1-\epsilon)\mathbf{A}^\top\mathbf{A} \preceq \mathbf{P} \preceq (1+\epsilon)\mathbf{A}^\top\mathbf{A}.
+      \]
+    context: "Leverage score sampling builds a spectral sparsifier of $\mathbf{A}^\top\mathbf{A}$ using only $K = O(\mathrm{rank}(\mathbf{A}) \cdot \epsilon^{-2} \log d)$ rank-one terms. Matches the OSE row count of Proposition 1 up to lower-order terms, but retains the row structure of $\mathbf{A}$."
+    proof_notes:
+      - label: "(11)"
+        content: |
+          \mathbf{P} := \sum_{k \in [K]} \frac{1}{K\mathbf{p}_{i_k}} \mathbf{a}_{i_k}\mathbf{a}_{i_k}^\top
+        description: "Definition of the leverage-score-weighted estimator; each sample contributes an importance-weighted rank-one term so that $\mathbb{E}[\mathbf{P}] = \mathbf{A}^\top\mathbf{A}$."
+      - label: "(12)"
+        content: |
+          (1-\epsilon)\mathbf{A}^\top\mathbf{A} \preceq \mathbf{P} \preceq (1+\epsilon)\mathbf{A}^\top\mathbf{A}
+        description: "The spectral approximation guarantee; proved by applying the matrix Chernoff bound (Theorem 12, Part VI) to the sum of independent PSD random matrices $\mathbf{Z}_k$."
+      - label: "(13)"
+        content: |
+          (1-\epsilon)\mathbf{\Pi} \preceq (\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}\mathbf{P}(\mathbf{A}^\top\mathbf{A})^{\frac{1}{2}}
+          = \sum_{k \in [K]} \frac{1}{K\mathbf{p}_{i_k}} \mathbf{v}_{i_k}\mathbf{v}_{i_k}^\top \preceq (1+\epsilon)\mathbf{\Pi}
+        description: "Equivalent reformulation of (12) after conjugating by $(\mathbf{A}^\top\mathbf{A})^{1/2}$; $\mathbf{\Pi}$ is the projection onto $\mathrm{Span}(\mathbf{A}^\top)$. The matrix Chernoff bound applies to the normalized summands $\mathbf{Z}_k = \frac{1}{K\mathbf{p}_{i_k}}\mathbf{v}_{i_k}\mathbf{v}_{i_k}^\top$."
+      - label: "(14)"
+        content: |
+          \max_{i \in [n]} \frac{1}{K\mathbf{p}_i}\left\|\mathbf{v}_i \mathbf{v}_i^\top\right\|_{\mathrm{op}}
+          = \max_{i \in [n]} \frac{\|\boldsymbol{\tau}\|_1}{K\tau_i}\|\mathbf{v}_i\|_2^2
+          = \frac{\|\boldsymbol{\tau}\|_1}{K}
+        description: "Computes the maximum operator norm of a single summand $\mathbf{Z}_k$, which serves as the $R$ parameter in the matrix Chernoff bound; using $\|\boldsymbol{\tau}\|_1 = \mathrm{rank}(\mathbf{A})$ gives $R = \frac{\mathrm{rank}(\mathbf{A})}{K}$, and the sample complexity follows."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of Proposition 3, suppose instead that $\boldsymbol{\tau} \in \mathbb{R}_{\ge 0}^n$
+      has $\tau_i \ge \tau_i(\mathbf{A})$ for all $i \in [n]$, and again define
+      $\mathbf{p} = \frac{\boldsymbol{\tau}}{\|\boldsymbol{\tau}\|_1}$. Then, defining $\mathbf{P}$ as
+      in (11) with respect to the new sampling probabilities $\mathbf{p}$, if
+      $K \ge \frac{3\|\boldsymbol{\tau}\|_1}{\epsilon^2}\log\!\left(\frac{2d}{\delta}\right)$,
+      the conclusion (12) holds with probability $\ge 1 - \delta$.
+    context: "Allows using overestimates of leverage scores for sampling. As long as the overestimates are not too large (i.e., $\|\boldsymbol{\tau}\|_1$ is reasonable compared to $\mathrm{rank}(\mathbf{A})$), one can still build a good preconditioner. Breaks the chicken-and-egg problem of needing $(\mathbf{A}^\top\mathbf{A})^\dagger$ to compute leverage scores."
+
+  - type: remark
+    number: "4"
+    name: ""
+    statement: |
+      Matrices of the form $\mathbf{P} = \mathbf{A}^\top\mathbf{W}\mathbf{A}$ which approximate
+      $\mathbf{A}^\top\mathbf{A}$ in the sense of (12), where $\mathrm{nnz}(\mathbf{w}) \ll n$,
+      are often called spectral sparsifiers. Proposition 3 shows that spectral sparsifiers exist
+      for all matrices $\mathbf{A} \in \mathbb{R}^{n \times d}$ with $\mathrm{nnz}(\mathbf{w}) = O(\frac{d\log d}{\epsilon^2})$.
+      [BSS14] proved that $\mathrm{nnz}(\mathbf{w}) = O(\frac{d}{\epsilon^2})$ suffices using a
+      careful analysis of an iterative process guided by potential functions, optimal up to a small
+      constant factor.
+    context: "Contextualizes Proposition 3 in the literature on spectral sparsification; the $O(d\log d/\epsilon^2)$ bound from leverage score sampling is nearly optimal, and [BSS14]'s $O(d/\epsilon^2)$ bound is tight."
+
+  - type: definition
+    number: "3 (implicit)"
+    name: "Partial leverage scores"
+    statement: |
+      For $S \subseteq [n]$, let $\mathbf{A}_{S,:} \in \mathbb{R}^{|S| \times d}$ be the submatrix
+      of $\mathbf{A}$'s rows indexed by $S$. Define
+      \[
+        \tau_i^S(\mathbf{A}) := \mathbf{a}_i^\top (\mathbf{A}_{S,:}^\top \mathbf{A}_{S,:})^\dagger \mathbf{a}_i.
+      \]
+    context: "The leverage score of row $i$ relative to the submatrix $\mathbf{A}_{S,:}$ rather than all of $\mathbf{A}$. Always satisfies $\tau_i^S(\mathbf{A}) \ge \tau_i(\mathbf{A})$, making it a valid overestimate for use in Corollary 1. Used as a computable surrogate for exact leverage scores in the recursive sampling algorithm."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      For $k \in [n]$, let $S$ be a uniformly random subset of $[n]$ of size $k$. Then for
+      $\mathbf{A} \in \mathbb{R}^{n \times d}$,
+      \[
+        \mathbb{E}\!\left[\sum_{i \in [n]} \tau_i^{S \cup \{i\}}(\mathbf{A})\right] \le \frac{nd}{k}.
+      \]
+      Moreover, $\tau_i^S(\mathbf{A}) \ge \tau_i(\mathbf{A})$ for any $S \subseteq [n]$.
+    context: "Shows that the expected sum of partial leverage score overestimates $\tau_i^{S \cup \{i\}}(\mathbf{A})$ is $O(nd/k)$ for a random subset $S$ of size $k$. Used in the recursive leverage score sampling algorithm (Theorem 2) to bound the total weight of the overestimates at each recursion level."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      Let $S \subseteq [n]$ and $i \notin S$. Then
+      $\tau_i^{S \cup \{i\}}(\mathbf{A}) = \frac{\tau_i^S(\mathbf{A})}{1 + \tau_i^S(\mathbf{A})}$.
+      Moreover, given a value $\tau \in [\tau_i^S(\mathbf{A}), (1+\epsilon)\tau_i^S(\mathbf{A})]$
+      for $\epsilon \in (0,1)$, we have
+      $\frac{\tau}{1+\tau} \in [\tau_i^{S \cup \{i\}}(\mathbf{A}), (1+\epsilon)\tau_i^{S \cup \{i\}}(\mathbf{A})]$.
+    context: "Gives a closed-form update for partial leverage scores when adding a single row to $S$, via the Sherman-Morrison formula. Allows efficient computation of $\tau_i^{S \cup \{i\}}(\mathbf{A})$ from $\tau_i^S(\mathbf{A})$ without recomputing the pseudoinverse."
+    proof_notes:
+      - label: "(16)"
+        content: |
+          \left(\mathbf{M} + \mathbf{u}\mathbf{u}^\top\right)^\dagger
+          = \mathbf{M}^\dagger - \frac{\mathbf{M}^\dagger \mathbf{u} \mathbf{u}^\top \mathbf{M}^\dagger}{1 + \mathbf{u}^\top \mathbf{M}^\dagger \mathbf{u}}
+        description: "Sherman-Morrison formula for pseudoinverses (for $\mathbf{M} \in \mathbb{S}_{\ge 0}^{d \times d}$ and $\mathbf{u} \in \mathbb{R}^d$); applied with $\mathbf{M} = \mathbf{A}_{S,:}^\top\mathbf{A}_{S,:}$ and $\mathbf{u} = \mathbf{a}_i$ to derive the leverage score update."
+
+  - type: theorem
+    number: "2"
+    name: "Linear regression via recursive row sampling"
+    statement: |
+      Let $\epsilon, \delta \in (0,1)$, $\mathbf{b} \in \mathbb{R}^n$, and let
+      $\mathbf{A} \in \mathbb{R}^{n \times d}$ be full-rank. There is an algorithm which computes
+      $\hat{\mathbf{x}} \in \mathbb{R}^d$ satisfying (3) with probability $\ge 1 - \delta$ in time
+      \[
+        O\!\left((\mathrm{nnz}(\mathbf{A}) + d^\omega)\!\left(\log^2(n) + \log\!\left(\frac{1}{\epsilon}\right)\right)\log\!\left(\frac{1}{\delta}\right)\right).
+      \]
+    context: "Main algorithmic result of Section 3. Uses recursive leverage score sampling to build a spectral sparsifier preconditioner of the form (9) in $O((\mathrm{nnz}(\mathbf{A}) + d^\omega)\log^2 n)$ time, matching (up to log factors) the runtime of Theorem 1 while preserving the row structure of $\mathbf{A}$."
+    proof_notes:
+      - label: "(17)"
+        content: |
+          (\mathbf{A}^\top\mathbf{W}\mathbf{A})^\dagger \preceq \mathbf{P}^2 \preceq \exp\!\left(\frac{r}{R}\right)(\mathbf{A}^\top\mathbf{W}\mathbf{A})^\dagger
+        description: "The recursive task at round $r$: given $\mathbf{W} = \mathbf{diag}(\mathbf{w})$ with $\mathrm{nnz}(\mathbf{w}) \le k$, produce a matrix $\mathbf{P}$ satisfying this spectral condition, conditioned on event $\mathcal{E}$."
+      - label: "(18)"
+        content: |
+          \mathbf{a}_i^\top (\mathbf{A}^\top\mathbf{W}\mathbf{A})^\dagger \mathbf{a}_i
+          \le 2\mathbf{a}_i^\top \mathbf{P}\mathbf{G}^\top\mathbf{G}\mathbf{P}\mathbf{a}_i
+          \le 12\mathbf{a}_i^\top (\mathbf{A}^\top\mathbf{W}\mathbf{A})^\dagger \mathbf{a}_i
+        description: "Leverage score overestimate via a random Gaussian sketch: $\mathbf{G} \sim \mathcal{N}(0, \frac{1}{k})^{k \times d}$ gives $2\mathbf{a}_i^\top\mathbf{P}\mathbf{G}^\top\mathbf{G}\mathbf{P}\mathbf{a}_i \approx \tau_i^{\mathbf{W}}(\mathbf{A})$ within a factor of 12, using the condition (17) and JL. Computing all $2\mathbf{a}_i^\top\mathbf{P}\mathbf{G}^\top\mathbf{G}\mathbf{P}\mathbf{a}_i$ takes $O((\mathrm{nnz}(\mathbf{A}) + d^2)\log n)$ time."

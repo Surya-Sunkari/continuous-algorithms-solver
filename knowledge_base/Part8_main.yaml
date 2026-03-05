@@ -1,0 +1,256 @@
+source: "Part8_main.pdf"
+lecture_number: 8
+title: "CS395T: Continuous Algorithms, Part VIII — Matrix multiplicative weights"
+items:
+  - type: definition
+    number: ""
+    name: "Spectraplex"
+    statement: |
+      The spectraplex is the set
+      \[
+        \Delta^{d \times d} := \left\{ \mathbf{X} \in \mathbb{S}_{\succ \mathbf{0}}^{d \times d} \mid \operatorname{Tr}(\mathbf{X}) = 1 \right\}.
+      \]
+      Equivalently, $\Delta^{d \times d}$ is the set of all matrices expressible as $\mathbf{U}\boldsymbol{\Lambda}\mathbf{U}^\top$
+      where $\mathbf{U} \in \mathbb{R}^{d \times d}$ is unitary and diagonal matrix $\boldsymbol{\Lambda}$ has diagonal
+      entries in $\Delta^d$. The action set for MMW is $\mathcal{X} := \Delta^{d \times d}$.
+    context: "The spectraplex is the matrix analog of the probability simplex; it is the domain over which MMW minimizes regret."
+
+  - type: definition
+    number: "(2)"
+    name: "Quantum entropy"
+    statement: |
+      The quantum entropy (or von Neumann entropy) regularizer is defined for $\mathbf{X} \in \mathcal{X}$ by
+      \[
+        \varphi(\mathbf{X}) := \langle \mathbf{X}, \log(\mathbf{X}) \rangle = \sum_{i \in [d]} \lambda_i(\mathbf{X}) \log \lambda_i(\mathbf{X}),
+      \]
+      where $\log(\mathbf{X})$ is the matrix logarithm (spectral analog of the entropy regularizer).
+      The dual is
+      \[
+        \varphi^*(\mathbf{Y}) := \log\!\left(\sum_{i \in [d]} \exp(\lambda_i(\mathbf{Y}))\right) = \log(\operatorname{Tr}\exp(\mathbf{Y})), \quad \text{for all } \mathbf{Y} \in \mathbb{S}^{d \times d},
+      \]
+      and
+      \[
+        \nabla \varphi^*(\mathbf{Y}) = \frac{\exp(\mathbf{Y})}{\operatorname{Tr}\exp(\mathbf{Y})} \in \mathcal{X} = \Delta^{d \times d}.
+      \]
+    context: "Used as the strongly convex regularizer for the MMW algorithm (mirror descent over the spectraplex). The dual $\varphi^*$ is the log-sum-exp of eigenvalues."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          \varphi^*(\mathbf{Y}) = \log\!\left(\sum_{i \in [d]} \exp(\lambda_i(\mathbf{Y}))\right) = \log(\operatorname{Tr}\exp(\mathbf{Y})), \quad \mathbf{Y} \in \mathbb{S}^{d \times d}.
+        description: "Closed form of the Fenchel dual of quantum entropy, used when computing mirror descent updates."
+      - label: "(4)"
+        content: |
+          \nabla \varphi^*(\mathbf{Y}) = \frac{\exp(\mathbf{Y})}{\operatorname{Tr}\exp(\mathbf{Y})} \in \mathcal{X} = \Delta^{d \times d}.
+        description: "Gradient of the dual quantum entropy; shows that Bregman projection onto the spectraplex yields a matrix exponential update."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Define $\varphi^*$ as in (3). Then for all $\mathbf{Y}, \mathbf{M} \in \mathbb{S}^{d \times d}$,
+      \[
+        \nabla^2 \varphi^*(\mathbf{Y})[\mathbf{M}, \mathbf{M}] \leq \langle \nabla \varphi^*(\mathbf{Y}), \mathbf{M}^2 \rangle \leq \|\mathbf{M}\|_{\mathrm{op}}^2.
+      \]
+    context: "Provides a tight upper bound on the Hessian of $\\varphi^*$; used to establish smoothness of $\\varphi^*$ and strong convexity of $\\varphi$. The left inequality is the substantive one; the right follows from matrix Holder."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          \nabla^2 r^*(\mathbf{Y})[\mathbf{M}, \mathbf{M}] = \nabla^2 \varphi^*_{\mathrm{vec}}(\boldsymbol{\lambda})\!\left[\operatorname{diagvec}\!\left(\widetilde{\mathbf{M}}\right), \operatorname{diagvec}\!\left(\widetilde{\mathbf{M}}\right)\right] + \langle \mathbf{A}, \mathbf{M} \circ \mathbf{M} \rangle,
+        description: "Lewis-Sendov formula decomposing the Hessian of a spectral function into a vector-entropy Hessian term and a Hadamard-product term; the starting point for bounding $\\nabla^2 \\varphi^*$."
+      - label: "(6)"
+        content: |
+          \nabla^2 \varphi^*_{\mathrm{vec}}(\boldsymbol{\lambda})\!\left[\operatorname{diagvec}\!\left(\widetilde{\mathbf{M}}\right), \operatorname{diagvec}\!\left(\widetilde{\mathbf{M}}\right)\right]
+          \leq \frac{1}{N(\boldsymbol{\lambda})} \sum_{i \in [d]} \exp(\lambda_i) \widetilde{M}_{ii}^2.
+        description: "Bound on the diagonal (vector-entropy Hessian) contribution to $\\nabla^2 \\varphi^*$."
+      - label: "(7)"
+        content: |
+          \mathbf{A}_{ij} \widetilde{M}_{ij}^2 \leq \frac{\exp(\lambda_i) + \exp(\lambda_j)}{2N(\boldsymbol{\lambda})} \widetilde{M}_{ij}^2, \quad i \neq j,
+        description: "Bound on the off-diagonal (Hadamard) contribution, obtained via the inequality $\\frac{\\exp(a)-\\exp(b)}{a-b} \\leq \\frac{\\exp(a)+\\exp(b)}{2}$."
+      - label: "(8)"
+        content: |
+          \nabla^2 \varphi^*(\mathbf{Y})[\mathbf{M},\mathbf{M}]
+          = \left\langle \mathbf{M}, \nabla\!\left(\frac{\langle \mathbf{M}, \exp(\mathbf{Y})\rangle}{\operatorname{Tr}\exp(\mathbf{Y})}\right) \right\rangle
+          \leq \left\langle \mathbf{M}, \frac{\nabla(\langle \mathbf{M}, \exp(\mathbf{Y})\rangle)}{\operatorname{Tr}\exp(\mathbf{Y})} \right\rangle,
+        description: "Alternative (Nesterov) proof of Lemma 1 upper bound using the variance form of the Hessian of $\\varphi^*$."
+      - label: "(9)"
+        content: |
+          \langle \mathbf{M}, \nabla(\langle \mathbf{M}, \exp(\mathbf{Y})\rangle)\rangle
+          = \sum_{k \geq 1} \sum_{i=0}^{k-1} \frac{1}{k!} \langle \mathbf{M}, \mathbf{Y}^i \mathbf{M} \mathbf{Y}^{k-1-i}\rangle
+          \leq \sum_{k \geq 1} \frac{1}{(k-1)!} \langle \mathbf{M}^2, \mathbf{Y}^{k-1}\rangle = \langle \mathbf{M}^2, \exp(\mathbf{Y})\rangle,
+        description: "Key inequality in the Nesterov proof, using Lemma 7 (Part VI) to go from the expansion of $\\nabla\\langle \\mathbf{M}, \\exp(\\mathbf{Y})\\rangle$ to $\\langle \\mathbf{M}^2, \\exp(\\mathbf{Y})\\rangle$."
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      In the special case of quantum entropy, there is an alternative proof of Lemma 1 that does not go
+      through the Lewis-Sendov formula, due to Nesterov [Nes07]. Using (4),
+      \[
+        \langle \nabla \varphi^*(\mathbf{Y}), \mathbf{M} \rangle = \frac{\langle \mathbf{M}, \exp(\mathbf{Y})\rangle}{\operatorname{Tr}\exp(\mathbf{Y})},
+      \]
+      from which the Hessian bound follows by a Taylor expansion argument and Lemma 7 (Part VI).
+    context: "Provides a self-contained, more elementary proof of the Hessian bound for quantum entropy specifically, avoiding the Lewis-Sendov formula."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      The quantum entropy $\varphi$ in (2) is 1-strongly convex in $\|\cdot\|_{\mathrm{tr}}$ over $\Delta^{d \times d}$.
+    context: "Follows from Lemma 1 and the smoothness-strong convexity duality characterization (Lemma 4, Part III). Enables application of mirror descent with the quantum entropy regularizer."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{X}_0 := \frac{1}{d}\mathbf{I}_d \in \mathcal{X}$. Then $\mathbf{X}_0$ minimizes $\varphi$ over $\mathcal{X}$, and
+      \[
+        D_\varphi(\mathbf{X} \| \mathbf{X}_0) \leq \varphi(\mathbf{X}) - \varphi(\mathbf{X}_0) \leq \log d \quad \text{for all } \mathbf{X} \in \mathcal{X}.
+      \]
+    context: "Establishes the maximally mixed state as the entropy minimizer over the spectraplex and bounds the initial Bregman divergence by $\\log d$. Used to initialize MMW and obtain the $\\log d$ regret term."
+
+  - type: theorem
+    number: "1"
+    name: "Matrix multiplicative weights"
+    statement: |
+      Let $\{\mathbf{G}_t\}_{0 \leq t < T} \subseteq \mathbb{S}^{d \times d}$ satisfy $\|\mathbf{G}_t\|_{\mathrm{op}} \leq L$ for all $0 \leq t < T$.
+      Let $\mathbf{X}_0 \leftarrow \frac{1}{d}\mathbf{I}_d \in \mathcal{X}$, and iteratively define
+      \[
+        \mathbf{X}_{t+1} \leftarrow \nabla \varphi^*(\nabla \varphi(\mathbf{X}_t) - \eta \mathbf{G}_t), \quad \text{for all } 0 \leq t < T,
+      \]
+      where $\varphi$ is quantum entropy (2). We have
+      \[
+        \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{G}_t, \mathbf{X}_t - \mathbf{X}^* \rangle \leq \frac{\log d}{\eta T} + \frac{\eta L^2}{2}, \quad \text{for all } \mathbf{X}^* \in \mathcal{X}.
+      \]
+      In particular, choosing $\eta = \frac{1}{L}\!\left(\frac{2\log d}{T}\right)^{1/2}$, the right-hand side is $L\!\left(\frac{2\log d}{T}\right)^{1/2}$.
+    context: "The main MMW regret bound. Follows directly from applying Corollary 1 and Lemma 2 in the context of mirror descent (Theorem 2, Part III). The dual update is equivalent to the matrix exponential update $\\mathbf{X}_t = \\exp(\\mathbf{S}_t)/\\operatorname{Tr}\\exp(\\mathbf{S}_t)$."
+    proof_notes:
+      - label: "(10)"
+        content: |
+          \mathbf{X}_{t+1} \leftarrow \nabla \varphi^*(\nabla \varphi(\mathbf{X}_t) - \eta \mathbf{G}_t), \quad 0 \leq t < T.
+        description: "The primal form of the MMW update; equivalent to the dual recursion $\\mathbf{S}_{t+1} = \\mathbf{S}_t - \\eta\\mathbf{G}_t$ with $\\mathbf{X}_t = \\nabla\\varphi^*(\\mathbf{S}_t)$."
+      - label: "(11)"
+        content: |
+          \mathbf{S}_0 \leftarrow \mathbf{0}_d, \quad \mathbf{S}_{t+1} \leftarrow \mathbf{S}_t - \eta \mathbf{G}_t, \quad 0 \leq t < T.
+        description: "Dual (sum-of-losses) form of the MMW recursion; $\\mathbf{S}_t = -\\eta\\sum_{0 \\leq s < t}\\mathbf{G}_s$."
+      - label: "(12)"
+        content: |
+          \mathbf{X}_t \leftarrow \frac{\exp(\mathbf{S}_t)}{\operatorname{Tr}\exp(\mathbf{S}_t)}
+          = \frac{\exp\!\left(-\eta\sum_{0 \leq s < t}\mathbf{G}_s\right)}{\operatorname{Tr}\exp\!\left(-\eta\sum_{0 \leq s < t}\mathbf{G}_s\right)}.
+        description: "Explicit matrix exponential form of the MMW iterate; shows each iterate is a softmax-normalized matrix exponential of the cumulative loss."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      For $\mathbf{G} \in \mathbb{S}_{\preceq \mathbf{0}}^{d \times d}$ satisfying $\|\mathbf{G}\|_{\mathrm{op}} \leq \frac{1}{2}$, and all $\mathbf{Y} \in \mathbb{S}^{d \times d}$,
+      \[
+        D_{\varphi^*}(\mathbf{Y} + \mathbf{G} \| \mathbf{Y}) \leq \|\mathbf{G}\|_{\mathrm{op}} \langle \mathbf{G}, \nabla \varphi^*(\mathbf{Y})\rangle.
+      \]
+    context: "A Bregman divergence bound used in the alternative (local norm) proof of the MMW regret guarantee. Requires that the loss matrices are negative semidefinite and have operator norm at most $1/2$."
+
+  - type: theorem
+    number: "2"
+    name: "Local norm MMW"
+    statement: |
+      In the setting of Theorem 1, suppose $\{-\mathbf{G}_t\}_{0 \leq t < T} \subseteq \mathbb{S}_{\succeq \mathbf{0}}^{d \times d}$ and
+      $\eta L \leq \frac{1}{2}$. Then, following the notation in (11),
+      \[
+        \frac{1}{T} \sum_{0 \leq t < T} \langle \mathbf{G}_t, \mathbf{X}_t - \mathbf{X}^* \rangle
+        \leq \frac{\log d}{\eta T} - \frac{\eta}{T} \sum_{0 \leq t < T} \|\mathbf{G}_t\|_{\mathrm{op}} \langle \mathbf{G}_t, \mathbf{X}_t \rangle.
+      \]
+    context: "A tighter, data-dependent (local norm) regret bound for MMW when loss matrices are negative semidefinite. Useful when the empirical variance of losses is small; gives significantly tighter bounds than Theorem 1 in applications like robust covariance estimation."
+
+  - type: fact
+    number: "1"
+    name: ""
+    statement: |
+      In the context of the simplex-spectraplex game (13), and following the notation (14), (15), (16),
+      \[
+        \sup_{\mathbf{z} \in \mathcal{Z}} \|\mathbf{g}(\mathbf{z})\|_* \leq \sqrt{2} L,
+      \]
+      where $L := \max_{i \in [n]} \|\mathbf{A}_i\|_{\mathrm{op}}$.
+    context: "Regularity bound for the simplex-spectraplex game operator; used to apply the mirror descent iteration count bound. Extends Lemma 5, Part IV to the matrix setting."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{v} \in \mathbb{R}^n$ satisfy $\|\mathbf{v}\|_1 \leq \rho$, and let $\epsilon, \delta \in (0,1)$. We can compute a value $V$
+      such that with probability $\geq 1 - \delta$,
+      \[
+        V \in \left[(1-\epsilon)\operatorname{Tr}\exp(\mathcal{A}(\mathbf{v})),\ (1+\epsilon)\operatorname{Tr}\exp(\mathcal{A}(\mathbf{v}))\right],
+      \]
+      in time
+      \[
+        O\!\left(\!\left(\sum_{i \in [n]} \mathcal{T}_{\mathrm{mv}}(\mathbf{A}_i)\right) \cdot \frac{L\rho \log\!\left(\frac{1}{\epsilon}\right) \log\!\left(\frac{d}{\delta}\right)}{\epsilon^2}\right).
+      \]
+    context: "Randomized algorithm to approximate $\\operatorname{Tr}\\exp(\\mathcal{A}(\\mathbf{v}))$ to multiplicative accuracy. Uses polynomial approximation of exp on $[-R,R]$ followed by a Johnson-Lindenstrauss sketch to reduce to row-norm computations."
+    proof_notes:
+      - label: "(23)"
+        content: |
+          p(t)^2 \in \left[\left(1 - \frac{\epsilon}{3}\right)\exp(t),\ \left(1+\frac{\epsilon}{3}\right)\exp(t)\right], \quad t \in [-R, R].
+        description: "Key approximation guarantee: the square of the degree-$\\Delta$ polynomial $p$ multiplicatively approximates $\\exp$ on $[-R,R]$, so $\\operatorname{Tr}(p(\\mathbf{M})^2) \\approx \\operatorname{Tr}\\exp(\\mathbf{M})$."
+      - label: "(24)"
+        content: |
+          \sum_{i \in [d]} \|\mathbf{G}\mathbf{r}_i\|_2^2 = \|\mathbf{G}p(\mathbf{M})\|_F^2 = \operatorname{Tr}\!\left(\mathbf{G}p(\mathbf{M})^2\mathbf{G}^\top\right)
+          = \operatorname{Tr}\!\left(\mathbf{G}p(\mathbf{M})\mathbf{G}^\top\right) = \|p(\mathbf{M})\mathbf{G}^\top\|_F^2 = \sum_{j \in [k]} \|p(\mathbf{M})\mathbf{g}_j\|_2^2.
+        description: "Cyclic trace identity allowing the JL sketch computation to be reorganized as $k$ matrix-vector products with $p(\\mathbf{M})$ applied to random sketch rows."
+
+  - type: proposition
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{N} \in \mathbb{S}_{\succeq \mathbf{0}}^{d \times d}$, $\mathbf{v} \in \mathbb{R}^n$ have $\|\mathbf{N}\|_{\mathrm{op}} \leq \nu$, $\|\mathbf{v}\|_1 \leq \rho$ respectively,
+      and let $\epsilon, \delta \in (0,1)$. We can compute a value $V$ such that with probability $\geq 1-\delta$,
+      \[
+        V \in \left[(1-\epsilon)\langle \exp(\mathcal{A}(\mathbf{v})), \mathbf{N}\rangle,\ (1+\epsilon)\langle \exp(\mathcal{A}(\mathbf{v})), \mathbf{N}\rangle\right],
+      \]
+      in time
+      \[
+        O\!\left(\!\left(\sum_{i \in [n]} \mathcal{T}_{\mathrm{mv}}(\mathbf{A}_i)\right) \cdot \frac{L\rho\log\!\left(\frac{1}{\epsilon}\right)\log\!\left(\frac{d}{\delta}\right)}{\epsilon^2} + \mathcal{T}_{\mathrm{mv}}(\mathbf{N}) \cdot \frac{\log\!\left(\frac{d}{\delta}\right)}{\epsilon^2}\right).
+      \]
+    context: "Randomized algorithm to approximate $\\langle \\exp(\\mathcal{A}(\\mathbf{v})), \\mathbf{N}\\rangle$ to multiplicative accuracy. Used in Corollary 2 to approximate the vector block of the minimax operator (20)."
+    proof_notes:
+      - label: "(25)"
+        content: |
+          \operatorname{Tr}\!\left(\mathbf{G}p(\mathbf{M})\mathbf{N}p(\mathbf{M})\mathbf{G}^\top\right) = \sum_{i \in [k]} \mathbf{g}_i^\top p(\mathbf{M})\mathbf{N}p(\mathbf{M})\mathbf{g}_i.
+        description: "Reduction allowing the JL sketch of $\\langle p(\\mathbf{M})^2, \\mathbf{N}\\rangle$ to be computed via $k$ pairs of matrix-vector products through $\\mathbf{N}$ and $p(\\mathbf{M})$."
+
+  - type: corollary
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{v} \in \mathbb{R}^n$ have $\|\mathbf{v}\|_1 \leq \rho$, and let $\epsilon, \delta \in (0,1)$. We can compute values
+      $\{u_i\}_{i \in [n]}$ such that with probability $\geq 1-\delta$,
+      \[
+        \left|u_i - \frac{\langle \exp(\mathcal{A}(\mathbf{v})), \mathbf{A}_i\rangle}{\operatorname{Tr}\exp(\mathcal{A}(\mathbf{v}))}\right| \leq \epsilon \quad \text{for all } i \in [n],
+      \]
+      in time
+      \[
+        O\!\left(\!\left(\sum_{i \in [n]} \mathcal{T}_{\mathrm{mv}}(\mathbf{A}_i)\right) \cdot \frac{L^3 \rho \log\!\left(\frac{L}{\epsilon}\right) \log\!\left(\frac{nd}{\delta}\right)}{\epsilon^2}\right).
+      \]
+    context: "Combines Propositions 1 and 2 to entrywise approximate the vector block of the minimax operator (20), i.e., $\\mathcal{A}^*(\\mathbf{X}_t)$ for implicitly-maintained $\\mathbf{X}_t$. This is the computational core of the nearly-linear time MMW implementation."
+
+  - type: theorem
+    number: "3"
+    name: "Simplex-spectraplex games"
+    statement: |
+      Consider an instance of (13), and define $L$ as in (16). For $\epsilon \in (0, L)$ and $\delta \in (0,1)$,
+      there is an algorithm which computes an $\epsilon$-approximate saddle point to (13) with probability
+      $\geq 1 - \delta$, in time
+      \[
+        O\!\left(\!\left(\sum_{i \in [n]} \mathcal{T}_{\mathrm{mv}}(\mathbf{A}_i)\right) \cdot \frac{L^5 \log^2(nd) \log\!\left(\frac{L}{\epsilon}\right) \log\!\left(\frac{ndL}{\delta\epsilon}\right)}{\epsilon^5}\right).
+      \]
+    context: "Main algorithmic result of the lecture. Runs the minimax mirror descent (Proposition 1, Part IV) with approximate oracle computations from Corollary 2, achieving nearly-linear per-iteration cost by maintaining $\\mathbf{X}_t$ implicitly via the matrix exponential representation (19)."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      The runtime in Theorem 3 scales linearly in the total input size $\sum_{i \in [n]} \mathcal{T}_{\mathrm{mv}}(\mathbf{A}_i)$
+      for small $\frac{L}{\epsilon}$, as opposed to exponentiating a matrix (which takes at least $d^\omega$ time).
+      However, the overhead factor of $\approx \left(\frac{L}{\epsilon}\right)^5$ is far larger than the $\approx \left(\frac{L}{\epsilon}\right)^2$
+      iteration complexity of mirror descent, or the $\approx \frac{L}{\epsilon}$ iterations of mirror prox.
+      The state-of-the-art overhead is $\approx \left(\frac{L}{\epsilon}\right)^{2.5}$, achieved by combining mirror prox
+      with lower-rank sketches [BBN13, CDST19].
+    context: "Contextualizes the runtime of Theorem 3 relative to standard iteration complexities and state-of-the-art improvements; useful background for understanding open problems in MMW runtime."
