@@ -1,0 +1,58 @@
+\section*{Problem 1}
+
+\subsection*{(i)}
+
+\begin{proof}
+The feasible set $\mathcal{F}_i := \{\mathbf{x} \in \mathbb{R}^n \mid \mathbf{A}^\top \mathbf{x} = \mathbf{a}_i\}$ is nonempty:
+since $\mathbf{a}_i$ is the $i$-th row of $\mathbf{A}$, we have $\mathbf{A}^\top \mathbf{e}_i = \mathbf{a}_i$, so $\mathbf{e}_i \in \mathcal{F}_i$.
+
+Decompose $\mathbb{R}^n = \mathrm{col}(\mathbf{A}) \oplus \ker(\mathbf{A}^\top)$ orthogonally (by the fundamental theorem of linear algebra). Any $\mathbf{x} \in \mathcal{F}_i$ splits as $\mathbf{x} = \mathbf{x}_R + \mathbf{x}_N$ with $\mathbf{x}_R \in \mathrm{col}(\mathbf{A})$ and $\mathbf{x}_N \in \ker(\mathbf{A}^\top)$. Then
+\[
+    \mathbf{A}^\top \mathbf{x} = \mathbf{A}^\top \mathbf{x}_R + \mathbf{A}^\top \mathbf{x}_N = \mathbf{A}^\top \mathbf{x}_R = \mathbf{a}_i,
+\]
+so $\mathbf{x}_R \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i$ as well. By orthogonality,
+\[
+    \|\mathbf{x}\|_2^2 = \|\mathbf{x}_R\|_2^2 + \|\mathbf{x}_N\|_2^2 \geq \|\mathbf{x}_R\|_2^2,
+\]
+with equality iff $\mathbf{x}_N = \mathbf{0}$. Thus $\min_{\mathbf{x} \in \mathcal{F}_i} \|\mathbf{x}\|_2^2 = \min_{\mathbf{x} \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i} \|\mathbf{x}\|_2^2$.
+
+There is a unique $\mathbf{x}^* \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i$: write $\mathbf{x}^* = \mathbf{A}\mathbf{y}$ for $\mathbf{y} \in \mathbb{R}^d$; the constraint $\mathbf{A}^\top \mathbf{x}^* = \mathbf{a}_i$ gives $\mathbf{A}^\top \mathbf{A} \mathbf{y} = \mathbf{a}_i$. Since $\mathbf{a}_i \in \mathrm{col}(\mathbf{A}^\top) = \mathrm{col}(\mathbf{A}^\top \mathbf{A})$, the minimum-norm solution is $\mathbf{y} = (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i$, yielding
+\[
+    \mathbf{x}^* = \mathbf{A}(\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i.
+\]
+The minimum value is
+\begin{align*}
+    \min_{\mathbf{x} \in \mathcal{F}_i} \|\mathbf{x}\|_2^2
+    = \|\mathbf{x}^*\|_2^2
+    &= \mathbf{a}_i^\top (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{A}^\top \mathbf{A} (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i \\
+    &= \mathbf{a}_i^\top (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i
+    = \boldsymbol{\tau}_i(\mathbf{A}),
+\end{align*}
+where the second equality uses the pseudoinverse identity $\mathbf{M}^\dagger \mathbf{M} \mathbf{M}^\dagger = \mathbf{M}^\dagger$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Let $\mathbf{A} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top$ be the thin SVD of $\mathbf{A}$, where $r := \mathrm{rank}(\mathbf{A})$, $\mathbf{U} \in \mathbb{R}^{n \times r}$ and $\mathbf{V} \in \mathbb{R}^{d \times r}$ have orthonormal columns, and $\boldsymbol{\Sigma} = \mathrm{diag}(\sigma_1,\ldots,\sigma_r)$ with $\sigma_j > 0$. Define
+\[
+    \mathbf{P} := \mathbf{U}\mathbf{U}^\top \in \mathbb{R}^{n \times n}.
+\]
+
+\textbf{$\mathbf{P}$ is an orthogonal projection matrix:}
+\[
+    \mathbf{P}^2 = \mathbf{U}\mathbf{U}^\top\mathbf{U}\mathbf{U}^\top = \mathbf{U}\mathbf{I}_r\mathbf{U}^\top = \mathbf{P},
+\]
+and $\mathbf{P}^\top = \mathbf{P}$. Moreover, $\mathbf{v}^\top \mathbf{P} \mathbf{v} = \|\mathbf{U}^\top \mathbf{v}\|_2^2 \geq 0$ for all $\mathbf{v}$, so $\mathbf{P} \in \mathbb{S}_{\succeq 0}^{n \times n}$.
+
+\textbf{$\mathbf{P}_{ii} = \boldsymbol{\tau}_i(\mathbf{A})$ for all $i \in [n]$:} The pseudoinverse is $(\mathbf{A}^\top\mathbf{A})^\dagger = \mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^\top$. Using $\mathbf{a}_i = \mathbf{A}^\top \mathbf{e}_i = \mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i$,
+\begin{align*}
+    \boldsymbol{\tau}_i(\mathbf{A})
+    = \mathbf{a}_i^\top (\mathbf{A}^\top\mathbf{A})^\dagger \mathbf{a}_i
+    &= \mathbf{e}_i^\top \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top \cdot \mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^\top \cdot \mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i \\
+    &= \mathbf{e}_i^\top \mathbf{U}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{-2}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i
+    = \mathbf{e}_i^\top \mathbf{U}\mathbf{U}^\top\mathbf{e}_i
+    = \mathbf{P}_{ii},
+\end{align*}
+where we used $\mathbf{V}^\top\mathbf{V} = \mathbf{I}_r$ twice.
+\end{proof}

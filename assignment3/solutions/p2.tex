@@ -1,0 +1,64 @@
+\section*{Problem 2}
+
+\begin{proof}
+By the spectral theorem and Lemma 6 (Part VI), the matrix inequality $(1-\epsilon)\mathbf{M} \preceq p(\mathbf{M})^2 \preceq (1+\epsilon)\mathbf{M}$ holds iff
+\[
+    (1-\epsilon)\lambda \leq p(\lambda)^2 \leq (1+\epsilon)\lambda \quad \text{for all } \lambda \in [\mu, L].
+\]
+It therefore suffices to construct a polynomial $p$ of degree $O(\sqrt{\kappa}\log\frac{\kappa}{\epsilon})$ satisfying $|p(\lambda)^2 - \lambda| \leq \epsilon\lambda$ for all $\lambda \in [\mu, L]$.
+
+\textbf{Chebyshev approximation of $\sqrt{\lambda}$.}
+Map $[\mu, L]$ to $[-1,1]$ via $\lambda(w) = \frac{L+\mu}{2} + \frac{L-\mu}{2}w$, and define $f(w) := \sqrt{\lambda(w)}$, which is real-valued on $[-1,1]$. The branch point $\lambda = 0$ corresponds to $w^\star = -\frac{L+\mu}{L-\mu} = -\frac{\kappa+1}{\kappa-1} < -1$.
+
+Set $\rho := 1 + \frac{1}{\sqrt{\kappa}}$. The leftmost real point of the Bernstein ellipse $E_\rho$ is at $w = -\frac{\rho + \rho^{-1}}{2}$. Using $\frac{\rho+\rho^{-1}}{2} = 1 + \frac{(\rho-1)^2}{2\rho} = 1 + \frac{1}{2\kappa + 2\sqrt{\kappa}}$, we verify
+\[
+    \frac{\rho + \rho^{-1}}{2} = 1 + \frac{1}{2\kappa + 2\sqrt{\kappa}} < 1 + \frac{2}{\kappa - 1} = \frac{\kappa+1}{\kappa-1} = |w^\star|,
+\]
+where the inequality holds since $\kappa - 1 < 4\kappa + 4\sqrt{\kappa}$ for all $\kappa > 1$. Hence $w^\star$ lies outside $E_\rho$.
+
+The affine map $\lambda(w)$ sends the interior of $E_\rho$ (simply connected) to a simply connected region $D \subset \mathbb{C}$. Since the leftmost real point of $D$ is
+\[
+    \frac{L+\mu}{2} - \frac{L-\mu}{2} \cdot \frac{\rho+\rho^{-1}}{2} = \mu - \frac{(L-\mu)}{4\kappa + 4\sqrt{\kappa}} > 0,
+\]
+we have $0 \notin D$. By the given analytic continuation, $\sqrt{\lambda}$ extends analytically to $D$, so $f$ is analytic on the interior of $E_\rho$.
+
+\textbf{Bounding $|f|$ on $E_\rho$.}
+For $w \in E_\rho$, $|w| \leq \frac{\rho+\rho^{-1}}{2}$, so
+\[
+    |\lambda(w)| \leq \frac{L+\mu}{2} + \frac{L-\mu}{2} \cdot \frac{\rho + \rho^{-1}}{2} = L + \frac{L-\mu}{4\kappa + 4\sqrt{\kappa}} \leq 2L.
+\]
+Therefore $M := \sup_{w \in E_\rho} |f(w)| \leq \sqrt{2L}$.
+
+\textbf{Truncation error.}
+By Theorem 3 (Part VII), the Chebyshev coefficients of $f$ satisfy $|a_i| \leq 2M\rho^{-i}$ for $i \geq 1$. By Lemma 3 (Part VII), the degree-$\Delta$ Chebyshev truncation $q_\Delta(w) := \sum_{i=0}^{\Delta} a_i T_i(w)$ satisfies
+\[
+    \sup_{w \in [-1,1]} |f(w) - q_\Delta(w)| \leq \sum_{i > \Delta} |a_i| \leq \frac{2M\rho^{-\Delta}}{\rho - 1}.
+\]
+
+Define $p(\lambda) := q_\Delta\!\left(\frac{2\lambda - (L+\mu)}{L-\mu}\right)$, a degree-$\Delta$ polynomial in $\lambda$, so that
+\[
+    E := \sup_{\lambda \in [\mu,L]} |p(\lambda) - \sqrt{\lambda}| \leq \frac{2\sqrt{2L} \cdot \rho^{-\Delta}}{1/\sqrt{\kappa}} = 2\sqrt{2}\,\frac{L}{\sqrt{\mu}}\,\rho^{-\Delta}.
+\]
+
+\textbf{Choosing the degree.}
+Set $\Delta := \lceil 2\sqrt{\kappa}\log(6\sqrt{2}\,\kappa/\epsilon)\rceil$. Since $\log\rho = \log(1 + 1/\sqrt{\kappa}) \geq \frac{1}{2\sqrt{\kappa}}$ (using $\log(1+x) \geq x/2$ for $x \in (0,1]$),
+\[
+    \rho^{-\Delta} \leq \exp\!\left(-\frac{\Delta}{2\sqrt{\kappa}}\right) \leq \exp\!\left(-\log\frac{6\sqrt{2}\,\kappa}{\epsilon}\right) = \frac{\epsilon}{6\sqrt{2}\,\kappa}.
+\]
+Substituting:
+\[
+    E \leq 2\sqrt{2}\,\frac{L}{\sqrt{\mu}} \cdot \frac{\epsilon}{6\sqrt{2}\,\kappa} = \frac{\epsilon L}{3\kappa\sqrt{\mu}} = \frac{\epsilon\sqrt{\mu}}{3},
+\]
+where the last step uses $L/\kappa = \mu$.
+
+\textbf{Converting to the quadratic bound.}
+For any $\lambda \in [\mu, L]$, since $E \leq \frac{\epsilon\sqrt{\mu}}{3} \leq \frac{\sqrt{\mu}}{3} \leq \sqrt{\lambda}$:
+\[
+    |p(\lambda) + \sqrt{\lambda}| \leq E + 2\sqrt{\lambda} \leq 3\sqrt{\lambda}.
+\]
+Therefore
+\[
+    |p(\lambda)^2 - \lambda| = |p(\lambda) - \sqrt{\lambda}|\,|p(\lambda) + \sqrt{\lambda}| \leq \frac{\epsilon\sqrt{\mu}}{3} \cdot 3\sqrt{\lambda} = \epsilon\sqrt{\mu\lambda} \leq \epsilon\lambda,
+\]
+where the last inequality uses $\sqrt{\mu} \leq \sqrt{\lambda}$. This gives $(1-\epsilon)\lambda \leq p(\lambda)^2 \leq (1+\epsilon)\lambda$ for all $\lambda \in [\mu, L]$, and $\Delta = O(\sqrt{\kappa}\log\frac{\kappa}{\epsilon})$.
+\end{proof}
