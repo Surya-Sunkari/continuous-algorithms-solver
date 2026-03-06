@@ -1,0 +1,12 @@
+\section*{Problem 1}
+
+Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ have rows $\{\mathbf{a}_i\}_{i \in [n]} \in \mathbb{R}^d$, and denote its leverage scores by $\{\boldsymbol{\tau}_i(\mathbf{A})\}_{i \in [n]}$.
+
+\begin{enumerate}[(i)]
+    \item Prove that for all $i \in [n]$,
+    \[
+        \boldsymbol{\tau}_i(\mathbf{A}) = \min_{\substack{\mathbf{x} \in \mathbb{R}^n \\ \mathbf{A}^\top \mathbf{x} = \mathbf{a}_i}} \|\mathbf{x}\|_2^2.
+    \]
+
+    \item Prove that there is a projection matrix\footnote{Recall from Section 2.2, Part VI that $\mathbf{P} \in \mathbb{S}_{\succeq 0}^{n \times n}$ is an orthogonal projection matrix iff $\mathbf{P}^2 = \mathbf{P}$.} $\mathbf{P} \in \mathbb{S}_{\succeq 0}^{n \times n}$ such that $\boldsymbol{\tau}_i(\mathbf{A}) = \mathbf{P}_{ii}$, for all $i \in [n]$.
+\end{enumerate}

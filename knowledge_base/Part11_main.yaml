@@ -1,0 +1,250 @@
+source: "Part11_main.pdf"
+lecture_number: 11
+title: "Low-rank approximation"
+items:
+  - type: definition
+    number: "1.1"
+    name: "Stiefel manifold U_k"
+    statement: |
+      $\mathcal{U}_k := \{ \mathbf{U} \in \mathbb{R}^{d \times k} \mid \mathbf{U}^\top \mathbf{U} = \mathbf{I}_k \}$
+      is the set of $d \times k$ matrices with orthonormal columns.
+    context: "Used to define the feasible set for k-PCA."
+
+  - type: definition
+    number: "1.2"
+    name: "k-PCA problem"
+    statement: |
+      Given $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, the $k$-principal component analysis ($k$-PCA) problem asks to return $\mathbf{V} \in \mathcal{U}_k$ satisfying
+      \[
+        \langle \mathbf{V}\mathbf{V}^\top, \mathbf{M} \rangle = \max_{\mathbf{U} \in \mathcal{U}_k} \langle \mathbf{U}\mathbf{U}^\top, \mathbf{M} \rangle.
+      \]
+    context: "The optimal solution is a basis for any eigenspace corresponding to the k largest eigenvalues of M."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{M} = \mathbf{U}\boldsymbol{\Lambda}\mathbf{U}^\top = \sum_{i \in [d]} \lambda_i \mathbf{u}_i \mathbf{u}_i^\top$ be the eigendecomposition of $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, where the $\{\lambda_i\}_{i \in [d]}$ are nonincreasing, let $[m] \subseteq [d]$ correspond to indices $i \in [d]$ where $\lambda_i \geq \lambda_k$, and let $[\ell] \subseteq [m]$ correspond to indices $i \in [d]$ where $\lambda_i > \lambda_k$. Then $\mathbf{V} \in \mathcal{U}_k$ solves the $k$-PCA problem (2) optimally iff
+      \[
+        \mathrm{Span}\left(\{\mathbf{u}_i\}_{i \in [\ell]}\right) \subseteq \mathrm{Span}(\mathbf{V}) \subseteq \mathrm{Span}\left(\{\mathbf{u}_i\}_{i \in [m]}\right).
+      \]
+    context: "Characterizes when a subspace is an optimal k-PCA solution; reduces k-PCA to finding a basis for the top-k eigenspace."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          $\mathrm{Span}\left(\{\mathbf{u}_i\}_{i \in [\ell]}\right) \subseteq \mathrm{Span}(\mathbf{V}) \subseteq \mathrm{Span}\left(\{\mathbf{u}_i\}_{i \in [m]}\right)$
+        description: "Optimality condition: V must contain the strict top eigenspace and lie within the non-strict top eigenspace."
+      - label: "von Neumann trace bound"
+        content: |
+          $\max_{\mathbf{U} \in \mathcal{U}_k} \langle \mathbf{U}\mathbf{U}^\top, \mathbf{M} \rangle \leq \sum_{i \in [k]} \lambda_i$
+        description: "Upper bound on k-PCA objective via von Neumann trace inequality (Theorem 6, Part VI)."
+
+  - type: theorem
+    number: "1"
+    name: "Eckart-Young-Mirsky"
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ with $n \geq d$, and let $\|\cdot\|$ be a unitarily-invariant norm. Then letting $\mathbf{V} \in \mathcal{U}_k$ attain the maximum value in the $k$-PCA problem for $\mathbf{M} := \mathbf{A}^\top \mathbf{A}$, we have
+      \[
+        \left\| \mathbf{A} - \mathbf{A}\mathbf{V}\mathbf{V}^\top \right\| \leq \left\| \mathbf{A} - \widetilde{\mathbf{A}} \right\|, \quad \text{for all rank-}k\ \widetilde{\mathbf{A}} \in \mathbb{R}^{n \times d}.
+      \]
+    context: "Solving k-PCA on M = A^T A gives the best rank-k approximation to A in any unitarily-invariant norm. The optimal low-rank approximation is $\sum_{i \in [k]} \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$ from the SVD."
+    proof_notes:
+      - label: "operator norm lower bound"
+        content: |
+          $\left\|\mathbf{A} - \widetilde{\mathbf{A}}\right\|_{\mathrm{op}} \geq \sigma_{k+1}$
+        description: "Any rank-k approximation has operator norm error at least σ_{k+1}, achieved by the truncated SVD."
+      - label: "Frobenius norm lower bound"
+        content: |
+          $\left\|\mathbf{A} - \widetilde{\mathbf{A}}\right\|_{\mathrm{F}}^2 \geq \sum_{i=k+1}^{d} \sigma_i(\mathbf{A})^2$
+        description: "Any rank-k approximation has squared Frobenius error at least the sum of squares of the (k+1)-th through d-th singular values."
+
+  - type: definition
+    number: "2.1"
+    name: "Eigendecomposition notation"
+    statement: |
+      For $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, we write its eigendecomposition (with nonincreasing $\boldsymbol{\lambda}$) as
+      \[
+        \mathbf{M} = \mathbf{U}\boldsymbol{\Lambda}\mathbf{U}^\top = \sum_{i \in [d]} \lambda_i \mathbf{u}_i \mathbf{u}_i^\top.
+      \]
+    context: "Standard notation used throughout the lecture for PCA analysis."
+
+  - type: theorem
+    number: "2"
+    name: "Power method, gapped variant"
+    statement: |
+      Let $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$ have eigendecomposition (5), and suppose for some $\Gamma \in (0,1)$ it is the case that $\lambda_2 \leq (1-\Gamma)\lambda_1$. Further, let $\delta, \Delta \in (0,1)$, and $p \geq \frac{8}{\Gamma} \log\!\left(\frac{32d}{\delta\Delta}\right)$. Then, with probability $\geq 1 - \delta$, we have $\langle \hat{\mathbf{u}}, \mathbf{u}_1 \rangle^2 \geq 1 - \Delta$, where
+      \[
+        \hat{\mathbf{u}} := \frac{\mathbf{M}^p \mathbf{g}}{\|\mathbf{M}^p \mathbf{g}\|_2} \quad \text{for } \mathbf{g} \sim \mathcal{N}(\mathbf{0}_d, \mathbf{I}_d).
+      \]
+    context: "The basic power method for 1-PCA when a spectral gap exists. Requires O(1/Γ · log(d/(δΔ))) matrix-vector products."
+    proof_notes:
+      - label: "(6)"
+        content: |
+          $\frac{\langle \mathbf{g}, \mathbf{u}_i \rangle^2}{\langle \mathbf{g}, \mathbf{u}_1 \rangle^2} \leq \frac{32\log\!\left(\frac{d}{\delta}\right)}{\delta^2} =: R, \quad \text{for all } 2 \leq i \leq d$
+        description: "With probability ≥ 1−δ, the ratio of squared projections of a random Gaussian onto any non-top eigenvector vs. the top eigenvector is bounded by R. Used throughout proofs of power method variants."
+
+  - type: definition
+    number: "1"
+    name: "Correlation 1-PCA (cPCA)"
+    statement: |
+      Let $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$ have eigendecomposition (5), and let $\Gamma, \Delta \in (0,1)$. Further, let $\ell \in [d]$ satisfy $\lambda_\ell > (1-\Gamma)\lambda_1 \geq \lambda_{\ell+1}$. We say that $\hat{\mathbf{u}} \in \mathcal{U}_1$ is a $(\Gamma,\Delta)$-approximate correlation-1-PCA (or, $(\Gamma,\Delta)$-1-cPCA) of $\mathbf{M}$ if
+      \[
+        \sum_{i \in [\ell]} \langle \hat{\mathbf{u}}, \mathbf{u}_i \rangle^2 \geq 1 - \Delta.
+      \]
+    context: "Gap-free approximation notion for 1-PCA: allows û to lie anywhere in the span of eigenvectors with eigenvalue > (1−Γ)λ₁. Recovers top eigenvector when (Γ,Δ)→(0,0)."
+
+  - type: theorem
+    number: "3"
+    name: "Power method, gap-free variant"
+    statement: |
+      Let $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$ have eigendecomposition (5), let $\delta, \Delta, \Gamma \in (0,1)$, and $p \geq \frac{8}{\Gamma}\log\!\left(\frac{32d}{\delta\Delta}\right)$. Then, with probability $\geq 1-\delta$, we have that $\hat{\mathbf{u}}$ is a $(\Gamma,\Delta)$-1-cPCA of $\mathbf{M}$, where
+      \[
+        \hat{\mathbf{u}} := \frac{\mathbf{M}^p \mathbf{g}}{\|\mathbf{M}^p \mathbf{g}\|_2} \quad \text{for } \mathbf{g} \sim \mathcal{N}(\mathbf{0}_d, \mathbf{I}_d).
+      \]
+    context: "Gap-free power method: works even when there is no spectral gap, producing a (Γ,Δ)-1-cPCA. Runtime dominated by p ≈ 1/Γ matrix-vector multiplications."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of Theorem 3, let $p \geq \frac{8}{\Gamma}\log\!\left(\frac{64d}{\delta\Delta}\right)$. There is an algorithm that uses
+      \[
+        m = \sqrt{2p\log\!\left(\frac{96}{\delta\Delta}\right)} = O\!\left(\frac{1}{\sqrt{\Gamma}}\log\!\left(\frac{d}{\delta\Delta}\right)\right)
+      \]
+      matrix-vector multiplications through $\mathbf{M}$ and $O(m^2)$ additional time, and with probability $\geq 1-\delta$, returns $\hat{\mathbf{u}}$ that is a $(\Gamma,\Delta)$-1-cPCA of $\mathbf{M}$.
+    context: "Lanczos method improvement over Theorem 3: reduces matrix-vector products by a factor of ≈ Γ^{−1/2} via polynomial approximation to M^p."
+    proof_notes:
+      - label: "(7)"
+        content: |
+          $\sup_{x \in [0,\lambda_1]} |r(x) - x^p| \leq \frac{\delta\Delta}{48} \lambda_1^p$
+        description: "Approximation quality of degree-m polynomial to x^p on [0,λ₁], using Lemma 1, Part VII."
+      - label: "(8)"
+        content: |
+          $D \geq |\langle \mathbf{P}\mathbf{g}, \mathbf{u}_1 \rangle| = \lambda_1^p |\langle \mathbf{g}, \mathbf{u}_1 \rangle| \geq \frac{\delta \lambda_1^p}{4}$
+        description: "Lower bound on D = ||M^p g||₂ used to control the error in approximating M^p g with Lanczos output."
+
+  - type: definition
+    number: "2"
+    name: "Energy 1-PCA (ePCA)"
+    statement: |
+      Let $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$ have eigendecomposition (5), and let $\epsilon \in (0,1)$. We say that $\hat{\mathbf{u}}$ is an $\epsilon$-1-ePCA (or, $\epsilon$-1-cPCA) of $\mathbf{M}$ if $\hat{\mathbf{u}} \in \mathcal{U}_1$ and
+      \[
+        \hat{\mathbf{u}}^\top \mathbf{M} \hat{\mathbf{u}} \geq (1-\epsilon) \max_{\mathbf{u} \in \mathcal{U}_1} \mathbf{u}^\top \mathbf{M} \mathbf{u} = (1-\epsilon)\lambda_1.
+      \]
+    context: "Energy-based approximation notion for 1-PCA: û approximately solves the variational characterization of the top eigenvector, agnostic to spectral gaps."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      If $\hat{\mathbf{u}}$ is an $\epsilon$-1-ePCA of $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, it is a $\left(\Gamma, \frac{\epsilon}{\Gamma}\right)$-1-cPCA of $\mathbf{M}$ for any $\Gamma \in (0,1)$.
+    context: "Converts ePCA guarantees to cPCA guarantees; used to instantiate deflation methods and shift-and-invert with cPCA oracles."
+    proof_notes:
+      - label: "Matrix Hölder inequality"
+        content: |
+          $(1-\epsilon)\lambda_1 \leq \hat{\mathbf{u}}^\top \mathbf{M} \hat{\mathbf{u}} \leq (1-\Delta)\lambda_1 + \Delta(1-\Gamma)\lambda_1 = (1-\Delta\Gamma)\lambda_1$
+        description: "Derivation via matrix Hölder (Eq. 12, Part VI) showing the cPCA error satisfies Δ ≤ ε/Γ."
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      If $\hat{\mathbf{u}}$ is a $(\Gamma, \Delta)$-1-cPCA of $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, it is a $(\Gamma + \Delta)$-1-ePCA of $\mathbf{M}$.
+    context: "Converts cPCA guarantees to ePCA guarantees. Together with Lemma 2, allows interconversion between the two notions."
+    proof_notes:
+      - label: "ePCA lower bound"
+        content: |
+          $\langle \hat{\mathbf{u}}\hat{\mathbf{u}}^\top, \mathbf{M} \rangle \geq (1-\Delta)(1-\Gamma)\lambda_1 \geq (1-\Gamma-\Delta)\lambda_1$
+        description: "Key computation: the large eigenspace contributes at least (1−Δ)(1−Γ)λ₁ to the quadratic form."
+
+  - type: corollary
+    number: "2"
+    name: ""
+    statement: |
+      In the setting of Theorem 3, let $\delta, \epsilon \in (0,1)$, and let $p \geq \frac{16}{\epsilon}\log\!\left(\frac{128d}{\delta\epsilon}\right)$. There is an algorithm that uses
+      \[
+        m = \sqrt{2p\log\!\left(\frac{192}{\delta\epsilon}\right)} = O\!\left(\frac{1}{\sqrt{\epsilon}}\log\!\left(\frac{d}{\delta\epsilon}\right)\right)
+      \]
+      matrix-vector multiplications through $\mathbf{M}$ and $O(m^2)$ additional time, and with probability $\geq 1-\delta$, returns $\hat{\mathbf{u}}$ that is an $\epsilon$-1-cPCA of $\mathbf{M}$. Assuming the success of this procedure, with $O(\mathcal{T}_{\mathrm{mv}}(\mathbf{M}) + d)$ additional time, we can compute $\hat{\lambda}$ satisfying $\lambda_1 \geq \hat{\lambda} \geq (1-\epsilon)\lambda_1$.
+    context: "Lanczos-based algorithm for ε-1-cPCA and top eigenvalue estimation. Set Γ = Δ = ε/2 in Corollary 1 and apply Lemma 3."
+
+  - type: lemma
+    number: "4"
+    name: "Gap-free Wedin's theorem"
+    statement: |
+      Let $\epsilon, \lambda, \tau > 0$, and let $\mathbf{M}, \widehat{\mathbf{M}} \in \mathbb{S}_{\geq 0}^{d \times d}$ have $\|\mathbf{M} - \widehat{\mathbf{M}}\|_{\mathrm{op}} \leq \epsilon$. Let $\mathbf{L}, \mathbf{S}$ have eigenvectors of $\mathbf{M}$ with eigenvalues $> \lambda$ and $\leq \lambda$ as columns respectively, so $\mathbf{L}\mathbf{L}^\top + \mathbf{S}\mathbf{S}^\top = \mathbf{I}_d$. Similarly, let $\widehat{\mathbf{L}}, \widehat{\mathbf{S}}$ have eigenvectors of $\widehat{\mathbf{M}}$ with eigenvalues $> \lambda + \tau$ and $\leq \lambda + \tau$ as columns respectively. Then,
+      \[
+        \left\|\mathbf{S}^\top \widehat{\mathbf{L}}\right\|_{\mathrm{op}} \leq \frac{\epsilon}{\tau}.
+      \]
+    context: "Perturbation bound for eigenvectors without requiring a spectral gap in the original matrix. Used to analyze statistical PCA: if empirical covariance is close to true covariance, their eigenspaces are close."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathcal{D}$ be a distribution on $\mathbb{R}^d$ with mean $\mathbf{0}_d$ and covariance $\boldsymbol{\Sigma}$, assume that $\mathcal{D}$ satisfies
+      \[
+        \left\|\mathbb{E}_{\mathbf{x} \sim \mathcal{D}}\!\left[\|\mathbf{x}\|_2^2 \mathbf{x}\mathbf{x}^\top\right]\right\|_{\mathrm{op}} \leq \sigma^2, \quad \text{and } \|\mathbf{x}\|_2 \leq R \text{ with probability } 1 \text{ over } \mathbf{x} \sim \mathcal{D},
+      \]
+      and let $\delta, \Gamma, \Delta \in (0,1)$. Given $n$ samples $\{\mathbf{x}_i\}_{i \in [n]} \sim_{\mathrm{i.i.d.}} \mathcal{D}$, for
+      \[
+        n \geq \left(\frac{64\sigma^2}{\lambda_1(\boldsymbol{\Sigma})^2 \Delta\Gamma^2} + \frac{32R^2}{\lambda_1(\boldsymbol{\Sigma})\sqrt{\Delta}\Gamma}\right)\log\!\left(\frac{2d}{\delta}\right),
+      \]
+      any $\left(\frac{\Gamma}{6}, \frac{\Delta}{4}\right)$-1-cPCA for $\widehat{\boldsymbol{\Sigma}} := \frac{1}{n}\sum_{i \in [n]} \mathbf{x}_i \mathbf{x}_i^\top$ is a $(\Gamma,\Delta)$-1-cPCA for $\boldsymbol{\Sigma}$ with probability $\geq 1-\delta$.
+    context: "Sample complexity bound for statistical PCA: how many i.i.d. samples suffice for the empirical covariance to be a good proxy. For Gaussian data with d-dimensional covariance, n ≈ d log(d) / (ΔΓ²) samples suffice."
+    proof_notes:
+      - label: "(16)"
+        content: |
+          $\left\|\mathbb{E}_{\mathbf{x} \sim \mathcal{D}}\!\left[\|\mathbf{x}\|_2^2 \mathbf{x}\mathbf{x}^\top\right]\right\|_{\mathrm{op}} \leq \sigma^2, \quad \|\mathbf{x}\|_2 \leq R \text{ w.p. } 1$
+        description: "Distributional assumptions on D used throughout statistical PCA analysis. Satisfied by Gaussian distributions with σ² = O(d)."
+      - label: "matrix Bernstein"
+        content: |
+          $\Pr\!\left[\left\|\widehat{\boldsymbol{\Sigma}} - \boldsymbol{\Sigma}\right\|_{\mathrm{op}} \geq t\right] \leq 2d\exp\!\left(-\min\!\left(\frac{nt^2}{4\sigma^2}, \frac{nt}{4R^2/n}\right)\right)$
+        description: "Matrix Bernstein inequality (Theorem 11, Part VI) applied with Z = Σ̂ − Σ, c = 2R²/n, σ² = σ²/n to bound spectral distance between empirical and true covariance."
+
+  - type: proposition
+    number: "2"
+    name: "Black-box reduction from k-ePCA to 1-ePCA"
+    statement: |
+      Let $\mathbf{M} \in \mathbb{S}_{\geq 0}^{d \times d}$, and for any projection matrix $\mathbf{\Pi} \in \mathbb{S}_{\geq 0}^{d \times d}$, let $\mathcal{O}$ be an oracle that takes input $\mathbf{\Pi}\mathbf{M}\mathbf{\Pi}$ and returns $\mathbf{v}$, an $\epsilon$-1-ePCA to $\mathbf{\Pi}\mathbf{M}\mathbf{\Pi}$ satisfying $\mathbf{v} \in \mathrm{Span}(\mathbf{\Pi})$. Further, let $\mathbf{V} \in \mathcal{U}_k$ concatenate $\{\mathbf{v}_i\}_{i \in [k]}$ resulting from iterating the deflation procedure (15). Then $\mathbf{V}$ is an $\epsilon$-$k$-ePCA to $\mathbf{M}$.
+    context: "Deflation is lossless for ePCA: applying a 1-ePCA oracle k times via deflation yields an ε-k-ePCA with the same approximation parameter ε. By contrast, deflation degrades cPCA approximation parameters."
+    proof_notes:
+      - label: "deflation iteration"
+        content: |
+          \mathbf{v}_i \leftarrow \mathcal{O}(\mathbf{\Pi}_{i-1}\mathbf{M}\mathbf{\Pi}_{i-1}), \quad \mathbf{\Pi}_i \leftarrow \mathbf{\Pi}_{i-1} - \mathbf{v}_i \mathbf{v}_i^\top, \quad \text{for } i \in [k]
+        description: "Deflation update: iteratively peel off approximate top eigenvectors via orthogonal projection. Lemma 1 shows that the concatenated output V is the k-PCA solution when O is exact."
+      - label: "inductive step"
+        content: |
+          \mathrm{Tr}(\mathbf{V}_{i+1}^\top \mathbf{M} \mathbf{V}_{i+1}) \geq (1-\epsilon)\sum_{j \in [i+1]} \lambda_j(\mathbf{M})
+        description: "Induction on i shows that Tr(V_i^T M V_i) ≥ (1−ε) Σ_{j≤i} λ_j(M) using the Cauchy interlacing theorem (Corollary 4, Part VI)."
+
+  - type: remark
+    number: "4.1"
+    name: "Shift-and-invert preconditioning"
+    statement: |
+      For any $\lambda \geq \lambda_1$, the matrix $\lambda\mathbf{I}_d - \mathbf{M}$ is PSD with eigenvalues $\{\lambda - \lambda_i\}_{i \in [d]}$ in nondecreasing order. The shift-and-invert matrix $\mathbf{B}_t := (\hat{\lambda}_t \mathbf{I}_d - \mathbf{M})^{-1}$ has top eigenvector $\mathbf{u}_1$ and condition number bounded by
+      \[
+        \frac{\lambda_1(\mathbf{B}_t)}{\lambda_d(\mathbf{B}_t)} \leq \frac{\hat{\lambda}_t}{\lambda_t - \lambda_1} \leq \frac{1 + \frac{\Gamma}{18}}{\frac{\Gamma}{18}} \leq \frac{19}{\Gamma}.
+      \]
+      Moreover, $\lambda_{\ell+1}(\mathbf{B}) = \frac{1}{\hat{\lambda} - \lambda_{\ell+1}} \leq \frac{1}{\Gamma\lambda_1}$ while $\lambda_1(\mathbf{B}) = \frac{1}{\hat{\lambda} - \lambda_1} \geq \frac{2}{\Gamma\lambda_1}$, so the gap parameter for $\mathbf{B}$ is $\frac{1}{2}$ regardless of the original gap $\Gamma$.
+    context: "Shift-and-invert widens the spectral gap to a constant (≥ 1/2) at the cost of solving linear systems. The condition number bound (12) is used to bound the runtime of linear system solves."
+    proof_notes:
+      - label: "(12)"
+        content: |
+          $\frac{\lambda_1(\mathbf{B}_t)}{\lambda_d(\mathbf{B}_t)} \leq \frac{\hat{\lambda}_t}{\hat{\lambda}_t - \lambda_1} \leq \frac{1 + \frac{\Gamma}{18}}{\frac{\Gamma}{18}} \leq \frac{19}{\Gamma}$
+        description: "Condition number bound for the shifted matrix B_t = (λ̂_t I − M)^{-1} during shift-and-invert iterations."
+      - label: "(14)"
+        content: |
+          \approx \mathrm{nnz}(\mathbf{A}) + \frac{\mathrm{nnz}(\mathbf{A})^{3/4}(d \cdot \mathrm{sr}(\mathbf{A}))^{1/4}}{\sqrt{\Gamma}}
+        description: "SVRG-based runtime for solving linear systems in B = λ̂I_d − A^T A using stable rank sr(A) = ||A||_F² / ||A||_op². Achieves input-sparsity time for moderate Γ."
+
+  - type: remark
+    number: "5.1"
+    name: "Stable rank"
+    statement: |
+      The stable rank of $\mathbf{A} \in \mathbb{R}^{n \times d}$ is defined by
+      \[
+        \mathrm{sr}(\mathbf{A}) := \frac{\|\mathbf{A}\|_{\mathrm{F}}^2}{\|\mathbf{A}\|_{\mathrm{op}}^2} = \frac{\sum_{i \in [d]} \lambda_i(\mathbf{M})^2}{\lambda_1(\mathbf{M})^2}.
+      \]
+      We have $\mathrm{sr}(\mathbf{A}) \leq \mathrm{rank}(\mathbf{A}) \leq d$; low-rank approximation is well-motivated when $\mathrm{sr}(\mathbf{A})$ is small.
+    context: "Stable rank measures the effective dimensionality of A and appears in the runtime of SVRG-based shift-and-invert algorithms."
