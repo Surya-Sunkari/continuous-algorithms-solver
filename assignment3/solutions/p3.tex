@@ -1,0 +1,55 @@
+\section*{Problem 3}
+
+If $\|\mathbf{v}\|_1 \leq R$, then $\mathbf{v}$ itself is feasible and the objective is zero, so the optimum is $\mathbf{x}^* = \mathbf{v}$. Assume henceforth that $\|\mathbf{v}\|_1 > R$.
+
+Since $\mathbf{v} \in \mathbb{R}^d_{\geq 0}$, the optimal $\mathbf{x}^*$ satisfies $\mathbf{x}^* \geq \mathbf{0}$: replacing any negative component $x_i^*$ by $0$ decreases $\|x_i - v_i\|$ (since $v_i \geq 0$) and decreases $\|\mathbf{x}\|_1$, so it strictly improves the objective while remaining feasible. With $\mathbf{x} \geq \mathbf{0}$, the constraint $\|\mathbf{x}\|_1 \leq R$ becomes $\sum_i x_i \leq R$, so the problem reduces to
+\[
+\min_{\mathbf{x} \geq \mathbf{0},\; \sum_i x_i \leq R} \frac{1}{2}\|\mathbf{x} - \mathbf{v}\|_2^2.
+\]
+
+\textbf{Claim:} The solution is $x_i^* = (v_i - \lambda)_+$ for the unique $\lambda \geq 0$ satisfying $\sum_{i=1}^d (v_i - \lambda)_+ = R$.
+
+\begin{proof}
+The Lagrangian is
+\[
+L(\mathbf{x}, \lambda, \boldsymbol{\mu}) = \frac{1}{2}\|\mathbf{x} - \mathbf{v}\|_2^2 + \lambda\Bigl(\sum_i x_i - R\Bigr) - \sum_i \mu_i x_i,
+\]
+with multipliers $\lambda \geq 0$ and $\mu_i \geq 0$. The KKT stationarity condition in coordinate $i$ is
+\[
+x_i - v_i + \lambda - \mu_i = 0, \qquad \text{i.e.,} \quad x_i = v_i - \lambda + \mu_i.
+\]
+Complementary slackness requires $\mu_i x_i = 0$ for each $i$:
+
+\textbf{Case 1:} $x_i > 0$. Then $\mu_i = 0$, so $x_i = v_i - \lambda$. Since $x_i > 0$, this requires $v_i > \lambda$.
+
+\textbf{Case 2:} $x_i = 0$. From stationarity, $0 = v_i - \lambda + \mu_i$, so $\mu_i = \lambda - v_i$. The requirement $\mu_i \geq 0$ gives $v_i \leq \lambda$.
+
+Combining both cases: $x_i^* = \max(v_i - \lambda, 0) = (v_i - \lambda)_+$.
+
+Since $\|\mathbf{v}\|_1 > R$, the constraint $\sum_i x_i \leq R$ is active at the optimum (if it were inactive, then $\lambda = 0$ by complementary slackness, giving $x_i = v_i$ and $\sum_i x_i = \|\mathbf{v}\|_1 > R$, a contradiction). So $\lambda > 0$ and
+\[
+\sum_{i=1}^d (v_i - \lambda)_+ = R.
+\]
+The left side is continuous and strictly decreasing in $\lambda$ on $[0, \max_i v_i]$, equals $\|\mathbf{v}\|_1 > R$ at $\lambda = 0$, and equals $0$ at $\lambda = \max_i v_i$. Hence there is a unique $\lambda^* \in (0, \max_i v_i)$ satisfying this equation. The objective is strictly convex and the feasible set is convex, so the KKT conditions are sufficient, and $\mathbf{x}^* = ((v_i - \lambda^*)_+)_{i=1}^d$ is the unique optimum.
+\end{proof}
+
+\textbf{Algorithm:}
+\begin{enumerate}
+\item If $\sum_{i=1}^d v_i \leq R$, return $\mathbf{x}^* = \mathbf{v}$.
+\item Sort $\mathbf{v}$ in decreasing order: $v_{\pi(1)} \geq v_{\pi(2)} \geq \cdots \geq v_{\pi(d)}$.
+\item Set $S \leftarrow 0$. For $k = 1, 2, \ldots, d$:
+    \begin{enumerate}
+        \item Set $S \leftarrow S + v_{\pi(k)}$.
+        \item Set $\lambda_k \leftarrow \frac{S - R}{k}$.
+        \item If $k = d$ or $\lambda_k \geq v_{\pi(k+1)}$, set $\lambda^* \leftarrow \lambda_k$ and break.
+    \end{enumerate}
+\item Return $x_i^* = (v_i - \lambda^*)_+$ for each $i$.
+\end{enumerate}
+
+\textbf{Correctness:} We need $\lambda^*$ such that $\sum_i (v_i - \lambda^*)_+ = R$. Suppose exactly the top $k$ components survive thresholding, i.e., $v_{\pi(k)} > \lambda^* \geq v_{\pi(k+1)}$ (with $v_{\pi(d+1)} := 0$). Then
+\[
+\sum_{i=1}^d (v_i - \lambda^*)_+ = \sum_{j=1}^k (v_{\pi(j)} - \lambda^*) = S_k - k\lambda^* = R,
+\]
+where $S_k = \sum_{j=1}^k v_{\pi(j)}$, giving $\lambda^* = (S_k - R)/k$. The algorithm checks each candidate $k$ in order and verifies the condition $v_{\pi(k)} > \lambda_k \geq v_{\pi(k+1)}$: since $\|\mathbf{v}\|_1 > R$, we have $\lambda_1 = v_{\pi(1)} - R \leq v_{\pi(1)}$, and the cumulative sum $S_k$ grows while $k$ grows, so $\lambda_k$ eventually drops below $v_{\pi(k+1)}$ (or we reach $k = d$). At that point, $\lambda_k \geq 0$ holds because $S_k \geq R$ (the partial sum of the largest components exceeds $R$ once enough are included). It remains to verify $\lambda_k < v_{\pi(k)}$. For $k \geq 2$: at iteration $k-1$ the algorithm did not break, so $\lambda_{k-1} < v_{\pi(k)}$, i.e., $(S_{k-1} - R)/(k-1) < v_{\pi(k)}$, i.e., $S_{k-1} - R < (k-1)\,v_{\pi(k)}$. Adding $v_{\pi(k)}$ to both sides gives $S_k - R < k\,v_{\pi(k)}$, hence $\lambda_k = (S_k - R)/k < v_{\pi(k)}$. For $k = 1$: $\lambda_1 = v_{\pi(1)} - R < v_{\pi(1)}$ since $R > 0$ (which holds because $\|\mathbf{v}\|_1 > R \geq 0$ and $\mathbf{v} \geq \mathbf{0}$ imply $R > 0$ is needed for a nontrivial problem; when $R = 0$, $\mathbf{x}^* = \mathbf{0}$ is immediate).
+
+\textbf{Runtime:} Sorting takes $O(d \log d)$. The loop runs at most $d$ iterations, each in $O(1)$. Computing the final output takes $O(d)$. Total: $O(d \log d)$.

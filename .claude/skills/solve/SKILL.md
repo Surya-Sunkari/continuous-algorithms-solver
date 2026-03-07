@@ -153,7 +153,7 @@ REFERENCE PATTERNS (from example.tex, if available):
 Check for:
 1. FORMATTING: Does it match the reference patterns above exactly?
 2. AI-SOUNDING PHRASES: Flag any of these — "delve", "it's important to note", "let's", "straightforward", "it can be shown that", "obviously", "clearly" (unless truly trivial), "we can see that", "interestingly", "notably", "crucial", "vital", "in order to", excessive "Note that"
-3. TONE: Does it sound like a strong, confident math student? Not like a textbook, not like AI?
+3. TONE: Does it sound like a strong, confident math student? Not like a textbook, not like AI?/usa
 4. LATEX CORRECTNESS: Are there any LaTeX syntax issues?
 
 If changes are needed, use the Write tool to save the CORRECTED LaTeX to: [absolute path to $1/solutions/.drafts/p$2_style.tex]
