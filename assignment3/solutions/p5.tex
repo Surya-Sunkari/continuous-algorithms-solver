@@ -1,0 +1,50 @@
+\section*{Problem 5}
+
+\begin{proof}
+Fix $y \in \operatorname{int}(\operatorname{dom} f^*)$ and set $x = \nabla f^*(y)$, so $y = \nabla f(x)$ with $x \in \operatorname{int}(\operatorname{dom} f)$. Write $H = \nabla^2 f(x)$. Since $f$ is Legendre type, the conjugate satisfies
+\[
+\nabla^2 f^*(y) = \bigl(\nabla^2 f(x)\bigr)^{-1} = H^{-1}.
+\]
+
+To compute $D^3 f^*(y)[u,u,u]$ for an arbitrary $u \in \mathbb{R}^d$, introduce the path $y(t) = y + tu$ and let $x(t) = \nabla f^*(y(t))$, so that $y(t) = \nabla f(x(t))$. Differentiating at $t = 0$,
+\[
+u = \nabla^2 f(x) \, x'(0) = H \, x'(0), \qquad \text{hence} \quad x'(0) = H^{-1} u.
+\]
+
+Define $M(t) = \nabla^2 f(x(t))$, so $\nabla^2 f^*(y(t)) = M(t)^{-1}$. By the given matrix derivative formula,
+\[
+\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)^{-1} = -H^{-1} \left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) H^{-1}.
+\]
+
+For any $a, b \in \mathbb{R}^d$, the derivative of $M(t)$ acts as
+\[
+a^\top \!\left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) b = D^3 f(x)\bigl[x'(0), a, b\bigr] = D^3 f(x)\bigl[H^{-1}u,\, a,\, b\bigr],
+\]
+since $M(t)_{ij} = \partial_i \partial_j f(x(t))$ and the chain rule produces the third derivative contracted with $x'(0)$.
+
+The third derivative of $f^*$ at $y$ in direction $u$ is then
+\begin{align*}
+D^3 f^*(y)[u,u,u]
+&= u^\top \!\left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} \nabla^2 f^*(y+tu)\right) u \\
+&= u^\top \bigl(-H^{-1}\bigr) \left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) H^{-1} u \\
+&= -D^3 f(x)\bigl[H^{-1}u,\, H^{-1}u,\, H^{-1}u\bigr],
+\end{align*}
+where the last equality uses the expression for $\tfrac{\mathrm{d}M}{\mathrm{d}t}$ with $a = H^{-1}u$ and $b = H^{-1}u$, together with multilinearity of $D^3 f(x)$.
+
+Set $h = H^{-1}u$. Self-concordance of $f$ gives
+\[
+\bigl|D^3 f(x)[h,h,h]\bigr| \leq 2\bigl(D^2 f(x)[h,h]\bigr)^{3/2} = 2\bigl(h^\top H\, h\bigr)^{3/2}.
+\]
+
+Substituting $h = H^{-1}u$:
+\[
+h^\top H\, h = (H^{-1}u)^\top H\, (H^{-1}u) = u^\top H^{-1} u = D^2 f^*(y)[u,u].
+\]
+
+Therefore
+\[
+\bigl|D^3 f^*(y)[u,u,u]\bigr| = \bigl|D^3 f(x)[h,h,h]\bigr| \leq 2\bigl(u^\top H^{-1} u\bigr)^{3/2} = 2\bigl(D^2 f^*(y)[u,u]\bigr)^{3/2}.
+\]
+
+Since $y \in \operatorname{int}(\operatorname{dom} f^*)$ and $u \in \mathbb{R}^d$ were arbitrary, $f^*$ is self-concordant.
+\end{proof}

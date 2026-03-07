@@ -1,0 +1,61 @@
+\section*{Problem 4}
+
+\subsection*{(i)}
+
+\begin{proof}
+$(\Rightarrow)$\; Suppose $\kappa^\star_{\mathrm{diag}}(\mathbf{K}) \le \kappa$. By definition, there exists a diagonal $\mathbf{W}' \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ such that
+\[
+\frac{\lambda_1\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)}{\lambda_d\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)} \le \kappa.
+\]
+Set $\alpha = \lambda_d\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)$ and $\beta = \lambda_1\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)$, so $\beta/\alpha \le \kappa$ and $\alpha > 0$. The eigenvalue bounds give
+\[
+\alpha \mathbf{I} \preceq \mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2} \preceq \beta \mathbf{I}.
+\]
+Define $\mathbf{W} = \alpha\,\mathbf{W}'$, which is diagonal and positive definite. Conjugating the left inequality by $\mathbf{W}'^{1/2}$:
+\[
+\alpha\,\mathbf{W}' \preceq \mathbf{K}, \quad\text{i.e.,}\quad \mathbf{W} \preceq \mathbf{K}.
+\]
+For the upper bound, $\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2} \preceq \beta\,\mathbf{I}$ gives $\mathbf{K} \preceq \beta\,\mathbf{W}'$. Since $\beta \le \kappa\alpha$,
+\[
+\mathbf{K} \preceq \beta\,\mathbf{W}' \preceq \kappa\alpha\,\mathbf{W}' = \kappa\,\mathbf{W}.
+\]
+
+$(\Leftarrow)$\; Suppose there exists a diagonal $\mathbf{W} \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ with $\mathbf{W} \preceq \mathbf{K} \preceq \kappa\,\mathbf{W}$. Conjugating by $\mathbf{W}^{-1/2}$ (diagonal, hence symmetric):
+\[
+\mathbf{I} \preceq \mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2} \preceq \kappa\,\mathbf{I}.
+\]
+Thus $\lambda_d\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right) \ge 1$ and $\lambda_1\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right) \le \kappa$, so
+\[
+\frac{\lambda_1\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right)}{\lambda_d\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right)} \le \frac{\kappa}{1} = \kappa.
+\]
+Since $\mathbf{W}$ is a feasible diagonal preconditioner, $\kappa^\star_{\mathrm{diag}}(\mathbf{K}) \le \kappa$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Let $\kappa^\star = \kappa^\star_{\mathrm{diag}}(\mathbf{K})$. Since $\mathbf{K} \succ \mathbf{0}$, the condition number of any conjugate $\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}$ is at least $1$, so $\kappa^\star \ge 1$.
+
+By part (i), there exists a diagonal $\mathbf{W} \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ with
+\[
+\mathbf{W} \preceq \mathbf{K} \preceq \kappa^\star\,\mathbf{W}.
+\]
+Define $\mathbf{W}' = \mathbf{W} + \mathbf{D}$, which is diagonal and positive definite (as the sum of two diagonal positive definite matrices). We verify the two Loewner inequalities for $\mathbf{K} + \mathbf{D}$:
+
+\textbf{Lower bound:}\; $\mathbf{W} \preceq \mathbf{K}$ implies $\mathbf{W} + \mathbf{D} \preceq \mathbf{K} + \mathbf{D}$, i.e., $\mathbf{W}' \preceq \mathbf{K} + \mathbf{D}$.
+
+\textbf{Upper bound:}\; From $\mathbf{K} \preceq \kappa^\star\,\mathbf{W}$,
+\[
+\mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W} + \mathbf{D}.
+\]
+Since $\kappa^\star \ge 1$ and $\mathbf{D} \succeq \mathbf{0}$, we have $\mathbf{D} \preceq \kappa^\star\,\mathbf{D}$, hence
+\[
+\kappa^\star\,\mathbf{W} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W} + \kappa^\star\,\mathbf{D} = \kappa^\star\,\mathbf{W}'.
+\]
+Combining: $\mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W}'$.
+
+We have shown $\mathbf{W}' \preceq \mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W}'$ with $\mathbf{W}'$ diagonal and positive definite. By part (i),
+\[
+\kappa^\star_{\mathrm{diag}}(\mathbf{K} + \mathbf{D}) \le \kappa^\star = \kappa^\star_{\mathrm{diag}}(\mathbf{K}). \qedhere
+\]
+\end{proof}
