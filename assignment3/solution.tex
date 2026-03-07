@@ -1,0 +1,312 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{subcaption} % only if you want them side-by-side
+\usepackage{float}      % for [H] placement (optional)
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+
+\title{CS 395T Homework 3}
+\author{Surya Sunkari (svs879)}
+\date{March 6, 2026}
+
+\maketitle
+
+\section*{Problem 1}
+
+\subsection*{(i)}
+
+\begin{proof}
+The feasible set $\mathcal{F}_i := \{\mathbf{x} \in \mathbb{R}^n \mid \mathbf{A}^\top \mathbf{x} = \mathbf{a}_i\}$ is nonempty:
+since $\mathbf{a}_i$ is the $i$-th row of $\mathbf{A}$, we have $\mathbf{A}^\top \mathbf{e}_i = \mathbf{a}_i$, so $\mathbf{e}_i \in \mathcal{F}_i$.
+
+Decompose $\mathbb{R}^n = \mathrm{col}(\mathbf{A}) \oplus \ker(\mathbf{A}^\top)$ orthogonally (by the fundamental theorem of linear algebra). Any $\mathbf{x} \in \mathcal{F}_i$ splits as $\mathbf{x} = \mathbf{x}_R + \mathbf{x}_N$ with $\mathbf{x}_R \in \mathrm{col}(\mathbf{A})$ and $\mathbf{x}_N \in \ker(\mathbf{A}^\top)$. Then
+\[
+    \mathbf{A}^\top \mathbf{x} = \mathbf{A}^\top \mathbf{x}_R + \mathbf{A}^\top \mathbf{x}_N = \mathbf{A}^\top \mathbf{x}_R = \mathbf{a}_i,
+\]
+so $\mathbf{x}_R \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i$ as well. By orthogonality,
+\[
+    \|\mathbf{x}\|_2^2 = \|\mathbf{x}_R\|_2^2 + \|\mathbf{x}_N\|_2^2 \geq \|\mathbf{x}_R\|_2^2,
+\]
+with equality iff $\mathbf{x}_N = \mathbf{0}$. Thus $\min_{\mathbf{x} \in \mathcal{F}_i} \|\mathbf{x}\|_2^2 = \min_{\mathbf{x} \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i} \|\mathbf{x}\|_2^2$.
+
+There is a unique $\mathbf{x}^* \in \mathrm{col}(\mathbf{A}) \cap \mathcal{F}_i$: write $\mathbf{x}^* = \mathbf{A}\mathbf{y}$ for $\mathbf{y} \in \mathbb{R}^d$; the constraint $\mathbf{A}^\top \mathbf{x}^* = \mathbf{a}_i$ gives $\mathbf{A}^\top \mathbf{A} \mathbf{y} = \mathbf{a}_i$. Since $\mathbf{a}_i \in \mathrm{col}(\mathbf{A}^\top) = \mathrm{col}(\mathbf{A}^\top \mathbf{A})$, the minimum-norm solution is $\mathbf{y} = (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i$, yielding
+\[
+    \mathbf{x}^* = \mathbf{A}(\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i.
+\]
+The minimum value is
+\begin{align*}
+    \min_{\mathbf{x} \in \mathcal{F}_i} \|\mathbf{x}\|_2^2
+    = \|\mathbf{x}^*\|_2^2
+    &= \mathbf{a}_i^\top (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{A}^\top \mathbf{A} (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i \\
+    &= \mathbf{a}_i^\top (\mathbf{A}^\top \mathbf{A})^\dagger \mathbf{a}_i
+    = \boldsymbol{\tau}_i(\mathbf{A}),
+\end{align*}
+where the second equality uses the pseudoinverse identity $\mathbf{M}^\dagger \mathbf{M} \mathbf{M}^\dagger = \mathbf{M}^\dagger$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Let $\mathbf{A} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top$ be the thin SVD of $\mathbf{A}$, where $r := \mathrm{rank}(\mathbf{A})$, $\mathbf{U} \in \mathbb{R}^{n \times r}$ and $\mathbf{V} \in \mathbb{R}^{d \times r}$ have orthonormal columns, and $\boldsymbol{\Sigma} = \mathrm{diag}(\sigma_1,\ldots,\sigma_r)$ with $\sigma_j > 0$. Define
+\[
+    \mathbf{P} := \mathbf{U}\mathbf{U}^\top \in \mathbb{R}^{n \times n}.
+\]
+
+\textbf{$\mathbf{P}$ is an orthogonal projection matrix:}
+\[
+    \mathbf{P}^2 = \mathbf{U}\mathbf{U}^\top\mathbf{U}\mathbf{U}^\top = \mathbf{U}\mathbf{I}_r\mathbf{U}^\top = \mathbf{P},
+\]
+and $\mathbf{P}^\top = \mathbf{P}$. Moreover, $\mathbf{v}^\top \mathbf{P} \mathbf{v} = \|\mathbf{U}^\top \mathbf{v}\|_2^2 \geq 0$ for all $\mathbf{v}$, so $\mathbf{P} \in \mathbb{S}_{\succeq 0}^{n \times n}$.
+
+\textbf{$\mathbf{P}_{ii} = \boldsymbol{\tau}_i(\mathbf{A})$ for all $i \in [n]$:} The pseudoinverse is $(\mathbf{A}^\top\mathbf{A})^\dagger = \mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^\top$. Using $\mathbf{a}_i = \mathbf{A}^\top \mathbf{e}_i = \mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i$,
+\begin{align*}
+    \boldsymbol{\tau}_i(\mathbf{A})
+    = \mathbf{a}_i^\top (\mathbf{A}^\top\mathbf{A})^\dagger \mathbf{a}_i
+    &= \mathbf{e}_i^\top \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top \cdot \mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^\top \cdot \mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i \\
+    &= \mathbf{e}_i^\top \mathbf{U}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{-2}\boldsymbol{\Sigma}\mathbf{U}^\top\mathbf{e}_i
+    = \mathbf{e}_i^\top \mathbf{U}\mathbf{U}^\top\mathbf{e}_i
+    = \mathbf{P}_{ii},
+\end{align*}
+where we used $\mathbf{V}^\top\mathbf{V} = \mathbf{I}_r$ twice.
+\end{proof}
+
+\section*{Problem 2}
+
+\begin{proof}
+By the spectral theorem and Lemma 6 (Part VI), the matrix inequality $(1-\epsilon)\mathbf{M} \preceq p(\mathbf{M})^2 \preceq (1+\epsilon)\mathbf{M}$ holds iff
+\[
+    (1-\epsilon)\lambda \leq p(\lambda)^2 \leq (1+\epsilon)\lambda \quad \text{for all } \lambda \in [\mu, L].
+\]
+It therefore suffices to construct a polynomial $p$ of degree $O(\sqrt{\kappa}\log\frac{\kappa}{\epsilon})$ satisfying $|p(\lambda)^2 - \lambda| \leq \epsilon\lambda$ for all $\lambda \in [\mu, L]$.
+
+\textbf{Chebyshev approximation of $\sqrt{\lambda}$.}
+Map $[\mu, L]$ to $[-1,1]$ via $\lambda(w) = \frac{L+\mu}{2} + \frac{L-\mu}{2}w$, and define $f(w) := \sqrt{\lambda(w)}$, which is real-valued on $[-1,1]$. The branch point $\lambda = 0$ corresponds to $w^\star = -\frac{L+\mu}{L-\mu} = -\frac{\kappa+1}{\kappa-1} < -1$.
+
+Set $\rho := 1 + \frac{1}{\sqrt{\kappa}}$. The leftmost real point of the Bernstein ellipse $E_\rho$ is at $w = -\frac{\rho + \rho^{-1}}{2}$. Using $\frac{\rho+\rho^{-1}}{2} = 1 + \frac{(\rho-1)^2}{2\rho} = 1 + \frac{1}{2\kappa + 2\sqrt{\kappa}}$, we verify
+\[
+    \frac{\rho + \rho^{-1}}{2} = 1 + \frac{1}{2\kappa + 2\sqrt{\kappa}} < 1 + \frac{2}{\kappa - 1} = \frac{\kappa+1}{\kappa-1} = |w^\star|,
+\]
+where the inequality holds since $\kappa - 1 < 4\kappa + 4\sqrt{\kappa}$ for all $\kappa > 1$. Hence $w^\star$ lies outside $E_\rho$.
+
+The affine map $\lambda(w)$ sends the interior of $E_\rho$ (simply connected) to a simply connected region $D \subset \mathbb{C}$. Since the leftmost real point of $D$ is
+\[
+    \frac{L+\mu}{2} - \frac{L-\mu}{2} \cdot \frac{\rho+\rho^{-1}}{2} = \mu - \frac{(L-\mu)}{4\kappa + 4\sqrt{\kappa}} > 0,
+\]
+we have $0 \notin D$. By the given analytic continuation, $\sqrt{\lambda}$ extends analytically to $D$, so $f$ is analytic on the interior of $E_\rho$.
+
+\textbf{Bounding $|f|$ on $E_\rho$.}
+For $w \in E_\rho$, $|w| \leq \frac{\rho+\rho^{-1}}{2}$, so
+\[
+    |\lambda(w)| \leq \frac{L+\mu}{2} + \frac{L-\mu}{2} \cdot \frac{\rho + \rho^{-1}}{2} = L + \frac{L-\mu}{4\kappa + 4\sqrt{\kappa}} \leq 2L.
+\]
+Therefore $M := \sup_{w \in E_\rho} |f(w)| \leq \sqrt{2L}$.
+
+\textbf{Truncation error.}
+By Theorem 3 (Part VII), the Chebyshev coefficients of $f$ satisfy $|a_i| \leq 2M\rho^{-i}$ for $i \geq 1$. By Lemma 3 (Part VII), the degree-$\Delta$ Chebyshev truncation $q_\Delta(w) := \sum_{i=0}^{\Delta} a_i T_i(w)$ satisfies
+\[
+    \sup_{w \in [-1,1]} |f(w) - q_\Delta(w)| \leq \sum_{i > \Delta} |a_i| \leq \frac{2M\rho^{-\Delta}}{\rho - 1}.
+\]
+
+Define $p(\lambda) := q_\Delta\!\left(\frac{2\lambda - (L+\mu)}{L-\mu}\right)$, a degree-$\Delta$ polynomial in $\lambda$, so that
+\[
+    E := \sup_{\lambda \in [\mu,L]} |p(\lambda) - \sqrt{\lambda}| \leq \frac{2\sqrt{2L} \cdot \rho^{-\Delta}}{1/\sqrt{\kappa}} = 2\sqrt{2}\,\frac{L}{\sqrt{\mu}}\,\rho^{-\Delta}.
+\]
+
+\textbf{Choosing the degree.}
+Set $\Delta := \lceil 2\sqrt{\kappa}\log(6\sqrt{2}\,\kappa/\epsilon)\rceil$. Since $\log\rho = \log(1 + 1/\sqrt{\kappa}) \geq \frac{1}{2\sqrt{\kappa}}$ (using $\log(1+x) \geq x/2$ for $x \in (0,1]$),
+\[
+    \rho^{-\Delta} \leq \exp\!\left(-\frac{\Delta}{2\sqrt{\kappa}}\right) \leq \exp\!\left(-\log\frac{6\sqrt{2}\,\kappa}{\epsilon}\right) = \frac{\epsilon}{6\sqrt{2}\,\kappa}.
+\]
+Substituting:
+\[
+    E \leq 2\sqrt{2}\,\frac{L}{\sqrt{\mu}} \cdot \frac{\epsilon}{6\sqrt{2}\,\kappa} = \frac{\epsilon L}{3\kappa\sqrt{\mu}} = \frac{\epsilon\sqrt{\mu}}{3},
+\]
+where the last step uses $L/\kappa = \mu$.
+
+\textbf{Converting to the quadratic bound.}
+For any $\lambda \in [\mu, L]$, since $E \leq \frac{\epsilon\sqrt{\mu}}{3} \leq \frac{\sqrt{\mu}}{3} \leq \sqrt{\lambda}$:
+\[
+    |p(\lambda) + \sqrt{\lambda}| \leq E + 2\sqrt{\lambda} \leq 3\sqrt{\lambda}.
+\]
+Therefore
+\[
+    |p(\lambda)^2 - \lambda| = |p(\lambda) - \sqrt{\lambda}|\,|p(\lambda) + \sqrt{\lambda}| \leq \frac{\epsilon\sqrt{\mu}}{3} \cdot 3\sqrt{\lambda} = \epsilon\sqrt{\mu\lambda} \leq \epsilon\lambda,
+\]
+where the last inequality uses $\sqrt{\mu} \leq \sqrt{\lambda}$. This gives $(1-\epsilon)\lambda \leq p(\lambda)^2 \leq (1+\epsilon)\lambda$ for all $\lambda \in [\mu, L]$, and $\Delta = O(\sqrt{\kappa}\log\frac{\kappa}{\epsilon})$.
+\end{proof}
+
+\section*{Problem 3}
+
+If $\|\mathbf{v}\|_1 \leq R$, then $\mathbf{v}$ itself is feasible and the objective is zero, so the optimum is $\mathbf{x}^* = \mathbf{v}$. Assume henceforth that $\|\mathbf{v}\|_1 > R$.
+
+Since $\mathbf{v} \in \mathbb{R}^d_{\geq 0}$, the optimal $\mathbf{x}^*$ satisfies $\mathbf{x}^* \geq \mathbf{0}$: replacing any negative component $x_i^*$ by $0$ decreases $\|x_i - v_i\|$ (since $v_i \geq 0$) and decreases $\|\mathbf{x}\|_1$, so it strictly improves the objective while remaining feasible. With $\mathbf{x} \geq \mathbf{0}$, the constraint $\|\mathbf{x}\|_1 \leq R$ becomes $\sum_i x_i \leq R$, so the problem reduces to
+\[
+\min_{\mathbf{x} \geq \mathbf{0},\; \sum_i x_i \leq R} \frac{1}{2}\|\mathbf{x} - \mathbf{v}\|_2^2.
+\]
+
+\textbf{Claim:} The solution is $x_i^* = (v_i - \lambda)_+$ for the unique $\lambda \geq 0$ satisfying $\sum_{i=1}^d (v_i - \lambda)_+ = R$.
+
+\begin{proof}
+The Lagrangian is
+\[
+L(\mathbf{x}, \lambda, \boldsymbol{\mu}) = \frac{1}{2}\|\mathbf{x} - \mathbf{v}\|_2^2 + \lambda\Bigl(\sum_i x_i - R\Bigr) - \sum_i \mu_i x_i,
+\]
+with multipliers $\lambda \geq 0$ and $\mu_i \geq 0$. The KKT stationarity condition in coordinate $i$ is
+\[
+x_i - v_i + \lambda - \mu_i = 0, \qquad \text{i.e.,} \quad x_i = v_i - \lambda + \mu_i.
+\]
+Complementary slackness requires $\mu_i x_i = 0$ for each $i$:
+
+\textbf{Case 1:} $x_i > 0$. Then $\mu_i = 0$, so $x_i = v_i - \lambda$. Since $x_i > 0$, this requires $v_i > \lambda$.
+
+\textbf{Case 2:} $x_i = 0$. From stationarity, $0 = v_i - \lambda + \mu_i$, so $\mu_i = \lambda - v_i$. The requirement $\mu_i \geq 0$ gives $v_i \leq \lambda$.
+
+Combining both cases: $x_i^* = \max(v_i - \lambda, 0) = (v_i - \lambda)_+$.
+
+Since $\|\mathbf{v}\|_1 > R$, the constraint $\sum_i x_i \leq R$ is active at the optimum (if it were inactive, then $\lambda = 0$ by complementary slackness, giving $x_i = v_i$ and $\sum_i x_i = \|\mathbf{v}\|_1 > R$, a contradiction). So $\lambda > 0$ and
+\[
+\sum_{i=1}^d (v_i - \lambda)_+ = R.
+\]
+The left side is continuous and strictly decreasing in $\lambda$ on $[0, \max_i v_i]$, equals $\|\mathbf{v}\|_1 > R$ at $\lambda = 0$, and equals $0$ at $\lambda = \max_i v_i$. Hence there is a unique $\lambda^* \in (0, \max_i v_i)$ satisfying this equation. The objective is strictly convex and the feasible set is convex, so the KKT conditions are sufficient, and $\mathbf{x}^* = ((v_i - \lambda^*)_+)_{i=1}^d$ is the unique optimum.
+\end{proof}
+
+\textbf{Algorithm:}
+\begin{enumerate}
+\item If $\sum_{i=1}^d v_i \leq R$, return $\mathbf{x}^* = \mathbf{v}$.
+\item Sort $\mathbf{v}$ in decreasing order: $v_{\pi(1)} \geq v_{\pi(2)} \geq \cdots \geq v_{\pi(d)}$.
+\item Set $S \leftarrow 0$. For $k = 1, 2, \ldots, d$:
+    \begin{enumerate}
+        \item Set $S \leftarrow S + v_{\pi(k)}$.
+        \item Set $\lambda_k \leftarrow \frac{S - R}{k}$.
+        \item If $k = d$ or $\lambda_k \geq v_{\pi(k+1)}$, set $\lambda^* \leftarrow \lambda_k$ and break.
+    \end{enumerate}
+\item Return $x_i^* = (v_i - \lambda^*)_+$ for each $i$.
+\end{enumerate}
+
+\textbf{Correctness:} We need $\lambda^*$ such that $\sum_i (v_i - \lambda^*)_+ = R$. Suppose exactly the top $k$ components survive thresholding, i.e., $v_{\pi(k)} > \lambda^* \geq v_{\pi(k+1)}$ (with $v_{\pi(d+1)} := 0$). Then
+\[
+\sum_{i=1}^d (v_i - \lambda^*)_+ = \sum_{j=1}^k (v_{\pi(j)} - \lambda^*) = S_k - k\lambda^* = R,
+\]
+where $S_k = \sum_{j=1}^k v_{\pi(j)}$, giving $\lambda^* = (S_k - R)/k$. The algorithm checks each candidate $k$ in order and verifies the condition $v_{\pi(k)} > \lambda_k \geq v_{\pi(k+1)}$: since $\|\mathbf{v}\|_1 > R$, we have $\lambda_1 = v_{\pi(1)} - R \leq v_{\pi(1)}$, and the cumulative sum $S_k$ grows while $k$ grows, so $\lambda_k$ eventually drops below $v_{\pi(k+1)}$ (or we reach $k = d$). At that point, $\lambda_k \geq 0$ holds because $S_k \geq R$ (the partial sum of the largest components exceeds $R$ once enough are included). It remains to verify $\lambda_k < v_{\pi(k)}$. For $k \geq 2$: at iteration $k-1$ the algorithm did not break, so $\lambda_{k-1} < v_{\pi(k)}$, i.e., $(S_{k-1} - R)/(k-1) < v_{\pi(k)}$, i.e., $S_{k-1} - R < (k-1)\,v_{\pi(k)}$. Adding $v_{\pi(k)}$ to both sides gives $S_k - R < k\,v_{\pi(k)}$, hence $\lambda_k = (S_k - R)/k < v_{\pi(k)}$. For $k = 1$: $\lambda_1 = v_{\pi(1)} - R < v_{\pi(1)}$ since $R > 0$ (which holds because $\|\mathbf{v}\|_1 > R \geq 0$ and $\mathbf{v} \geq \mathbf{0}$ imply $R > 0$ is needed for a nontrivial problem; when $R = 0$, $\mathbf{x}^* = \mathbf{0}$ is immediate).
+
+\textbf{Runtime:} Sorting takes $O(d \log d)$. The loop runs at most $d$ iterations, each in $O(1)$. Computing the final output takes $O(d)$. Total: $O(d \log d)$.
+
+\section*{Problem 4}
+
+\subsection*{(i)}
+
+\begin{proof}
+$(\Rightarrow)$\; Suppose $\kappa^\star_{\mathrm{diag}}(\mathbf{K}) \le \kappa$. By definition, there exists a diagonal $\mathbf{W}' \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ such that
+\[
+\frac{\lambda_1\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)}{\lambda_d\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)} \le \kappa.
+\]
+Set $\alpha = \lambda_d\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)$ and $\beta = \lambda_1\!\left(\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2}\right)$, so $\beta/\alpha \le \kappa$ and $\alpha > 0$. The eigenvalue bounds give
+\[
+\alpha \mathbf{I} \preceq \mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2} \preceq \beta \mathbf{I}.
+\]
+Define $\mathbf{W} = \alpha\,\mathbf{W}'$, which is diagonal and positive definite. Conjugating the left inequality by $\mathbf{W}'^{1/2}$:
+\[
+\alpha\,\mathbf{W}' \preceq \mathbf{K}, \quad\text{i.e.,}\quad \mathbf{W} \preceq \mathbf{K}.
+\]
+For the upper bound, $\mathbf{W}'^{-1/2}\mathbf{K}\,\mathbf{W}'^{-1/2} \preceq \beta\,\mathbf{I}$ gives $\mathbf{K} \preceq \beta\,\mathbf{W}'$. Since $\beta \le \kappa\alpha$,
+\[
+\mathbf{K} \preceq \beta\,\mathbf{W}' \preceq \kappa\alpha\,\mathbf{W}' = \kappa\,\mathbf{W}.
+\]
+
+$(\Leftarrow)$\; Suppose there exists a diagonal $\mathbf{W} \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ with $\mathbf{W} \preceq \mathbf{K} \preceq \kappa\,\mathbf{W}$. Conjugating by $\mathbf{W}^{-1/2}$ (diagonal, hence symmetric):
+\[
+\mathbf{I} \preceq \mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2} \preceq \kappa\,\mathbf{I}.
+\]
+Thus $\lambda_d\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right) \ge 1$ and $\lambda_1\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right) \le \kappa$, so
+\[
+\frac{\lambda_1\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right)}{\lambda_d\!\left(\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}\right)} \le \frac{\kappa}{1} = \kappa.
+\]
+Since $\mathbf{W}$ is a feasible diagonal preconditioner, $\kappa^\star_{\mathrm{diag}}(\mathbf{K}) \le \kappa$.
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+Let $\kappa^\star = \kappa^\star_{\mathrm{diag}}(\mathbf{K})$. Since $\mathbf{K} \succ \mathbf{0}$, the condition number of any conjugate $\mathbf{W}^{-1/2}\mathbf{K}\,\mathbf{W}^{-1/2}$ is at least $1$, so $\kappa^\star \ge 1$.
+
+By part (i), there exists a diagonal $\mathbf{W} \in \mathbb{S}^{d \times d}_{\succ \mathbf{0}}$ with
+\[
+\mathbf{W} \preceq \mathbf{K} \preceq \kappa^\star\,\mathbf{W}.
+\]
+Define $\mathbf{W}' = \mathbf{W} + \mathbf{D}$, which is diagonal and positive definite (as the sum of two diagonal positive definite matrices). We verify the two Loewner inequalities for $\mathbf{K} + \mathbf{D}$:
+
+\textbf{Lower bound:}\; $\mathbf{W} \preceq \mathbf{K}$ implies $\mathbf{W} + \mathbf{D} \preceq \mathbf{K} + \mathbf{D}$, i.e., $\mathbf{W}' \preceq \mathbf{K} + \mathbf{D}$.
+
+\textbf{Upper bound:}\; From $\mathbf{K} \preceq \kappa^\star\,\mathbf{W}$,
+\[
+\mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W} + \mathbf{D}.
+\]
+Since $\kappa^\star \ge 1$ and $\mathbf{D} \succeq \mathbf{0}$, we have $\mathbf{D} \preceq \kappa^\star\,\mathbf{D}$, hence
+\[
+\kappa^\star\,\mathbf{W} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W} + \kappa^\star\,\mathbf{D} = \kappa^\star\,\mathbf{W}'.
+\]
+Combining: $\mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W}'$.
+
+We have shown $\mathbf{W}' \preceq \mathbf{K} + \mathbf{D} \preceq \kappa^\star\,\mathbf{W}'$ with $\mathbf{W}'$ diagonal and positive definite. By part (i),
+\[
+\kappa^\star_{\mathrm{diag}}(\mathbf{K} + \mathbf{D}) \le \kappa^\star = \kappa^\star_{\mathrm{diag}}(\mathbf{K}). \qedhere
+\]
+\end{proof}
+
+\section*{Problem 5}
+
+\begin{proof}
+Fix $y \in \operatorname{int}(\operatorname{dom} f^*)$ and set $x = \nabla f^*(y)$, so $y = \nabla f(x)$ with $x \in \operatorname{int}(\operatorname{dom} f)$. Write $H = \nabla^2 f(x)$. Since $f$ is Legendre type, the conjugate satisfies
+\[
+\nabla^2 f^*(y) = \bigl(\nabla^2 f(x)\bigr)^{-1} = H^{-1}.
+\]
+
+To compute $D^3 f^*(y)[u,u,u]$ for an arbitrary $u \in \mathbb{R}^d$, introduce the path $y(t) = y + tu$ and let $x(t) = \nabla f^*(y(t))$, so that $y(t) = \nabla f(x(t))$. Differentiating at $t = 0$,
+\[
+u = \nabla^2 f(x) \, x'(0) = H \, x'(0), \qquad \text{hence} \quad x'(0) = H^{-1} u.
+\]
+
+Define $M(t) = \nabla^2 f(x(t))$, so $\nabla^2 f^*(y(t)) = M(t)^{-1}$. By the given matrix derivative formula,
+\[
+\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)^{-1} = -H^{-1} \left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) H^{-1}.
+\]
+
+For any $a, b \in \mathbb{R}^d$, the derivative of $M(t)$ acts as
+\[
+a^\top \!\left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) b = D^3 f(x)\bigl[x'(0), a, b\bigr] = D^3 f(x)\bigl[H^{-1}u,\, a,\, b\bigr],
+\]
+since $M(t)_{ij} = \partial_i \partial_j f(x(t))$ and the chain rule produces the third derivative contracted with $x'(0)$.
+
+The third derivative of $f^*$ at $y$ in direction $u$ is then
+\begin{align*}
+D^3 f^*(y)[u,u,u]
+&= u^\top \!\left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} \nabla^2 f^*(y+tu)\right) u \\
+&= u^\top \bigl(-H^{-1}\bigr) \left(\frac{\mathrm{d}}{\mathrm{d}t}\Big|_{t=0} M(t)\right) H^{-1} u \\
+&= -D^3 f(x)\bigl[H^{-1}u,\, H^{-1}u,\, H^{-1}u\bigr],
+\end{align*}
+where the last equality uses the expression for $\tfrac{\mathrm{d}M}{\mathrm{d}t}$ with $a = H^{-1}u$ and $b = H^{-1}u$, together with multilinearity of $D^3 f(x)$.
+
+Set $h = H^{-1}u$. Self-concordance of $f$ gives
+\[
+\bigl|D^3 f(x)[h,h,h]\bigr| \leq 2\bigl(D^2 f(x)[h,h]\bigr)^{3/2} = 2\bigl(h^\top H\, h\bigr)^{3/2}.
+\]
+
+Substituting $h = H^{-1}u$:
+\[
+h^\top H\, h = (H^{-1}u)^\top H\, (H^{-1}u) = u^\top H^{-1} u = D^2 f^*(y)[u,u].
+\]
+
+Therefore
+\[
+\bigl|D^3 f^*(y)[u,u,u]\bigr| = \bigl|D^3 f(x)[h,h,h]\bigr| \leq 2\bigl(u^\top H^{-1} u\bigr)^{3/2} = 2\bigl(D^2 f^*(y)[u,u]\bigr)^{3/2}.
+\]
+
+Since $y \in \operatorname{int}(\operatorname{dom} f^*)$ and $u \in \mathbb{R}^d$ were arbitrary, $f^*$ is self-concordant.
+\end{proof}
+
+\end{document}
