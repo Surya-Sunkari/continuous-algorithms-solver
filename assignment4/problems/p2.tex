@@ -1,0 +1,15 @@
+\section*{Problem 2}
+
+\begin{enumerate}[(i)]
+\item Let $f : \Omega \to \mathbb{R}_{\geq 0}$ and $g : \Omega \to \mathbb{R}_{>0}$ for a sample space $\Omega$ satisfying $\frac{f(\omega)}{g(\omega)} \leq C$ for all $\omega \in \Omega$, and let $P \propto f$ and $Q \propto g$ be probability distributions over $\Omega$. Suppose we have sample access to $Q$ through an oracle $\mathcal{O}$. Give an algorithm which samples from $P$, using at most
+\[
+N := \frac{C \int_{\omega \in \Omega} g(\omega) \mathrm{d}\omega}{\int_{\omega \in \Omega} f(\omega) \mathrm{d}\omega}
+\]
+queries to $\mathcal{O}$, as well as at most $N$ value oracle queries to each of $f$ and $g$, all in expectation.
+
+\item Let $f : \mathbb{B}(\mathbf{0}_d, 1) \to \mathbb{R}$ be 1-Lipschitz. Give an algorithm which samples from the density $\pi \propto \exp(-f)$ over $\mathbb{B}(\mathbf{0}_d, 1)$, i.e.,
+\[
+\pi(\mathbf{x}) = \begin{cases} \frac{\exp(-f(\mathbf{x}))}{\int_{\mathbf{y} \in \mathbb{B}(\mathbf{0}_d, 1)} \exp(-f(\mathbf{y})) \mathrm{d}\mathbf{y}} & \mathbf{x} \in \mathbb{B}(\mathbf{0}_d, 1) \\ 0 & \text{else} \end{cases},
+\]
+using a constant number of value oracle queries to $f$ in expectation.\footnote{This shows that exact sampling of log-Lipschitz functions over the unit ball can be done in an expected constant number of value oracle queries. In contrast, Lemma 4, Part II shows that even approximate optimization of Lipschitz functions over the unit ball requires exponentially many value oracle queries. This gives an example where a sampling problem is easier than the corresponding optimization problem, once we leave the convex setting.}
+\end{enumerate}
