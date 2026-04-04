@@ -1,0 +1,55 @@
+\section*{Problem 3}
+
+\subsection*{(i)}
+The kernel of $\mathbf{L}_G$ is the span of the indicator vectors of the connected components of $G$.
+
+\begin{proof}
+By Lemma 10 (Part II),
+\[
+\mathbf{x}^\top \mathbf{L}_G \mathbf{x} = \sum_{e = (u,v) \in E} w_e (x_u - x_v)^2.
+\]
+Since $w_e > 0$ for all $e \in E$, this equals zero if and only if $x_u = x_v$ for every edge $(u, v) \in E$. Equivalently, $\mathbf{x}$ is constant on each connected component of $G$. The set of all such vectors is precisely $\operatorname{span}\{\mathbf{1}_{C_1}, \ldots, \mathbf{1}_{C_k}\}$, where $C_1, \ldots, C_k$ are the connected components of $G$.
+\end{proof}
+
+\subsection*{(ii)}
+For $\mathbf{x} \in \{-\tfrac{1}{2}, \tfrac{1}{2}\}^V$, the vector $\mathbf{x}$ defines a cut $(S, V \setminus S)$ where $S = \{v \in V : x_v = \tfrac{1}{2}\}$. For each edge $e = (u,v)$, we have $(x_u - x_v)^2 = 1$ if $e$ crosses the cut (i.e., exactly one of $u, v$ is in $S$) and $(x_u - x_v)^2 = 0$ otherwise. By Lemma 10 (Part II),
+\[
+\mathbf{x}^\top \mathbf{L}_G \mathbf{x} = \sum_{e = (u,v) \in E} w_e (x_u - x_v)^2 = \sum_{\substack{e = (u,v) \in E \\ |\{u,v\} \cap S| = 1}} w_e.
+\]
+This is the total weight of edges crossing the cut $(S, V \setminus S)$.
+
+\subsection*{(iii)}
+\begin{proof}
+Write the Laplacian as a sum of rank-one terms:
+\[
+\mathbf{L}_G = \sum_{e = (u,v) \in E} w_e (\mathbf{e}_u - \mathbf{e}_v)(\mathbf{e}_u - \mathbf{e}_v)^\top.
+\]
+Define the matrix $\mathbf{A} \in \mathbb{R}^{|E| \times |V|}$ whose row indexed by edge $e = (u,v)$ is $\mathbf{a}_e := \sqrt{w_e}(\mathbf{e}_u - \mathbf{e}_v)^\top$. Then
+\[
+\mathbf{A}^\top \mathbf{A} = \sum_{e \in E} \mathbf{a}_e^\top \mathbf{a}_e = \sum_{e = (u,v) \in E} w_e (\mathbf{e}_u - \mathbf{e}_v)(\mathbf{e}_u - \mathbf{e}_v)^\top = \mathbf{L}_G.
+\]
+We apply Proposition 3 (Part IX) to $\mathbf{A}$. Set $\varepsilon = 0.1$, $\delta = \tfrac{1}{2}$, $n = |E|$, and $d = |V|$.
+
+\textbf{Rank bound:} $\operatorname{rank}(\mathbf{A}) = \operatorname{rank}(\mathbf{L}_G) \leq |V|$.
+
+\textbf{Sample complexity:} By Proposition 3 (Part IX), taking
+\[
+K \geq \frac{3 \operatorname{rank}(\mathbf{A})}{\varepsilon^2} \log\!\left(\frac{2d}{\delta}\right) \leq \frac{3|V|}{0.01} \log(4|V|) = O(|V| \log |V|)
+\]
+i.i.d.\ samples $e_1, \ldots, e_K$ from the leverage score distribution $p_e = \tau_e(\mathbf{A}) / \|\boldsymbol{\tau}\|_1$ guarantees, with probability at least $\tfrac{1}{2}$, that
+\[
+(1 - \varepsilon)\,\mathbf{A}^\top \mathbf{A} \preceq \mathbf{P} \preceq (1 + \varepsilon)\,\mathbf{A}^\top \mathbf{A},
+\]
+where
+\[
+\mathbf{P} = \sum_{k=1}^{K} \frac{1}{K\, p_{e_k}} \mathbf{a}_{e_k}^\top \mathbf{a}_{e_k} = \sum_{k=1}^{K} \frac{w_{e_k}}{K\, p_{e_k}} (\mathbf{e}_{u_k} - \mathbf{e}_{v_k})(\mathbf{e}_{u_k} - \mathbf{e}_{v_k})^\top.
+\]
+
+\textbf{Identifying the sparsifier:} Each term in $\mathbf{P}$ has the form $w'(\mathbf{e}_u - \mathbf{e}_v)(\mathbf{e}_u - \mathbf{e}_v)^\top$ for some edge $(u,v) \in E$ with positive weight $w' = w_{e_k}/(K\, p_{e_k}) > 0$. If the same edge is sampled multiple times, we sum its weights. Hence $\mathbf{P} = \mathbf{L}_H$ for a reweighted subgraph $H = (V, E', \mathbf{w}')$ with $E' \subseteq E$ and $\mathbf{w}' \in \mathbb{R}_{>0}^{E'}$. The number of distinct edges satisfies $|E'| \leq K = O(|V| \log |V|)$.
+
+Since $\mathbf{A}^\top \mathbf{A} = \mathbf{L}_G$ and $\varepsilon = 0.1$, the guarantee becomes
+\[
+0.9\, \mathbf{L}_G \preceq \mathbf{L}_H \preceq 1.1\, \mathbf{L}_G.
+\]
+The sampling succeeds with probability at least $\tfrac{1}{2} > 0$, so such a graph $H$ exists.
+\end{proof}

@@ -1,0 +1,52 @@
+\section*{Problem 4}
+
+Set $\pi_0 = \mathcal{N}\!\left(\mathbf{x}^\star,\, \frac{1}{L}\mathbf{I}_d\right)$, the Gaussian centered at the minimizer with covariance $\frac{1}{L}\mathbf{I}_d$. We show $\pi_0$ is $\beta$-warm with respect to $\pi^\star$ for $\beta = \kappa^{d/2} = \exp\!\bigl(\tfrac{d}{2}\log\kappa\bigr)$.
+
+\begin{proof}
+Write the normalizing constant $Z := \int_{\mathbb{R}^d} \exp(-f(\mathbf{x}))\,d\mathbf{x}$, so that
+\[
+\pi^\star(\mathbf{x}) = \frac{\exp(-f(\mathbf{x}))}{Z}.
+\]
+The Gaussian density is
+\[
+\pi_0(\mathbf{x}) = \left(\frac{L}{2\pi}\right)^{d/2} \exp\!\left(-\frac{L}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2\right).
+\]
+The warmness ratio at any $\mathbf{x} \in \mathbb{R}^d$ is
+\[
+\frac{\pi_0(\mathbf{x})}{\pi^\star(\mathbf{x})} = \left(\frac{L}{2\pi}\right)^{d/2} \exp\!\left(-\frac{L}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2 + f(\mathbf{x})\right) \cdot Z.
+\]
+
+\textbf{Bounding the exponent.} Since $f$ is $L$-smooth and $\mathbf{x}^\star$ is the minimizer (so $\nabla f(\mathbf{x}^\star) = \mathbf{0}$), the quadratic upper bound gives
+\[
+f(\mathbf{x}) \leq f(\mathbf{x}^\star) + \frac{L}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2.
+\]
+Therefore, for every $\mathbf{x} \in \mathbb{R}^d$,
+\[
+-\frac{L}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2 + f(\mathbf{x}) \leq f(\mathbf{x}^\star).
+\]
+
+\textbf{Bounding $Z$.} Since $f$ is $\mu$-strongly convex with minimizer $\mathbf{x}^\star$ (so $\nabla f(\mathbf{x}^\star) = \mathbf{0}$),
+\[
+f(\mathbf{x}) \geq f(\mathbf{x}^\star) + \frac{\mu}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2 \quad \text{for all } \mathbf{x} \in \mathbb{R}^d.
+\]
+Exponentiating and integrating:
+\begin{align*}
+Z &= \int_{\mathbb{R}^d} \exp(-f(\mathbf{x}))\,d\mathbf{x} \\
+  &\leq \int_{\mathbb{R}^d} \exp\!\left(-f(\mathbf{x}^\star) - \frac{\mu}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2\right)d\mathbf{x} \\
+  &= \exp(-f(\mathbf{x}^\star)) \int_{\mathbb{R}^d} \exp\!\left(-\frac{\mu}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2\right)d\mathbf{x} \\
+  &= \exp(-f(\mathbf{x}^\star)) \left(\frac{2\pi}{\mu}\right)^{d/2}.
+\end{align*}
+
+\textbf{Combining.} Substituting both bounds into the ratio:
+\begin{align*}
+\frac{\pi_0(\mathbf{x})}{\pi^\star(\mathbf{x})}
+&= \left(\frac{L}{2\pi}\right)^{d/2} \exp\!\left(-\frac{L}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2 + f(\mathbf{x})\right) \cdot Z \\
+&\leq \left(\frac{L}{2\pi}\right)^{d/2} \exp(f(\mathbf{x}^\star)) \cdot \exp(-f(\mathbf{x}^\star))\left(\frac{2\pi}{\mu}\right)^{d/2} \\
+&= \left(\frac{L}{2\pi}\right)^{d/2} \cdot \left(\frac{2\pi}{\mu}\right)^{d/2} \\
+&= \left(\frac{L}{\mu}\right)^{d/2} = \kappa^{d/2}.
+\end{align*}
+This holds for every $\mathbf{x} \in \mathbb{R}^d$, so by Definition 2 (Part XV), $\pi_0$ is $\beta$-warm with respect to $\pi^\star$ with
+\[
+\beta = \kappa^{d/2} = \exp\!\left(\frac{d}{2}\log\kappa\right) = \exp(O(d\log\kappa)).
+\]
+\end{proof}

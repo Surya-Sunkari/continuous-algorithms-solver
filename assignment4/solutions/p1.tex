@@ -1,0 +1,54 @@
+\section*{Problem 1}
+
+\subsection*{(i)}
+
+\begin{proof}
+By the equivalent characterization of total variation (Remark 1, Lecture 14),
+\[
+D_{\mathrm{TV}}(\mathcal{T}\pi, \pi^\star)
+= \sup_{A \subseteq \mathbb{R}^d} \left( \int_{A} (\mathcal{T}\pi)(\mathbf{y}) \,\mathrm{d}\mathbf{y} - \int_{A} \pi^\star(\mathbf{y}) \,\mathrm{d}\mathbf{y} \right).
+\]
+Fix a measurable set $A \subseteq \mathbb{R}^d$. Expanding $(\mathcal{T}\pi)(\mathbf{y})$ and using stationarity of $\pi^\star$:
+\begin{align*}
+\int_{A} (\mathcal{T}\pi)(\mathbf{y}) \,\mathrm{d}\mathbf{y} - \int_{A} \pi^\star(\mathbf{y}) \,\mathrm{d}\mathbf{y}
+&= \int_{A} \int_{\mathbb{R}^d} \mathcal{T}_{\mathbf{x}}(\mathbf{y})\, \pi(\mathbf{x}) \,\mathrm{d}\mathbf{x} \,\mathrm{d}\mathbf{y} - \int_{A} \int_{\mathbb{R}^d} \mathcal{T}_{\mathbf{x}}(\mathbf{y})\, \pi^\star(\mathbf{x}) \,\mathrm{d}\mathbf{x} \,\mathrm{d}\mathbf{y} \\
+&= \int_{\mathbb{R}^d} \left( \int_{A} \mathcal{T}_{\mathbf{x}}(\mathbf{y}) \,\mathrm{d}\mathbf{y} \right) \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr) \,\mathrm{d}\mathbf{x},
+\end{align*}
+where the interchange of integrals is justified by Fubini's theorem (the integrands are non-negative densities, hence measurable, and the product measures are $\sigma$-finite).
+
+Since $\mathcal{T}_{\mathbf{x}}$ is a probability distribution for each $\mathbf{x}$, we have $\int_{A} \mathcal{T}_{\mathbf{x}}(\mathbf{y}) \,\mathrm{d}\mathbf{y} \leq 1$. Define $g(\mathbf{x}) := \int_{A} \mathcal{T}_{\mathbf{x}}(\mathbf{y}) \,\mathrm{d}\mathbf{y} \in [0, 1]$. Then
+\begin{align*}
+\int_{\mathbb{R}^d} g(\mathbf{x}) \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr) \,\mathrm{d}\mathbf{x}
+&= \int_{\mathbb{R}^d} g(\mathbf{x}) \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr)^+ \,\mathrm{d}\mathbf{x} - \int_{\mathbb{R}^d} g(\mathbf{x}) \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr)^- \,\mathrm{d}\mathbf{x} \\
+&\leq \int_{\mathbb{R}^d} \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr)^+ \,\mathrm{d}\mathbf{x}, \quad \text{(since } g \leq 1 \text{ and } g \geq 0\text{)}
+\end{align*}
+where $(a)^+ = \max(a, 0)$ and $(a)^- = \max(-a, 0)$.
+
+By the standard identity relating the positive part to TV distance,
+\[
+\int_{\mathbb{R}^d} \bigl(\pi(\mathbf{x}) - \pi^\star(\mathbf{x})\bigr)^+ \,\mathrm{d}\mathbf{x}
+= \sup_{B \subseteq \mathbb{R}^d} \left( \int_{B} \pi(\mathbf{x}) \,\mathrm{d}\mathbf{x} - \int_{B} \pi^\star(\mathbf{x}) \,\mathrm{d}\mathbf{x} \right)
+= D_{\mathrm{TV}}(\pi, \pi^\star),
+\]
+where the first equality holds by taking $B = \{\mathbf{x} : \pi(\mathbf{x}) > \pi^\star(\mathbf{x})\}$, and the second is the equivalent characterization (Remark 1, Lecture 14).
+
+Since the bound $D_{\mathrm{TV}}(\pi, \pi^\star)$ holds for every measurable $A$, taking the supremum over $A$ gives
+\[
+D_{\mathrm{TV}}(\mathcal{T}\pi, \pi^\star) \leq D_{\mathrm{TV}}(\pi, \pi^\star). \qedhere
+\]
+\end{proof}
+
+\subsection*{(ii)}
+
+\begin{proof}
+We show $(\mathcal{T}\pi)(\mathbf{y}) \leq \beta \, \pi^\star(\mathbf{y})$ for all $\mathbf{y} \in \mathbb{R}^d$. Since $\pi$ is $\beta$-warm with respect to $\pi^\star$ (Definition 2, Lecture 15), we have $\pi(\mathbf{x}) \leq \beta \, \pi^\star(\mathbf{x})$ for all $\mathbf{x} \in \mathbb{R}^d$. Then for any $\mathbf{y} \in \mathbb{R}^d$,
+\begin{align*}
+(\mathcal{T}\pi)(\mathbf{y})
+&= \int_{\mathbb{R}^d} \mathcal{T}_{\mathbf{x}}(\mathbf{y})\, \pi(\mathbf{x}) \,\mathrm{d}\mathbf{x} \\
+&\leq \int_{\mathbb{R}^d} \mathcal{T}_{\mathbf{x}}(\mathbf{y})\, \beta \, \pi^\star(\mathbf{x}) \,\mathrm{d}\mathbf{x} \quad \text{($\pi(\mathbf{x}) \leq \beta\, \pi^\star(\mathbf{x})$ and } \mathcal{T}_{\mathbf{x}}(\mathbf{y}) \geq 0\text{)} \\
+&= \beta \int_{\mathbb{R}^d} \mathcal{T}_{\mathbf{x}}(\mathbf{y})\, \pi^\star(\mathbf{x}) \,\mathrm{d}\mathbf{x} \\
+&= \beta \, (\mathcal{T}\pi^\star)(\mathbf{y}) \\
+&= \beta \, \pi^\star(\mathbf{y}), \quad \text{(stationarity of $\pi^\star$)}
+\end{align*}
+so $\mathcal{T}\pi$ is $\beta$-warm with respect to $\pi^\star$.
+\end{proof}

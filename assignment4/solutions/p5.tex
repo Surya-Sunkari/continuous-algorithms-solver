@@ -1,0 +1,64 @@
+\section*{Problem 5}
+\begin{proof}
+Set $\pi_k := T^k \pi_0$ and $\delta_k := D_{\mathrm{TV}}(\pi_k, \pi^\star)$.
+
+By Lemma 2 (Part XV), since $\pi_0$ is $\beta$-warm with respect to $\pi^\star$, $\pi_k$ is $\beta$-warm with respect to $\pi^\star$ for all $k \ge 0$ (apply the lemma inductively: $T\pi_k$ is $\beta$-warm whenever $\pi_k$ is).
+
+\textbf{Claim:} If $\delta_k \ge \epsilon$, then $\delta_{k+1} \le \delta_k / 2$.
+
+Since $D_{\mathrm{TV}}(\pi_k, \pi^\star) = \delta_k$, decompose via the TV coupling:
+\[
+\pi_k = (1 - \delta_k)\sigma_k + \delta_k \rho_k, \qquad \pi^\star = (1 - \delta_k)\sigma_k + \delta_k \rho_k',
+\]
+where
+\[
+\sigma_k(x) = \frac{\min(\pi_k(x), \pi^\star(x))}{1 - \delta_k}, \quad \rho_k(x) = \frac{(\pi_k(x) - \pi^\star(x))^+}{\delta_k}, \quad \rho_k'(x) = \frac{(\pi^\star(x) - \pi_k(x))^+}{\delta_k}.
+\]
+These are valid densities: $\sigma_k, \rho_k, \rho_k' \ge 0$ by construction, and integrating the decomposition of $\pi_k$ gives
+\[
+1 = (1 - \delta_k)\int \sigma_k + \delta_k \int \rho_k,
+\]
+while $\int \sigma_k = \frac{\int \min(\pi_k, \pi^\star)}{1 - \delta_k} = \frac{1 - \delta_k}{1 - \delta_k} = 1$ (since $\int \min(\pi_k, \pi^\star) = 1 - D_{\mathrm{TV}}(\pi_k, \pi^\star) = 1 - \delta_k$), so $\int \rho_k = 1$. The same argument gives $\int \rho_k' = 1$.
+
+By linearity of the transition operator $T$ and stationarity $T\pi^\star = \pi^\star$:
+\begin{align*}
+T\pi_k &= (1 - \delta_k) T\sigma_k + \delta_k T\rho_k, \\
+\pi^\star = T\pi^\star &= (1 - \delta_k) T\sigma_k + \delta_k T\rho_k'.
+\end{align*}
+Subtracting, for any measurable $S$:
+\[
+T\pi_k(S) - \pi^\star(S) = \delta_k \bigl(T\rho_k(S) - T\rho_k'(S)\bigr).
+\]
+Taking $\sup_S$ on both sides:
+\[
+\delta_{k+1} = D_{\mathrm{TV}}(T\pi_k, \pi^\star) = \delta_k \cdot D_{\mathrm{TV}}(T\rho_k, T\rho_k').
+\]
+
+For $\rho_k$:
+\[
+\rho_k(x) = \frac{(\pi_k(x) - \pi^\star(x))^+}{\delta_k} \le \frac{\pi_k(x)}{\delta_k} \le \frac{\beta \pi^\star(x)}{\delta_k},
+\]
+so $\rho_k$ is $\frac{\beta}{\delta_k}$-warm with respect to $\pi^\star$. Since $\delta_k \ge \epsilon$, $\rho_k$ is $\frac{\beta}{\epsilon}$-warm. For $\rho_k'$:
+\[
+\rho_k'(x) = \frac{(\pi^\star(x) - \pi_k(x))^+}{\delta_k} \le \frac{\pi^\star(x)}{\delta_k},
+\]
+so $\rho_k'$ is $\frac{1}{\delta_k}$-warm, hence $\frac{\beta}{\epsilon}$-warm since $\beta \ge 1$ and $\delta_k \ge \epsilon$.
+
+By the hypothesis on the random walk, any $\frac{\beta}{\epsilon}$-warm density $\pi$ satisfies $D_{\mathrm{TV}}(T\pi, \pi^\star) \le \frac{1}{4}$. Applying this to $\rho_k$ and $\rho_k'$:
+\[
+D_{\mathrm{TV}}(T\rho_k, \pi^\star) \le \frac{1}{4}, \qquad D_{\mathrm{TV}}(T\rho_k', \pi^\star) \le \frac{1}{4}.
+\]
+By the triangle inequality:
+\[
+D_{\mathrm{TV}}(T\rho_k, T\rho_k') \le D_{\mathrm{TV}}(T\rho_k, \pi^\star) + D_{\mathrm{TV}}(\pi^\star, T\rho_k') \le \frac{1}{4} + \frac{1}{4} = \frac{1}{2}.
+\]
+Therefore $\delta_{k+1} = \delta_k \cdot D_{\mathrm{TV}}(T\rho_k, T\rho_k') \le \delta_k / 2$, proving the claim.
+
+We show by induction that $\delta_k \le 2^{-(k+1)}$ for all $k \ge 1$. The base case $k = 1$: since $\pi_0$ is $\beta$-warm and $\epsilon < 1$ implies $\frac{\beta}{\epsilon} \ge \beta \ge 1$, $\pi_0$ is $\frac{\beta}{\epsilon}$-warm, so the hypothesis gives $\delta_1 \le \frac{1}{4} = 2^{-2}$. For the inductive step, suppose $\delta_k \le 2^{-(k+1)}$. If $\delta_k < \epsilon$, then $\delta_{k+1} \le \delta_k < \epsilon$ by Lemma 2 (Part XV) (TV distance does not increase under $T$), so the conclusion holds. If $\delta_k \ge \epsilon$, the halving gives $\delta_{k+1} \le \delta_k / 2 \le 2^{-(k+2)}$.
+
+For $k \ge \log_2(1/\epsilon)$:
+\[
+\delta_k \le 2^{-(k+1)} \le 2^{-(\log_2(1/\epsilon) + 1)} = \frac{\epsilon}{2} \le \epsilon.
+\]
+Hence $D_{\mathrm{TV}}(T^k \pi_0, \pi^\star) \le \epsilon$ whenever $k \ge \log_2(1/\epsilon)$.
+\end{proof}

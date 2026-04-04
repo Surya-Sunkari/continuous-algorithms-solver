@@ -1,0 +1,90 @@
+\section*{Problem 2}
+\subsection*{(i)}
+
+\textbf{Algorithm (Rejection Sampling):}
+\begin{enumerate}
+\item Sample $\omega \sim Q$ using one query to $\mathcal{O}$.
+\item Query the value oracles for $f(\omega)$ and $g(\omega)$.
+\item Accept $\omega$ with probability $\frac{f(\omega)}{C \cdot g(\omega)} \in [0,1]$.
+\item If rejected, return to step 1. If accepted, output $\omega$.
+\end{enumerate}
+
+The acceptance probability is well-defined since $\frac{f(\omega)}{g(\omega)} \leq C$ implies $\frac{f(\omega)}{C \cdot g(\omega)} \leq 1$, and $f \geq 0$, $g > 0$ ensures $\frac{f(\omega)}{C \cdot g(\omega)} \geq 0$.
+
+\textbf{Correctness:}
+\begin{proof}
+Let $Z_f = \int_\Omega f(\omega)\,\mathrm{d}\omega$ and $Z_g = \int_\Omega g(\omega)\,\mathrm{d}\omega$, so $P(\omega) = \frac{f(\omega)}{Z_f}$ and $Q(\omega) = \frac{g(\omega)}{Z_g}$. The probability that a sample $\omega \sim Q$ is accepted and falls in a measurable set $A \subseteq \Omega$ is:
+\[
+\int_A Q(\omega) \cdot \frac{f(\omega)}{C \cdot g(\omega)}\,\mathrm{d}\omega = \int_A \frac{g(\omega)}{Z_g} \cdot \frac{f(\omega)}{C \cdot g(\omega)}\,\mathrm{d}\omega = \frac{1}{C \cdot Z_g} \int_A f(\omega)\,\mathrm{d}\omega.
+\]
+Conditioning on acceptance, the density of the accepted sample over $A$ is:
+\[
+\frac{\frac{1}{C \cdot Z_g} \int_A f(\omega)\,\mathrm{d}\omega}{\frac{1}{C \cdot Z_g} \int_\Omega f(\omega)\,\mathrm{d}\omega} = \frac{\int_A f(\omega)\,\mathrm{d}\omega}{Z_f},
+\]
+which is precisely $\int_A P(\omega)\,\mathrm{d}\omega$. Hence the accepted sample is distributed according to $P$.
+\end{proof}
+
+\textbf{Query complexity:}
+\begin{proof}
+The acceptance probability in each iteration is:
+\[
+\Pr[\text{accept}] = \int_\Omega Q(\omega) \cdot \frac{f(\omega)}{C \cdot g(\omega)}\,\mathrm{d}\omega = \frac{1}{C \cdot Z_g} \int_\Omega f(\omega)\,\mathrm{d}\omega = \frac{Z_f}{C \cdot Z_g}.
+\]
+The number of iterations until acceptance is geometric with success probability $\frac{Z_f}{C \cdot Z_g}$, so the expected number of iterations is:
+\[
+\frac{C \cdot Z_g}{Z_f} = \frac{C \int_\Omega g(\omega)\,\mathrm{d}\omega}{\int_\Omega f(\omega)\,\mathrm{d}\omega} = N.
+\]
+Each iteration uses one query to $\mathcal{O}$ and one value oracle query to each of $f$ and $g$, giving at most $N$ queries of each type in expectation.
+\end{proof}
+
+\subsection*{(ii)}
+
+We apply the rejection sampling algorithm from part (i) with the following choices:
+\begin{itemize}
+\item $\Omega = \mathbb{B}(\mathbf{0}_d, 1)$,
+\item the unnormalized target density $\tilde{\pi}(\mathbf{x}) = \exp(-f(\mathbf{x}))$ (playing the role of $f$ in part (i)),
+\item $g(\mathbf{x}) = 1$ for all $\mathbf{x} \in \Omega$, so $Q = \mathrm{Uniform}(\mathbb{B}(\mathbf{0}_d, 1))$.
+\end{itemize}
+
+\textbf{Computing $C$:} Since $f$ is $1$-Lipschitz and $\mathbb{B}(\mathbf{0}_d, 1)$ has diameter at most $2$, for all $\mathbf{x} \in \mathbb{B}(\mathbf{0}_d, 1)$:
+\[
+|f(\mathbf{x}) - f(\mathbf{0})| \leq \|\mathbf{x} - \mathbf{0}\|_2 \leq 1,
+\]
+so $f(\mathbf{x}) \geq f(\mathbf{0}) - 1$, which gives:
+\[
+\exp(-f(\mathbf{x})) \leq \exp(-f(\mathbf{0}) + 1) = e \cdot \exp(-f(\mathbf{0})).
+\]
+Since $g(\mathbf{x}) = 1$, we need $\frac{\exp(-f(\mathbf{x}))}{g(\mathbf{x})} \leq C$. Set
+\[
+C = e \cdot \exp(-f(\mathbf{0})),
+\]
+which requires one value oracle query to $f$ (at $\mathbf{0}$).
+
+\textbf{Algorithm:}
+\begin{enumerate}
+\item Query $f(\mathbf{0})$ and set $C = e \cdot \exp(-f(\mathbf{0}))$.
+\item Sample $\mathbf{x}$ uniformly from $\mathbb{B}(\mathbf{0}_d, 1)$.
+\item Query $f(\mathbf{x})$ and accept with probability
+\[
+\frac{\exp(-f(\mathbf{x}))}{C \cdot g(\mathbf{x})} = \frac{\exp(-f(\mathbf{x}))}{e \cdot \exp(-f(\mathbf{0}))} = \exp(f(\mathbf{0}) - f(\mathbf{x}) - 1).
+\]
+This lies in $[0,1]$: the bound $\frac{\exp(-f(\mathbf{x}))}{g(\mathbf{x})} \leq C$ gives $\frac{\exp(-f(\mathbf{x}))}{C \cdot g(\mathbf{x})} \leq 1$, and $\exp(-f(\mathbf{x})) > 0$ gives $\geq 0$.
+
+\item If rejected, return to step 2. If accepted, output $\mathbf{x}$.
+\end{enumerate}
+
+\textbf{Correctness} follows from part (i): the output is distributed according to $\pi \propto \exp(-f)$ over $\mathbb{B}(\mathbf{0}_d, 1)$.
+
+\textbf{Query complexity:} By part (i), the expected number of iterations is:
+\[
+N = \frac{C \int_{\mathbb{B}(\mathbf{0}_d,1)} g(\mathbf{x})\,\mathrm{d}\mathbf{x}}{\int_{\mathbb{B}(\mathbf{0}_d,1)} \exp(-f(\mathbf{x}))\,\mathrm{d}\mathbf{x}} = \frac{e \cdot \exp(-f(\mathbf{0})) \cdot \mathrm{Vol}(\mathbb{B}(\mathbf{0}_d,1))}{\int_{\mathbb{B}(\mathbf{0}_d,1)} \exp(-f(\mathbf{x}))\,\mathrm{d}\mathbf{x}}.
+\]
+Since $f(\mathbf{x}) \leq f(\mathbf{0}) + 1$ for all $\mathbf{x} \in \mathbb{B}(\mathbf{0}_d,1)$, we have $\exp(-f(\mathbf{x})) \geq \exp(-f(\mathbf{0}) - 1)$, so:
+\[
+\int_{\mathbb{B}(\mathbf{0}_d,1)} \exp(-f(\mathbf{x}))\,\mathrm{d}\mathbf{x} \geq \exp(-f(\mathbf{0}) - 1) \cdot \mathrm{Vol}(\mathbb{B}(\mathbf{0}_d,1)).
+\]
+Therefore:
+\[
+N \leq \frac{e \cdot \exp(-f(\mathbf{0})) \cdot \mathrm{Vol}(\mathbb{B}(\mathbf{0}_d,1))}{\exp(-f(\mathbf{0}) - 1) \cdot \mathrm{Vol}(\mathbb{B}(\mathbf{0}_d,1))} = \frac{e \cdot \exp(-f(\mathbf{0}))}{\exp(-f(\mathbf{0}) - 1)} = e \cdot e = e^2.
+\]
+Including the initial query to compute $f(\mathbf{0})$, the total expected number of value oracle queries to $f$ is $1 + e^2 = O(1)$.
