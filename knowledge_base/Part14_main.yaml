@@ -1,0 +1,257 @@
+source: "Part14_main.pdf"
+lecture_number: 14
+title: "Spectral graph theory"
+items:
+  - type: definition
+    number: "1"
+    name: "Irreducibility and aperiodicity"
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be a transition matrix.
+      1. We say $\mathbf{P}$ is irreducible if for all $(i,j) \in [d] \times [d]$, there exists $k \in \mathbb{N}$ such that $\mathbf{P}_{ij}^k \neq 0$.
+      2. We say $\mathbf{P}$ is aperiodic if for all $i \in [d]$, $\{k \in \mathbb{N} \mid \mathbf{P}_{ii}^k \neq 0\}$ has greatest common divisor $1$.
+    context: "Required conditions for uniqueness of stationary distributions of Markov chains."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      If $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ is a transition matrix with eigenvalue-eigenvector pair $(\lambda, \mathbf{v})$, then $|\lambda| \leq 1$.
+    context: "Basic spectral bound on transition matrices; used together with Perron-Frobenius to establish uniqueness of the stationary distribution."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be an irreducible and aperiodic transition matrix. Then $\mathbf{P}$ has a unique left eigenvector with eigenvalue $1$ which is entrywise positive, and all other eigenvalues of $\mathbf{P}$ have magnitude $< 1$.
+    context: "Guarantees uniqueness and positivity of the stationary distribution for irreducible aperiodic chains. Relies on Perron-Frobenius theorem."
+
+  - type: definition
+    number: "2"
+    name: "Graph-induced matrices"
+    statement: |
+      Let $G = (V, E, \mathbf{w})$ be a weighted graph on vertices $V$ and directed edges $E \subset V \times V$, where $\mathbf{w} \in \mathbb{R}_{>0}^{E}$ gives the weight of each edge. We let $\mathbf{D}_G$ denote the out-degree matrix of $G$, which is the diagonal matrix satisfying $[\mathbf{D}_G]_{vv} = \sum_{u \in V} \mathbf{w}_{(v,u)}$. We let $\mathbf{A}_G$ denote the adjacency matrix of $G$, where $[\mathbf{A}_G]_{uv} = \mathbf{w}_{(u,v)}$ for all $(u,v) \in E$.
+    context: 'Sets up the correspondence between weighted graphs and transition matrices via $\mathbf{P} := \mathbf{D}_G^{-1}\mathbf{A}_G$.'
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $G = (V, E, \mathbf{w})$ be a weighted graph, and (following Definition 2) suppose $\mathbf{A}_G^\top = \mathbf{A}_G$ and $\mathbf{D}_G = \mathrm{diag}(\mathbf{d}_G)$. Then defining $\mathbf{P}$ as in (1), and supposing $\mathbf{P}$ is irreducible and aperiodic with unique stationary distribution $\boldsymbol{\pi}$, we have
+      \[
+        \boldsymbol{\pi} = \frac{\mathbf{d}_G}{\|\mathbf{d}_G\|_1}.
+      \]
+    context: "For undirected graphs, the stationary distribution is proportional to the vertex degrees."
+    proof_notes:
+      - label: "(1)"
+        content: |
+          $\mathbf{P} := \mathbf{D}_G^{-1}\mathbf{A}_G$
+        description: "The transition matrix induced by a weighted graph: the i-th row is the outgoing weights from vertex i, normalized by its out-degree."
+
+  - type: definition
+    number: "3"
+    name: "Reversible Markov chain"
+    statement: |
+      We say that a Markov chain associated with a transition matrix $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ is reversible (or, $\mathbf{P}$ is reversible) if it has stationary distribution $\boldsymbol{\pi}$, and
+      \[
+        \boldsymbol{\pi}_i \mathbf{P}_{ij} = \boldsymbol{\pi}_j \mathbf{P}_{ji} \quad \text{for all } (i,j) \in [d] \times [d].
+      \]
+    context: "Detailed balance condition. Reversible chains correspond to undirected graphs, and the associated transition matrix is similar to a symmetric matrix."
+    proof_notes:
+      - label: "(2)"
+        content: |
+          $\boldsymbol{\pi}_i \mathbf{P}_{ij} = \boldsymbol{\pi}_j \mathbf{P}_{ji}$ for all $(i,j) \in [d] \times [d]$
+        description: "The detailed balance (reversibility) condition. Implies stationarity by summing over j."
+      - label: "(3)"
+        content: |
+          $\sum_{j \in [d]} \boldsymbol{\pi}_j \mathbf{P}_{ji} = \sum_{j \in [d]} \boldsymbol{\pi}_i \mathbf{P}_{ij} = \boldsymbol{\pi}_i$
+        description: "Reversibility implies stationarity: summing the detailed balance condition over j shows pi is stationary."
+
+  - type: lemma
+    number: "3"
+    name: "Metropolis-Hastings"
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be a transition matrix, and for $\boldsymbol{\pi} \in \Delta^d$, denote the modified transition matrix $\widetilde{\mathbf{P}} \in \mathbb{R}_{\geq 0}^{d \times d}$ by
+      \[
+        \widetilde{\mathbf{P}}_{ij} = \mathbf{P}_{ij} \min\left(1, \frac{\boldsymbol{\pi}_j \mathbf{P}_{ji}}{\boldsymbol{\pi}_i \mathbf{P}_{ij}}\right) \quad \text{for all } (i,j) \in [d] \times [d] \text{ with } i \neq j,
+      \]
+      and such that $\{\widetilde{\mathbf{P}}_{ii}\}_{i \in [d]}$ are chosen so $\widetilde{\mathbf{P}}$ is a transition matrix. Then $\boldsymbol{\pi}$ is stationary for $\widetilde{\mathbf{P}}$.
+    context: "The Metropolis-Hastings correction: given any proposal chain P and target distribution pi, produces a modified chain with pi as its stationary distribution. Preserves irreducibility and aperiodicity under mild conditions."
+    proof_notes:
+      - label: "(4)"
+        content: |
+          $\widetilde{\mathbf{P}}_{ij} = \mathbf{P}_{ij} \min\left(1, \frac{\boldsymbol{\pi}_j \mathbf{P}_{ji}}{\boldsymbol{\pi}_i \mathbf{P}_{ij}}\right)$ for all $(i,j) \in [d] \times [d]$ with $i \neq j$
+        description: "The Metropolis-Hastings acceptance probability formula. Satisfies detailed balance with respect to pi."
+
+  - type: definition
+    number: "4"
+    name: "Total variation distance"
+    statement: |
+      For two distributions $P, Q$ on the same continuous sample space $\Omega$, we define their total variation distance (where we overload $P, Q$ to denote the respective probability density functions) by
+      \[
+        D_{\mathrm{TV}}(P, Q) := \frac{1}{2} \int_{\omega \in \Omega} |P(\omega) - Q(\omega)| \, \mathrm{d}\omega.
+      \]
+      When $\Omega$ is discrete, we analogously let
+      \[
+        D_{\mathrm{TV}}(P, Q) = \frac{1}{2} \sum_{\omega \in \Omega} |P(\omega) - Q(\omega)|.
+      \]
+    context: "The standard measure of convergence for sampling algorithms and Markov chain mixing."
+
+  - type: remark
+    number: "1"
+    name: "Equivalent characterizations of total variation"
+    statement: |
+      For two distributions $P, Q$ on the same sample space $\Omega$, we have the following equivalent characterizations of $D_{\mathrm{TV}}(P, Q)$:
+      1. $D_{\mathrm{TV}}(P, Q) = \sup_{A \subseteq \Omega} \Pr_{\omega \sim P}[\omega \in A] - \Pr_{\omega \sim Q}[\omega \in A]$.
+      2. $D_{\mathrm{TV}}(P, Q) = \inf_{\gamma \in \mathcal{C}(P,Q)} \Pr_{(\omega, \omega') \sim \gamma}[\omega \neq \omega']$, where $\mathcal{C}(P,Q)$ is the set of all couplings of $(P, Q)$, i.e., distributions $\gamma$ on $\Omega \times \Omega$ such that for $(\omega, \omega') \sim \gamma$, the marginal distribution of $\omega$ is $P$, and the marginal distribution of $\omega'$ is $Q$.
+    context: "Labeled as Fact 1 in the notes. The supremum characterization is useful for lower bounds; the coupling characterization is useful for composing sampling algorithms (total variation of composed algorithms is bounded by the sum of individual errors)."
+
+  - type: theorem
+    number: "1"
+    name: "Spectral convergence of random walks"
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be a reversible, irreducible, and aperiodic transition matrix with stationary distribution $\boldsymbol{\pi}$, let $\boldsymbol{\Pi} := \mathrm{diag}(\boldsymbol{\pi})$, and let $\epsilon \in (0,1)$. Let $\{\lambda_i\}_{i \in [d]}$ be the eigenvalues of $\boldsymbol{\Pi}^{\frac{1}{2}} \mathbf{P} \boldsymbol{\Pi}^{-\frac{1}{2}}$ in nondecreasing order, with $1 = \lambda_1 > \lambda_2$. Then for any $\boldsymbol{\mu} \in \Delta^d$, we have
+      \[
+        D_{\mathrm{TV}}\left((\mathbf{P}^k)^\top \boldsymbol{\mu}, \boldsymbol{\pi}\right) \leq \epsilon, \quad \text{if } k \geq \log_{\frac{1}{\max\{|\lambda_2|, |\lambda_d|\}}} \left(\frac{1}{2\epsilon \min_{i \in [d]} \boldsymbol{\pi}_i}\right).
+      \]
+    context: "Main convergence theorem for discrete reversible Markov chains. The convergence rate is governed by the spectral gap 1 - lambda_2 (for lazy chains). Similar to the power method analysis (Theorem 2, Part XI)."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          $\mathbf{D}_G^{\frac{1}{2}} \mathbf{P} \mathbf{D}_G^{-\frac{1}{2}} = \mathbf{D}_G^{-\frac{1}{2}} \mathbf{A}_G \mathbf{D}_G^{-\frac{1}{2}} = \left(\mathbf{D}_G^{-\frac{1}{2}} \mathbf{A}_G \mathbf{D}_G^{-\frac{1}{2}}\right)^\top$
+        description: "For reversible chains, P is similar to a symmetric matrix via the degree normalization. This allows applying the spectral theorem."
+      - label: "(7)"
+        content: |
+          $[\mathbf{P}^k]_{ij} - \boldsymbol{\pi}_j = \sqrt{\frac{\boldsymbol{\pi}_j}{\boldsymbol{\pi}_i}} \sum_{\ell=2}^{d} \lambda_\ell^k [\mathbf{v}_\ell]_i [\mathbf{v}_\ell]_j \leq \left(\max_{2 \leq \ell \leq d} |\lambda_\ell|\right)^k \frac{\boldsymbol{\pi}_j}{\min_{\ell \in [d]} \boldsymbol{\pi}_\ell} \cdot \boldsymbol{\pi}_j \leq 2\epsilon \boldsymbol{\pi}_j$
+        description: "Entry-wise bound on the deviation of the k-step transition probability from stationarity, obtained via spectral decomposition of P^k."
+      - label: "(8)"
+        content: |
+          $\mathbf{P} = \frac{1}{2}(\mathbf{I}_d + \mathbf{P}')$
+        description: "Lazy chain construction: averaging with the identity maps all eigenvalues into (0,1], so the convergence rate simplifies to 1/(1 - lambda_2)."
+
+  - type: definition
+    number: "5"
+    name: "Mixing time"
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be an irreducible and aperiodic transition matrix with stationary distribution $\boldsymbol{\pi}$. For any $\epsilon \in (0, 1)$, we define $\tau_{\mathrm{mix}}(\epsilon)$, the $\epsilon$-mixing time of $\mathbf{P}$, to be the smallest integer $k \in \mathbb{N}$ such that
+      \[
+        \max_{\boldsymbol{\mu} \in \Delta^d} D_{\mathrm{TV}}\left((\mathbf{P}^k)^\top \boldsymbol{\mu}, \boldsymbol{\pi}\right) \leq \epsilon.
+      \]
+      If $\epsilon = \frac{1}{4}$, we call this the mixing time of $\mathbf{P}$ for short.
+    context: "The standard definition of mixing time. The choice epsilon = 1/4 is conventional; Corollary 1 shows mixing times at different accuracies differ by at most a logarithmic factor."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be an irreducible and aperiodic transition matrix with stationary distribution $\boldsymbol{\pi}$. Following notation (10), $\Delta(k) \leq \overline{\Delta}(k) \leq 2\Delta(k)$ for all $k \in \mathbb{N}$.
+    context: "Relates the worst-case total variation from a point mass (Delta) to the worst-case total variation between two point masses (Delta-bar). Used in the submultiplicativity argument for mixing time boosting."
+    proof_notes:
+      - label: "(10)"
+        content: |
+          $\Delta(k) := \max_{i \in [d]} D_{\mathrm{TV}}\left((\mathbf{P}^k)^\top \mathbf{e}_i, \boldsymbol{\pi}\right), \quad \overline{\Delta}(k) := \max_{(i,j) \in [d] \times [d]} D_{\mathrm{TV}}\left((\mathbf{P}^k)^\top \mathbf{e}_i, (\mathbf{P}^k)^\top \mathbf{e}_j\right)$
+        description: "Definitions of Delta(k) and Delta-bar(k): worst-case TV distance from stationarity (over point masses), and worst-case TV distance between two evolved point masses."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be an irreducible and aperiodic transition matrix with stationary distribution $\boldsymbol{\pi}$. Following notation (10), $\overline{\Delta}(s + t) \leq \overline{\Delta}(s)\overline{\Delta}(t)$ for all $s, t \in \mathbb{N}$.
+    context: "Submultiplicativity of Delta-bar. Key ingredient for boosting mixing time accuracy from 1/4 to epsilon at only logarithmic cost (Corollary 1)."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be an irreducible and aperiodic transition matrix with stationary distribution $\boldsymbol{\pi}$. For all $\epsilon < \frac{1}{4}$:
+      \[
+        \tau_{\mathrm{mix}}(\epsilon) \leq \tau_{\mathrm{mix}}\left(\frac{1}{4}\right) \left\lceil \log_2\left(\frac{1}{\epsilon}\right) \right\rceil.
+      \]
+    context: "Generic boosting: once the mixing time at constant accuracy is bounded, achieving epsilon accuracy costs only an additional log(1/epsilon) factor. Follows from submultiplicativity of Delta-bar (Lemma 5) and the comparison Lemma 4."
+
+  - type: definition
+    number: "6"
+    name: "Conductance"
+    statement: |
+      For an undirected graph $G = (V, E, \mathbf{w})$, let $\deg(v) := \sum_{(u,v) \in E} \mathbf{w}_{(u,v)}$ denote the degree of vertex $v \in V$. For a subset $S \subseteq V$, let $\deg(S) := \sum_{v \in S} \deg(v)$, and let
+      \[
+        \partial(S) := \sum_{(u,v) \in (S \times V \setminus S) \cap E} \mathbf{w}_{(u,v)}
+      \]
+      denote the total weight crossing the boundary from $S$ to $V \setminus S$. We define the conductance of $G$ by
+      \[
+        \Phi_G := \min_{\substack{S \subseteq V \\ S \notin \{\emptyset, V\}}} \Phi_G(S), \quad \text{where } \Phi_G(S) := \frac{\partial(S)}{\min(\deg(S), \deg(V \setminus S))}.
+      \]
+    context: "Measures the bottleneck of a graph. If deg(S) <= deg(V\\S), then Phi_G(S) is the probability that a random walk initialized within S according to the stationary distribution leaves S in one step. Related to the spectral gap via Cheeger's inequality."
+
+  - type: remark
+    number: "2"
+    name: "Cheeger's inequality (both directions)"
+    statement: |
+      For all undirected graphs $G$,
+      \[
+        \frac{\lambda_G^\star}{2} \leq \Phi_G \leq \sqrt{2\lambda_G^\star},
+      \]
+      where $\lambda_G^\star := \lambda_{d-1}(\mathbf{N}_G)$ is the second-smallest eigenvalue of the normalized Laplacian $\mathbf{N}_G$.
+    context: "The full Cheeger inequality relating conductance and spectral gap. The upper bound is Theorem 2; the lower bound is easier (see Spielman's notes). The upper bound is tight for path graphs."
+
+  - type: theorem
+    number: "2"
+    name: "Cheeger's inequality"
+    statement: |
+      Let $G = (V, E, \mathbf{w})$ be a connected undirected graph. Following the notation (13), (14),
+      \[
+        \Phi_G \leq \sqrt{2\lambda_G^\star}.
+      \]
+    context: "Upper bound on conductance in terms of the spectral gap. Proved via a sweep cut argument on the second eigenvector of the normalized Laplacian. The bound is tight for path graphs."
+    proof_notes:
+      - label: "(11)"
+        content: |
+          $\mathbf{N}_G := \mathbf{I}_V - \mathbf{D}_G^{-\frac{1}{2}} \mathbf{A}_G \mathbf{D}_G^{-\frac{1}{2}}$
+        description: "Definition of the normalized Laplacian. Similar to the Laplacian matrix from Part II but with degree normalization."
+      - label: "(12)"
+        content: |
+          $\mathbf{N}_G = \mathbf{D}_G^{\frac{1}{2}} (\mathbf{I}_V - \mathbf{P}) \mathbf{D}_G^{-\frac{1}{2}}$
+        description: "Alternative expression for the normalized Laplacian in terms of the transition matrix. Shows that the second-smallest eigenvalue of N_G equals 1 - lambda_2(P), i.e., the spectral gap."
+      - label: "(13)"
+        content: |
+          $\lambda_G^\star := \lambda_{d-1}(\mathbf{N}_G)$
+        description: "The second-smallest eigenvalue of the normalized Laplacian, which equals the spectral gap 1 - lambda_2(P) of the associated random walk."
+      - label: "(16)"
+        content: |
+          $\lambda_G^\star = \min_{\substack{\mathbf{x} \in \mathbb{R}^V \\ \mathbf{x} \perp \sqrt{\boldsymbol{\Delta}}}} \frac{\mathbf{x}^\top \mathbf{N}_G \mathbf{x}}{\|\mathbf{x}\|_2^2} = \min_{\substack{\mathbf{y} \in \mathbb{R}^V \\ \mathbf{y} \perp \boldsymbol{\Delta}}} \frac{\mathbf{y}^\top \mathbf{L}_G \mathbf{y}}{\mathbf{y}^\top \mathbf{D}_G \mathbf{y}}$
+        description: "Variational (Rayleigh quotient) characterization of the spectral gap, where L_G = D_G - A_G is the Laplacian and Delta is the degree vector. The change of variables is y = sqrt(Delta) circ x."
+      - label: "(17)"
+        content: |
+          $\mathbb{E}_t[\partial(S_t)] \leq \sqrt{2\rho} \cdot \mathbb{E}_t[\min(\deg(S_t), \deg(V \setminus S_t))]$, where $\rho := \frac{\mathbf{y}^\top \mathbf{L}_G \mathbf{y}}{\mathbf{y}^\top \mathbf{D}_G \mathbf{y}}$
+        description: "The key claim in Cheeger's proof: a random threshold family S_t of sets constructed from an eigenvector y achieves expected conductance at most sqrt(2 rho). Minimizing rho over y gives Phi_G <= sqrt(2 lambda_G^*)."
+      - label: "(18)"
+        content: |
+          $\frac{\mathbf{z}^\top \mathbf{L}_G \mathbf{z}}{\mathbf{z}^\top \mathbf{D}_G \mathbf{z}} \leq \rho$
+        description: "After shifting y by a constant c to get z = y + c 1_V, the Rayleigh quotient does not increase because L_G has 1_V in its kernel and the denominator does not decrease."
+      - label: "(19)"
+        content: |
+          $\Pr[t \in [a,b]] = \int_a^b 2|t| \, \mathrm{d}t = \mathrm{sign}(b) \cdot b^2 - \mathrm{sign}(a) \cdot a^2$
+        description: "The threshold density 2|t| used for the random sweep cut, chosen so that the probability measure is valid on [z_1, z_d] with z_1^2 + z_d^2 = 1."
+      - label: "(21)"
+        content: |
+          $\mathrm{sign}(a) \cdot a^2 - \mathrm{sign}(b) \cdot b^2 \leq |a - b| \, (|a| + |b|)$
+        description: "Casework inequality on signs used to bound the expected boundary weight E_t[partial(S_t)]."
+
+  - type: corollary
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{P} \in \mathbb{R}_{\geq 0}^{d \times d}$ be a reversible, irreducible, aperiodic and lazy transition matrix with stationary distribution $\boldsymbol{\pi}$, and let $G = (V, E, \mathbf{w})$ be an weighted undirected graph such that (1) holds. Then for any $\boldsymbol{\mu} \in \Delta^d$,
+      \[
+        D_{\mathrm{TV}}\left((\mathbf{P}^k)^\top \boldsymbol{\mu}, \boldsymbol{\pi}\right) \leq \epsilon, \quad \text{if } k \geq \frac{2}{\Phi_G^2} \cdot \log\left(\frac{1}{2\epsilon \min_{i \in [d]} \boldsymbol{\pi}_i}\right).
+      \]
+    context: "Combines Theorem 1 (spectral convergence) and Theorem 2 (Cheeger's inequality) to give a mixing time bound in terms of conductance. The mixing time is O(1/Phi_G^2 * log(1/(epsilon * pi_min)))."
+
+  - type: proposition
+    number: "2"
+    name: "Expander decomposition"
+    statement: |
+      Let $G = (V, E, \mathbf{1}_E)$ be an undirected, unweighted graph with $n := |V|$, and let $\phi \in (0,1)$. There exists a partitioning of $V$ into disjoint subsets $\{V_i\}_{i \in [k]}$ such that $\bigcup_{i \in [k]} V_i = V$, where every induced subgraph $G[V_i]$ is a $\phi$-expander, and
+      \[
+        |\{e = (u,v) \in E \mid u \in V_i, v \in V_j, i \neq j\}| \leq 2\phi \log_2(n) |E|.
+      \]
+    context: "Every unweighted undirected graph can be decomposed into phi-expanders while cutting at most O(phi log n) fraction of edges. Foundational for modern graph algorithms following the breakthrough of Spielman-Teng."

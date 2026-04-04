@@ -1,0 +1,391 @@
+source: "Part16_main.pdf"
+lecture_number: 16
+title: "Stochastic calculus"
+items:
+  - type: definition
+    number: "1"
+    name: "Brownian motion"
+    statement: |
+      We define Brownian motion in $\mathbb{R}^d$, denoted by $\{\boldsymbol{B}_t\}_{t \ge 0}$, to be a stochastic process, i.e., a random sequence of points in $\mathbb{R}^d$ indexed by $t \ge 0$ (thought of as time), satisfying the following properties:
+      1. $\boldsymbol{B}_0 = \mathbf{0}_d$.
+      2. $\{\boldsymbol{B}_t\}_{t \ge 0}$ is continuous with probability 1.
+      3. For all $k \in \mathbb{N}$ and all $\{t_i\}_{i=0}^k \subset \mathbb{R}_{\ge 0}$ with $t_0 = 0 < t_1 < \ldots < t_k$, all of the random variables $\boldsymbol{B}_{t_{i+1}} - \boldsymbol{B}_{t_i}$ for $0 \le i \le k-1$ are mutually independent.
+      4. For all $0 \le s \le t$, $\boldsymbol{B}_t - \boldsymbol{B}_s$ is distributed as $\mathcal{N}(\mathbf{0}_d, (t-s)\mathbf{I}_d)$.
+    context: 'Foundational definition for stochastic calculus; Brownian motion is the driving noise process in stochastic differential equations.'
+
+  - type: lemma
+    number: "1"
+    name: "Reflection principle"
+    statement: |
+      Let $\{B_t\}_{t \ge 0}$ be Brownian motion in $\mathbb{R}$. For all $t \ge 0$ and $a > 0$,
+      \[
+        \Pr\left[\sup_{0 \le s \le t} B_s \ge a\right] = 2\Pr[B_t \ge a].
+      \]
+    context: 'Useful for bounding the maximum of Brownian motion over an interval; connects supremum probabilities to marginal probabilities.'
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      Much of the previous discussion can in fact be substantially generalized via the formalism of local martingales and localizing sequences. Specifically, while martingales have $\mathbb{E}\mathbf{x}_\tau = \mathbf{x}_0$ for all stopping times $\tau$, a local martingale $\{\mathbf{x}_t\}_{t \ge 0}$ adapted to $\{\mathcal{F}_t\}_{t \ge 0}$ is a stochastic process satisfying the weaker property that there is a sequence of stopping times $\{\tau_n\}_{n \in \mathbb{N}}$ such that $\lim_{n \to \infty} \tau_n \to \infty$ with probability 1, where $\mathbf{x}_{\min\{t, \tau_n\}}$ is a martingale for all $n \in \mathbb{N}$. These stopping times are called a localizing sequence, and are used to formalize Ito integrals.
+    context: 'Explains the distinction between martingales and local martingales, and the role of localizing sequences in formalizing Ito integrals.'
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      Suppose, for a SDE of the form $\mathrm{d}\mathbf{x}_t = \boldsymbol{\mu}(\mathbf{x}_t)\mathrm{d}t + \boldsymbol{\sigma}(\mathbf{x}_t)\mathrm{d}\boldsymbol{B}_t$ (equation (3)), that $\boldsymbol{\mu}$ and $\boldsymbol{\sigma}$ both have a finite Lipschitz constant (with respect to $\|\cdot\|_2$ and $\|\cdot\|_F$, respectively). Then for all $t \ge 0$, there exists a unique solution $\mathbf{x}_t$ to the SDE for every realization of $\mathcal{F}_t$. Moreover, $\mathbf{x}_t$ is square-integrable in the sense that $\mathbb{E}\int_0^t \|\mathbf{x}_s\|_2^2 \mathrm{d}s < \infty$.
+    context: 'Existence and uniqueness result for SDE solutions under Lipschitz conditions; analogous to Picard-Lindelof for ODEs.'
+
+  - type: proposition
+    number: "2"
+    name: "Ito''s lemma"
+    statement: |
+      Let $f : \mathbb{R}^d \to \mathbb{R}$ be twice-differentiable, and suppose that $\{\mathbf{x}_t\}_{t \ge 0}$ is a drift-diffusion process following the SDE $\mathrm{d}\mathbf{x}_t = \boldsymbol{\mu}(\mathbf{x}_t)\mathrm{d}t + \boldsymbol{\sigma}(\mathbf{x}_t)\mathrm{d}\boldsymbol{B}_t$. Then the stochastic process $\{f(\mathbf{x}_t)\}_{t \ge 0}$ is also a drift-diffusion process, and follows the SDE
+      \[
+        \mathrm{d}f(\mathbf{x}_t) = \left(\langle \nabla f(\mathbf{x}_t), \boldsymbol{\mu}(\mathbf{x}_t)\rangle + \frac{1}{2}\langle \nabla^2 f(\mathbf{x}_t), \boldsymbol{\sigma}(\mathbf{x}_t)\boldsymbol{\sigma}(\mathbf{x}_t)^\top\rangle\right)\mathrm{d}t + \langle \nabla f(\mathbf{x}_t), \boldsymbol{\sigma}(\mathbf{x}_t)\mathrm{d}\boldsymbol{B}_t\rangle.
+      \]
+    context: 'The stochastic chain rule; fundamental tool for computing how functions of SDEs evolve. The extra second-order term $\frac{1}{2}\langle \nabla^2 f, \boldsymbol{\sigma}\boldsymbol{\sigma}^\top\rangle$ distinguishes it from the standard chain rule.'
+    proof_notes:
+      - label: "(5)"
+        content: |
+          For the Langevin diffusion $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$, Ito''s lemma yields
+          $\mathrm{d}f(\mathbf{x}_t) = (-\langle \nabla f(\mathbf{x}_t), \nabla V(\mathbf{x}_t)\rangle + \Delta f(\mathbf{x}_t))\mathrm{d}t + \sqrt{2}\langle \nabla f(\mathbf{x}_t), \mathrm{d}\boldsymbol{B}_t\rangle$.
+        description: 'Ito''s lemma specialized to the Langevin diffusion; used for deriving the Fokker-Planck equation and analyzing Langevin convergence.'
+
+  - type: definition
+    number: "2"
+    name: "Reversibility"
+    statement: |
+      Let $\{P_t\}_{t \ge 0}$ be a Markov semigroup with generator $\mathcal{L}$, and stationary distribution $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$. We say $\{P_t\}_{t \ge 0}$ is reversible if for all $f, g \in L_2(\pi^\star)$, following notation (8),
+      \[
+        \int \mathcal{L}f(\mathbf{x})g(\mathbf{x})\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x} = \int \mathcal{L}g(\mathbf{x})f(\mathbf{x})\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}.
+      \]
+    context: 'Continuous-time analog of reversibility for Markov chains; implies the Dirichlet energy operator is symmetric. Equivalent to the reversed-time Markov semigroup being the same as the original.'
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      For all $t \ge 0$ and $f : \mathbb{R}^d \to \mathbb{R}$, we have pointwise on $\mathbb{R}^d$,
+      \[
+        \frac{\partial}{\partial t} P_t f = \mathcal{L}P_t f = P_t \mathcal{L}f.
+      \]
+    context: 'Shows the generator commutes with the semigroup; equation (11) is sometimes called Kolmogorov''s backward equation.'
+    proof_notes:
+      - label: "(11)"
+        content: |
+          $\frac{\partial}{\partial t} P_t f = \mathcal{L}P_t f = P_t \mathcal{L}f$
+        description: 'Kolmogorov''s backward equation; used to derive the forward equation and analyze density evolution.'
+      - label: "(12)"
+        content: |
+          $\frac{\partial}{\partial t} P_t^\star \pi_0 = \mathcal{L}^\star P_t^\star \pi_0 = P_t^\star \mathcal{L}^\star \pi_0$
+        description: 'Kolmogorov''s forward equation for the adjoint operator; governs the evolution of the density $\pi_t$.'
+
+  - type: proposition
+    number: "3"
+    name: "Fokker-Planck equation"
+    statement: |
+      Let $\{\mathbf{x}_t\}_{t \ge 0}$ follow the drift-diffusion process $\mathrm{d}\mathbf{x}_t = \boldsymbol{\mu}(\mathbf{x}_t)\mathrm{d}t + \boldsymbol{\sigma}(\mathbf{x}_t)\mathrm{d}\boldsymbol{B}_t$ from $\mathbf{x}_0 \sim \pi_0 \in \mathcal{P}(\mathbb{R}^d)$. Then for all $t \ge 0$, denoting the law of $\mathbf{x}_t$ by $\pi_t$, we have
+      \[
+        \frac{\partial}{\partial t}\pi_t(\mathbf{x}) = -\nabla \cdot (\boldsymbol{\mu}(\mathbf{x})\pi_t(\mathbf{x})) + \frac{1}{2}\sum_{i,j \in [d]} \frac{\partial^2}{\partial \mathbf{x}_i \partial \mathbf{x}_j}[\boldsymbol{\sigma}(\mathbf{x})\boldsymbol{\sigma}(\mathbf{x})^\top \pi_t(\mathbf{x})]_{ij} \quad \text{for all } \mathbf{x} \in \mathbb{R}^d.
+      \]
+    context: 'The PDE governing the evolution of the density of a drift-diffusion process; derived from Kolmogorov''s forward equation.'
+    proof_notes:
+      - label: "(15)"
+        content: |
+          $\mathcal{L}f(\mathbf{x}) = \langle \nabla f(\mathbf{x}), \boldsymbol{\mu}(\mathbf{x})\rangle + \frac{1}{2}\langle \nabla^2 f(\mathbf{x}), \boldsymbol{\sigma}(\mathbf{x})\boldsymbol{\sigma}(\mathbf{x})^\top\rangle$
+        description: 'The generator of a drift-diffusion process; obtained by taking expectation in Ito''s lemma and dropping the martingale term.'
+      - label: "(16)"
+        content: |
+          $\frac{\partial}{\partial t}\pi_t(\mathbf{x}) = \nabla \cdot (\nabla V(\mathbf{x})\pi_t(\mathbf{x})) + \Delta \pi_t(\mathbf{x})$
+        description: 'Fokker-Planck equation specialized to Langevin dynamics; the $\Delta \pi_t$ term is the heat equation contribution from Brownian noise.'
+
+  - type: theorem
+    number: "1"
+    name: "Langevin diffusion stationarity"
+    statement: |
+      Suppose that $V : \mathbb{R}^d \to \mathbb{R}$ is differentiable and $\int \exp(-V(x))\mathrm{d}x < \infty$. Then, a stationary distribution for the Langevin dynamics $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$ is given by the density $\pi^\star : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ satisfying $\pi^\star \propto \exp(-V)$.
+    context: 'Establishes that the Langevin dynamics has a Gibbs-type stationary distribution; foundational for sampling algorithms based on Langevin diffusion.'
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      Following notation (18), if $\{P_t\}_{t \ge 0}$ is the Markov semigroup corresponding to the Langevin diffusion $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$ and $\int \exp(-V(\mathbf{x}))\mathrm{d}\mathbf{x} < \infty$, then for $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfying $\pi^\star \propto \exp(-V)$,
+      \[
+        \mathcal{E}(f, g) = \int \langle \nabla f(\mathbf{x}), \nabla g(\mathbf{x})\rangle\, \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x} \quad \text{for all } f, g \in L^2(\pi^\star).
+      \]
+    context: 'Shows that the Dirichlet energy for the Langevin diffusion is simply the inner product of gradients weighted by the stationary distribution. Also proves the Langevin diffusion is reversible since $\mathcal{E}(f,g) = \mathcal{E}(g,f)$. Justifies the name ''carre du champ'' (square of a field) since $\mathcal{E}(f,f) = \int \|\nabla f(\mathbf{x})\|_2^2 \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}$.'
+
+  - type: definition
+    number: "3"
+    name: "Wasserstein distance"
+    statement: |
+      Let $\mu, \pi \in \mathcal{P}(\mathbb{R}^d)$ have finite second moments, i.e., $\mathbb{E}_{\mathbf{x} \sim \mu}[\|\mathbf{x}\|_2^2] < \infty$, $\mathbb{E}_{\mathbf{x} \sim \pi}[\|\mathbf{x}\|_2^2] < \infty$. We define the Wasserstein distance between $\mu$ and $\pi$ by
+      \[
+        W_2(\mu, \pi) := \inf_{\gamma \in \mathcal{C}(\mu, \pi)} \sqrt{\int \|\mathbf{x} - \mathbf{y}\|_2^2\, \gamma(\mathbf{x}, \mathbf{y})\mathrm{d}\mathbf{x}\mathrm{d}\mathbf{y}},
+      \]
+      where $\mathcal{C}(\mu, \pi)$ is the set of all couplings of $\mu$ and $\pi$.
+    context: 'Defines the 2-Wasserstein distance, a key metric on probability distributions used throughout the convergence analysis of sampling algorithms.'
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      For all $\mu, \nu, \pi \in \mathcal{P}_2(\mathbb{R}^d)$, we have $W_2(\mu, \pi) \le W_2(\mu, \nu) + W_2(\nu, \pi)$.
+    context: 'Triangle inequality for the Wasserstein distance; shows $W_2$ is a metric on $\mathcal{P}_2(\mathbb{R}^d)$.'
+
+  - type: proposition
+    number: "4"
+    name: "Brenier''s theorem"
+    statement: |
+      If $\mu, \pi \in \mathcal{P}_2(\mathbb{R}^d)$, the values of the primal optimal transport problem $\frac{1}{2}W_2^2(\mu, \pi)$ and the dual problem $\sup_{(f,g) \in \mathcal{D}(\mu,\pi)} \int f(\mathbf{x})\mu(\mathbf{x})\mathrm{d}\mathbf{x} + \int g(\mathbf{y})\pi(\mathbf{y})\mathrm{d}\mathbf{y}$ are equal (i.e., strong duality holds), and both values are realized, respectively by $\gamma^\star \in \mathcal{C}(\mu, \pi)$ and $(f^\star, g^\star) \in \mathcal{D}(\mu, \pi)$. Moreover, there exists a unique convex function $\varphi : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ such that
+      \[
+        f^\star(\mathbf{x}) = \frac{1}{2}\|\mathbf{x}\|_2^2 - \varphi(\mathbf{x}),\quad g^\star(\mathbf{y}) = \frac{1}{2}\|\mathbf{y}\|_2^2 - \varphi^\star(\mathbf{y}),
+      \]
+      and the optimal coupling $\gamma^\star$ is supported only on points $(\mathbf{x}, \mathbf{y})$ where $\mathbf{y} \in \partial\varphi(\mathbf{x})$.
+    context: 'Fundamental theorem of optimal transport; establishes that the optimal transport map from $\mu$ to $\pi$ is the gradient of a convex function $\nabla\varphi$, i.e., a deterministic map $\mathbf{x} \mapsto \nabla\varphi(\mathbf{x})$.'
+
+  - type: remark
+    number: "4"
+    name: "Caffarelli''s contraction theorem"
+    statement: |
+      Under further structural assumptions on the measures $\mu, \pi$ in Definition 3, one can say more about the optimal transport map $\partial\varphi$ described in Proposition 4. For example, a famous result by [Caf00] states that if $\mu \propto \exp(-V)$ and $\pi \propto \exp(-W)$ where $V$ is $L$-smooth and $W$ is $m$-strongly convex, then the optimal transport map is induced by a differentiable convex function $\varphi$ which is $\sqrt{L/\mu}$-smooth.
+    context: 'Provides regularity of the optimal transport map under strong log-concavity and smoothness assumptions; useful for bounding how spread out the transport is.'
+
+  - type: definition
+    number: "4"
+    name: "Strong logconcavity"
+    statement: |
+      We say $\pi \in \mathcal{P}(\mathbb{R}^d)$ is $\mu$-strongly logconcave if $\pi \propto \exp(-V)$ for $V : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$, such that $V$ is $\mu$-strongly convex.
+    context: 'Key structural assumption on the target distribution for convergence guarantees of Langevin dynamics and other sampling algorithms.'
+
+  - type: theorem
+    number: "2"
+    name: "Wasserstein convergence of Langevin dynamics"
+    statement: |
+      Let $\{\mathbf{x}_t\}_{t \ge 0}$ follow the Langevin dynamics $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$ with stationary distribution $\pi^\star$, and assume that $\pi^\star$ is $\mu$-strongly logconcave. For all $t \ge 0$, the law of $\mathbf{x}_t$, denoted $\pi_t \in \mathcal{P}(\mathbb{R}^d)$, satisfies
+      \[
+        W_2^2(\pi_t, \pi^\star) \le \exp(-2\mu t)\, W_2^2(\pi_0, \pi^\star).
+      \]
+    context: 'Linear (exponential) convergence rate in Wasserstein distance for continuous-time Langevin dynamics under strong logconcavity. Uses a synchronous coupling argument.'
+    proof_notes:
+      - label: "Key coupling bound"
+        content: |
+          $\|\mathbf{x}_t - \mathbf{x}_t^\star\|_2^2 \le \exp(-2\mu t)\|\mathbf{x}_0 - \mathbf{x}_0^\star\|_2^2$
+        description: 'Pathwise contraction of two copies of Langevin dynamics driven by the same Brownian motion, using strong convexity of $V$. The key step uses $\langle \nabla V(\mathbf{x}) - \nabla V(\mathbf{x}''), \mathbf{x} - \mathbf{x}''\rangle \ge \mu\|\mathbf{x} - \mathbf{x}''\|_2^2$.'
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      Let $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfy $\pi^\star \propto \exp(-V)$, and suppose $V : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ is $\mu$-strongly convex and minimized at $\mathbf{x}^\star$. Then,
+      \[
+        \mathbb{E}_{\mathbf{x} \sim \pi^\star}\left[\|\mathbf{x} - \mathbf{x}^\star\|_2^2\right] \le \frac{2d}{\mu}.
+      \]
+    context: 'Bounds the second moment of a strongly logconcave distribution around its mode; useful for bounding the initial Wasserstein distance $W_2^2(\pi_0, \pi^\star)$ when initializing at a point mass.'
+
+  - type: lemma
+    number: "6"
+    name: "Continuity equation"
+    statement: |
+      Let $\{\mathbf{v}_t\}_{t \in \mathbb{R}}$ be a family of vector fields on $\mathbb{R}^d$, i.e., for all $t \in \mathbb{R}$, $\mathbf{v}_t : \mathbb{R}^d \to \mathbb{R}^d$ is a corresponding vector field. Let $\mathbf{x}_0 \sim \pi_0$ and suppose $\mathbf{x}_t$ follows the ODE $\frac{\partial}{\partial t}\mathbf{x}_t = \mathbf{v}_t(\mathbf{x}_t)$ for all $t \ge 0$. Then $\pi_t$, the law of $\mathbf{x}_t$, follows the following PDE pointwise on $\mathbb{R}^d$:
+      \[
+        \frac{\partial}{\partial t}\pi_t + \nabla \cdot (\pi_t \mathbf{v}_t) = 0.
+      \]
+    context: 'Fundamental PDE relating particle flows (ODEs in $\mathbb{R}^d$) to density flows (PDEs on $\mathcal{P}(\mathbb{R}^d)$); key building block for the Wasserstein space formalism.'
+
+  - type: theorem
+    number: "3"
+    name: ""
+    statement: |
+      Let $\pi^\star \in \mathcal{P}_2(\mathbb{R}^d)$ satisfy $\pi^\star \propto \exp(-V)$ for $V : \mathbb{R}^d \to \mathbb{R}$, and let $\mathcal{F}(\pi) := D_{\mathrm{KL}}(\pi \| \pi^\star)$ for $\pi \in \mathcal{P}_2(\mathbb{R}^d)$. Drawing $\mathbf{x}_0 \sim \pi_0$ for a density $\pi_0 \in \mathcal{P}_2(\mathbb{R}^d)$, and letting $\pi_t$ be the law of $\mathbf{x}_t$ for $\{\mathbf{x}_t\}_{t \ge 0}$ following the Langevin dynamics $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$, the curve $\{\pi_t\}_{t \ge 0}$ follows the curve
+      \[
+        \frac{\partial}{\partial t}\pi_t = -\nabla_{\mathcal{M}}\mathcal{F}(\pi_t),
+      \]
+      where $\nabla_{\mathcal{M}}$ is the manifold gradient defined in (26), and $\mathcal{M}$ is the Riemannian manifold given by $\mathcal{P}_2(\mathbb{R}^d)$ equipped with the distance function $W_2$. In other words, the Langevin dynamics in particle space induce the gradient flow of the KL divergence to $\pi^\star$ in the space of measures.
+    context: 'JKO theorem (Jordan-Kinderlehrer-Otto, 1998); establishes the deep connection between Langevin dynamics and Wasserstein gradient flow of KL divergence. Fundamental for the Otto calculus perspective on sampling.'
+    proof_notes:
+      - label: "(37)"
+        content: |
+          $\frac{\partial}{\partial t}\mathcal{F}(\pi_t) = \int \log\left(\frac{\pi_t(\mathbf{x})}{\pi^\star(\mathbf{x})}\right)\left(\frac{\partial}{\partial t}\pi_t(\mathbf{x})\right)\mathrm{d}\mathbf{x}$
+        description: 'Time derivative of the KL divergence along the density flow; uses the fact that $\int \pi_t(\mathbf{x})\mathrm{d}\mathbf{x} = 1$.'
+      - label: "(38)"
+        content: |
+          $\nabla \delta\mathcal{F}(\pi)(\mathbf{x}) = \nabla \log\left(\frac{\pi(\mathbf{x})}{\pi^\star(\mathbf{x})}\right) = \nabla V(\mathbf{x}) + \nabla \log \pi(\mathbf{x})$
+        description: 'The gradient of the first variation of the KL divergence functional; shows the Wasserstein gradient field is $\nabla V + \nabla \log \pi$, matching the Langevin dynamics continuity equation.'
+
+  - type: definition
+    number: "5"
+    name: "Poincare inequality"
+    statement: |
+      We say that $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a Poincare inequality with constant $C_{\mathrm{PI}}$ if for all differentiable $f \in L^2(\pi^\star)$,
+      \[
+        \mathrm{Var}_{\pi^\star}[f] \le C_{\mathrm{PI}} \int \|\nabla f(\mathbf{x})\|_2^2\, \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x},
+      \]
+      where $\mathrm{Var}_{\pi^\star}[f] := \int \left(f(\mathbf{x}) - \int f(\mathbf{y})\pi^\star(\mathbf{y})\mathrm{d}\mathbf{y}\right)^2 \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}$.
+    context: 'Provides a spectral gap on the Dirichlet energy operator $\mathcal{E}$; implies covariance bounds $\mathrm{Cov}_{\pi^\star} \preceq C_{\mathrm{PI}}\mathbf{I}_d$ and is used to prove $\chi^2$ convergence of the Langevin dynamics.'
+
+  - type: definition
+    number: "6"
+    name: "Log-Sobolev inequality"
+    statement: |
+      We say that $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a log-Sobolev inequality with constant $C_{\mathrm{LSI}}$ if for all differentiable $f \in L^2(\pi^\star)$,
+      \[
+        \mathrm{Ent}_{\pi^\star}[f^2] \le 2C_{\mathrm{LSI}} \int \|\nabla f(\mathbf{x})\|_2^2\, \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x},
+      \]
+      where $\mathrm{Ent}_{\pi^\star}[f] := \int f(\mathbf{x})\log(f(\mathbf{x}))\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x} - \left(\int f(\mathbf{x})\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}\right)\log\left(\int f(\mathbf{x})\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}\right)$.
+    context: 'Stronger than the Poincare inequality; implies KL divergence convergence and sub-Gaussian concentration. The entropy decay analog of the spectral gap.'
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      If $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a log-Sobolev inequality with constant $C$, it also satisfies a Poincare inequality with constant $C$.
+    context: 'Shows that LSI is strictly stronger than Poincare; obtained by linearizing the entropy around a constant.'
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      If $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a log-Sobolev inequality with constant $C_{\mathrm{LSI}}$, then for any $\pi \in \mathcal{P}(\mathbb{R}^d)$ such that $\frac{\pi}{\pi^\star} < \infty$ almost surely,
+      \[
+        D_{\mathrm{KL}}(\pi \| \pi^\star) \le \frac{C_{\mathrm{LSI}}}{2} \int \left\|\nabla \log\left(\frac{\pi(\mathbf{x})}{\pi^\star(\mathbf{x})}\right)\right\|_2^2 \pi(\mathbf{x})\mathrm{d}\mathbf{x},
+      \]
+      where $D_{\mathrm{KL}}(\pi \| \pi^\star) := \int \pi(\mathbf{x})\log\left(\frac{\pi(\mathbf{x})}{\pi^\star(\mathbf{x})}\right)\mathrm{d}\mathbf{x}$.
+    context: 'Alternative formulation of the log-Sobolev inequality in terms of KL divergence and Fisher information; the right-hand side is the Fisher information.'
+    proof_notes:
+      - label: "(42)"
+        content: |
+          $D_{\mathrm{KL}}(\pi \| \pi^\star) \le \frac{C_{\mathrm{LSI}}}{2} \int \left\|\nabla \log\left(\frac{\pi(\mathbf{x})}{\pi^\star(\mathbf{x})}\right)\right\|_2^2 \pi(\mathbf{x})\mathrm{d}\mathbf{x}$
+        description: 'KL divergence form of the log-Sobolev inequality; obtained by plugging $f = \sqrt{\pi/\pi^\star}$ into (41).'
+      - label: "(43)"
+        content: |
+          $\mathcal{F}(\pi) - \mathcal{F}(\pi^\star) \le \frac{C_{\mathrm{LSI}}}{2}\langle \nabla_{\mathcal{M}}\mathcal{F}(\pi), \nabla_{\mathcal{M}}\mathcal{F}(\pi)\rangle_\pi$
+        description: 'Functional analog of gradient domination (cf. Corollary 3, Part II); the LSI is the gradient domination condition for KL divergence on Wasserstein space.'
+
+  - type: lemma
+    number: "9"
+    name: ""
+    statement: |
+      Let $\{\mathbf{x}_t\}_{t \ge 0}$ follow the Langevin dynamics $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$ with stationary distribution $\pi^\star$, and assume $\pi^\star$ satisfies a Poincare inequality with constant $C_{\mathrm{PI}}$. For all $t \ge 0$, the law of $\mathbf{x}_t$, denoted $\pi_t \in \mathcal{P}(\mathbb{R}^d)$, satisfies
+      \[
+        \chi^2(\pi_t \| \pi^\star) \le \exp\left(-\frac{2t}{C_{\mathrm{PI}}}\right) \chi^2(\pi_0 \| \pi^\star).
+      \]
+    context: 'Exponential convergence of the $\chi^2$ divergence under the Poincare inequality; proved via Gronwall''s inequality applied to the variance decay rate.'
+
+  - type: lemma
+    number: "10"
+    name: ""
+    statement: |
+      Let $\{\mathbf{x}_t\}_{t \ge 0}$ follow the Langevin dynamics $\mathrm{d}\mathbf{x}_t = -\nabla V(\mathbf{x}_t)\mathrm{d}t + \sqrt{2}\mathrm{d}\boldsymbol{B}_t$ with stationary distribution $\pi^\star$, and assume $\pi^\star$ satisfies a log-Sobolev inequality with constant $C_{\mathrm{LSI}}$. For all $t \ge 0$, the law of $\mathbf{x}_t$, denoted $\pi_t \in \mathcal{P}(\mathbb{R}^d)$, satisfies
+      \[
+        D_{\mathrm{KL}}(\pi_t \| \pi^\star) \le \exp\left(-\frac{2t}{C_{\mathrm{LSI}}}\right) D_{\mathrm{KL}}(\pi_0 \| \pi^\star).
+      \]
+    context: 'Exponential convergence of the KL divergence under the log-Sobolev inequality; the key convergence result for Langevin dynamics in stronger metrics than $W_2$.'
+
+  - type: proposition
+    number: "5"
+    name: "Brascamp-Lieb inequality"
+    statement: |
+      Let $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ be logconcave, and let $\pi^\star \propto \exp(-V)$ where $V : \mathbb{R}^d \to \mathbb{R}$ is strictly convex and twice-continuously differentiable. Then for all twice-differentiable $f \in L^2(\pi^\star)$,
+      \[
+        \mathrm{Var}_{\pi^\star}[f] \le \int \|\nabla f(\mathbf{x})\|_{(\nabla^2 V(\mathbf{x}))^{-1}}^2\, \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}.
+      \]
+    context: 'Hessian-reweighted Poincare inequality for logconcave densities; stronger than the standard Poincare inequality when the Hessian of V varies. Proved using the Prekopa-Leindler inequality.'
+    proof_notes:
+      - label: "(45)"
+        content: |
+          $\int \exp(2\delta f(\mathbf{x}))\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x} \le \left(\int \exp(g^{\delta f}(\mathbf{x}))\pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}\right)^2$
+        description: 'Key intermediate inequality from applying Prekopa-Leindler with $\lambda = 1/2$; relates the moment generating function of $f$ to the conjugate perturbation $g^{\delta f}$.'
+      - label: "(46)"
+        content: |
+          $g^{\delta f}(\mathbf{y}) = \delta f(\mathbf{y}) + \frac{\delta^2}{2}(\nabla^2 V(\mathbf{y}))^{-1}[\nabla f(\mathbf{y}), \nabla f(\mathbf{y})] + o(\delta^2)$
+        description: 'Second-order expansion of the conjugate perturbation $g^{\delta f}$; the Hessian-inverse-weighted gradient term is the crux that produces the Brascamp-Lieb bound.'
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      Any $\mu$-strongly logconcave density satisfies a Poincare inequality with constant $\frac{1}{\mu}$.
+    context: 'Immediate consequence of Brascamp-Lieb (Proposition 5) with $(\nabla^2 V(\cdot))^{-1} \preceq \frac{1}{\mu}\mathbf{I}_d$; gives explicit Poincare constant for strongly logconcave distributions.'
+
+  - type: theorem
+    number: "4"
+    name: ""
+    statement: |
+      Let $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ be $\mu$-strongly logconcave with respect to $\|\cdot\|$, i.e., $\pi^\star \propto \exp(-V)$ where $V$ is $\mu$-strongly convex with respect to $\|\cdot\|$ (Definition 4, Part II). Then for all differentiable $f \in L^2(\pi^\star)$,
+      \[
+        \mathrm{Ent}_{\pi^\star}[f^2] \le \frac{2}{\mu} \int \|\nabla f(\mathbf{x})\|_\star^2\, \pi^\star(\mathbf{x})\mathrm{d}\mathbf{x}.
+      \]
+    context: 'Log-Sobolev inequality with constant $1/\mu$ for $\mu$-strongly logconcave densities, holding for all norms (not just $\ell_2$). Implies both LSI and Poincare hold with constant $1/\mu$ for strongly logconcave distributions.'
+
+  - type: lemma
+    number: "11"
+    name: ""
+    statement: |
+      If $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a log-Sobolev inequality with constant $C_{\mathrm{LSI}}$, then for any 1-Lipschitz function $f : \mathbb{R}^d \to \mathbb{R}$, we have that
+      \[
+        \Pr_{\mathbf{x} \sim \pi^\star}[f(\mathbf{x}) \ge \mathbb{E}_{\pi^\star}[f] + c] \le \exp\left(-\frac{c^2}{2C_{\mathrm{LSI}}}\right) \quad \text{for all } c > 0.
+      \]
+    context: 'Sub-Gaussian concentration of Lipschitz functions under LSI; proved via Herbst''s argument using the moment-generating function.'
+    proof_notes:
+      - label: "(47)"
+        content: |
+          $\lambda H'(\lambda) - H(\lambda)\log H(\lambda) \le \frac{\lambda^2 C_{\mathrm{LSI}}}{2} H(\lambda)$
+        description: 'Differential inequality for the moment-generating function $H(\lambda) = \mathbb{E}_{\pi^\star}[\exp(\lambda f)]$ obtained from the log-Sobolev inequality; the crux of Herbst''s argument.'
+
+  - type: lemma
+    number: "12"
+    name: ""
+    statement: |
+      If $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a Poincare inequality with constant $C_{\mathrm{PI}}$, then for any 1-Lipschitz function $f : \mathbb{R}^d \to \mathbb{R}$, we have that
+      \[
+        \Pr_{x \sim \pi^\star}[f(\mathbf{x}) \ge \mathbb{E}_{\pi^\star}[f] + c] \le 3\exp\left(-\frac{c}{\sqrt{C_{\mathrm{PI}}}}\right) \quad \text{for all } c > 0.
+      \]
+    context: 'Sub-exponential concentration of Lipschitz functions under Poincare inequality; weaker than the sub-Gaussian bound from LSI (Lemma 11).'
+
+  - type: lemma
+    number: "13"
+    name: ""
+    statement: |
+      If $\pi^\star \in \mathcal{P}(\mathbb{R}^d)$ satisfies a log-Sobolev inequality with constant $C_{\mathrm{LSI}}$, then
+      \[
+        \frac{1}{2C_{\mathrm{LSI}}} W_2^2(\pi, \pi^\star) \le D_{\mathrm{KL}}(\pi \| \pi^\star) \quad \text{for all } \pi \in \mathcal{P}_2(\mathbb{R}^d).
+      \]
+    context: 'Otto-Villani theorem (Talagrand''s transportation inequality); shows LSI implies a quadratic relationship between $W_2$ and $D_{\mathrm{KL}}$. Proved via a gradient flow/Otto calculus argument.'
+    proof_notes:
+      - label: "(48)"
+        content: |
+          $f(\mathbf{x}) - f(\mathbf{x}^\star) \le \frac{1}{2\mu}\|\nabla f(\mathbf{x})\|_2^2$ for all $\mathbf{x} \in \mathbb{R}^d$
+        description: 'Gradient domination condition for $\mu$-strongly convex functions; used to establish quadratic growth from gradient domination on Wasserstein space.'
+      - label: "(49)"
+        content: |
+          $\frac{\mu}{2}\|\mathbf{x} - \mathbf{x}^\star\|_2^2 \le f(\mathbf{x}) - f(\mathbf{x}^\star)$ for all $\mathbf{x} \in \mathbb{R}^d$
+        description: 'Quadratic growth bound implied by gradient domination; the Wasserstein-space analog gives the transportation inequality.'
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      There is a connection between the Laplacian operator defined in (6) and the Laplacian matrix associated with a graph, defined in Definition 5, Part II. At a high level, the Laplacian $\mathbf{L}_G$ of an unweighted path graph $G$ acts on each indicator vector $\mathbf{e}_v$ for a vertex $v$ of $G$, with neighbors $u, w$, by computing $\mathbf{L}_G \mathbf{e}_v = 2\mathbf{e}_v - \mathbf{e}_u - \mathbf{e}_w$, i.e., it computes the difference between a vertex value and averages around its neighbors. Similarly, the Laplacian operator $\Delta$ computes a difference of a function value with an average in a small neighborhood.
+    context: 'Connects the continuous Laplacian operator $\Delta f = \mathrm{Tr}(\nabla^2 f)$ to the discrete graph Laplacian from spectral graph theory.'
+
+  - type: remark
+    number: "3"
+    name: ""
+    statement: |
+      Markov semigroup theory extends to the discrete setting as well, where a continuous-time Markov chain is governed by a matrix specifying transition probabilities for a continuous-time jump process. The continuous-time analog of the "transition matrix" is a family of matrices $\{\exp(t\mathbf{L})\}_{t \ge 0}$ for a generator matrix $\mathbf{L}$, specifying transition probabilities after $t$ time has passed.
+    context: 'Connects continuous-time Markov semigroups to continuous-time Markov chains and matrix exponentials.'
+
+  - type: proposition
+    number: "1a"
+    name: "Fact 1 (Rockafellar)"
+    statement: |
+      If $S \subseteq \mathbb{R}^d \times \mathbb{R}^d$ is cyclically monotone, i.e., for all $n \in \mathbb{N}$ and all permutations $\sigma : [n] \to [n]$, we have for all $\{(\mathbf{x}_i, \mathbf{y}_i)\}_{i \in [n]} \subseteq S$,
+      \[
+        \sum_{i \in [n]} \langle \mathbf{x}_i, \mathbf{y}_i\rangle \ge \sum_{i \in [n]} \langle \mathbf{x}_i, \mathbf{y}_{\sigma(i)}\rangle,
+      \]
+      then there exists a convex function $\varphi : \mathbb{R}^d \to \mathbb{R} \cup \{\infty\}$ such that $S \subseteq \{(\mathbf{x}, \mathbf{y}) \mid \mathbf{x} \in \mathbb{R}^d, \mathbf{y} \in \partial\varphi(x)\}$.
+    context: 'Rockafellar''s theorem characterizing cyclically monotone sets as subgradients of convex functions; crucial step in the proof of Brenier''s theorem (Proposition 4).'

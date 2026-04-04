@@ -1,0 +1,268 @@
+source: "Part13_main.pdf"
+lecture_number: 13
+title: "Generalized Linear Models"
+items:
+  - type: definition
+    number: ""
+    name: "Realizable and agnostic setting"
+    statement: |
+      Fix a distribution $\mathcal{D}$ over $\mathcal{X} \times \mathcal{Y}$ where $\mathcal{X} \subseteq \mathbb{R}^d$ and $\mathcal{Y} = \{0,1\}$, and a family of classifiers $\mathcal{C}$. When there exists $c^\star \in \mathcal{C}$ with $c^\star(\mathbf{x}) = \mathbb{E}_{\mathcal{D}_{y|\mathbf{x}}}[y]$ for all $\mathbf{x} \in \mathcal{X}$, we are in the realizable setting. When no such $c^\star$ exists, we are in the agnostic setting, where we compete with the best classifier in $\mathcal{C}$ at predicting $\mathbb{E}_{\mathcal{D}_{y|\mathbf{x}}}[y]$.
+    context: "Fundamental distinction between settings where the model class contains the true predictor versus where it does not."
+
+  - type: definition
+    number: ""
+    name: "Proper loss"
+    statement: |
+      A loss function $\ell : [0,1] \times \{0,1\} \to \mathbb{R}$ is called a proper loss if for all $p^\star \in [0,1]$, $p^\star \in \operatorname{argmin}_{p \in [0,1]} \mathbb{E}_{y \sim \mathrm{Bern}(p^\star)}[\ell(p, y)]$.
+    context: "Proper losses ensure that outputting the ground truth is optimal in the realizable setting. Key examples include 0-1 loss, squared loss, and cross entropy loss."
+    proof_notes:
+      - label: "(4)"
+        content: |
+          $p^\star \in \operatorname{argmin}_{p \in [0,1]} \mathbb{E}_{y \sim \mathrm{Bern}(p^\star)}[\ell(p, y)]$
+        description: |-
+          The defining property of a proper loss function.
+
+  - type: definition
+    number: ""
+    name: "Entropy of a loss"
+    statement: |
+      For a proper loss $\ell$ and $p \in [0,1]$, the entropy is defined as $H(p) := \mathbb{E}_{y \sim \mathrm{Bern}(p)}[\ell(p, y)] = \min_{q \in [0,1]} \{(1-p)\ell(q,0) + p\ell(q,1)\}$. For cross entropy loss, $H(p) = (1-p)\log\frac{1}{1-p} + p\log\frac{1}{p}$. For squared loss, $H(p) = p(1-p)$. In both cases $p = \frac{1}{2}$ maximizes entropy.
+    context: "The entropy of a loss is the minimum expected loss achievable, analogous to Shannon entropy for cross entropy loss."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          $H(p) := \mathbb{E}_{y \sim \mathrm{Bern}(p)}[\ell(p,y)] = \min_{q \in [0,1]} \{(1-p)\ell(q,0) + p\ell(q,1)\}$
+        description: >-
+          Definition of the entropy of a proper loss, with the second equality holding because $\ell$ is proper.
+      - label: "(6)"
+        content: |
+          $\omega'(p) = -H'(p) = \ell(p,0) - \ell(p,1)$
+        description: |-
+          Derivative of the convex negentropy $\omega := -H$ expressed in terms of the loss, used in the characterization of proper losses.
+
+  - type: lemma
+    number: "1"
+    name: "Characterization of proper losses"
+    statement: |
+      Let $\ell : [0,1] \times \{0,1\} \to \mathbb{R}$ be a proper loss (i.e., $\ell$ satisfies (4)), and define $H : [0,1] \to \mathbb{R}$ as in (5). Then for all $(p,y) \in [0,1] \times \{0,1\}$, $\ell(p,y) = -\omega(p) - \omega'(p)(y - p)$. Conversely, for any convex $\omega : [0,1] \to \mathbb{R}$, the loss $\ell : [0,1] \times \{0,1\}$ defined by (7) is proper.
+    context: "Complete characterization of proper losses for binary classification in terms of convex functions. Gives a bijection between convex functions on $[0,1]$ and proper losses."
+    proof_notes:
+      - label: "(7)"
+        content: |
+          $\ell(p,y) = -\omega(p) - \omega'(p)(y - p)$
+        description: |-
+          The canonical form of any proper loss in terms of a convex function $\omega = -H$.
+      - label: "(8)"
+        content: |
+          $-\omega(p) + p\omega'(p) - y\omega'(p) = \omega^*(t) - yt = \int_0^t (\sigma(\tau) - y)\,\mathrm{d}\tau$
+        description: |-
+          Alternative parameterization of a proper loss via a link function $\sigma : \mathbb{R} \to [0,1]$ with $t = \omega'(p)$. This is the matching loss formulation.
+
+  - type: definition
+    number: ""
+    name: "Generalized linear model (GLM)"
+    statement: |
+      A GLM makes predictions from features $\mathbf{x} \in \mathbb{R}^d$ using a linear predictor $\mathbf{w} \in \mathbb{R}^d$ combined with a link function $\sigma : \mathbb{R} \to [0,1]$. It posits that $\sigma(\mathbf{w} \cdot \mathbf{x}) = \mathbb{E}_{y \sim \mathcal{D}_{y|\mathbf{x}}}[y]$ is the mean function governing the labels. When $\sigma$ is known and fixed, this is the GLM with link $\sigma$; when $\sigma$ is treated as flexible, this is a single-index model (SIM).
+    context: "Fundamental model class for binary classification. SIMs are a semiparametric generalization where the link function is also learned."
+    proof_notes:
+      - label: "(9)"
+        content: |
+          $\sigma(\mathbf{w} \cdot \mathbf{x}) = \mathbb{E}_{y \sim \mathcal{D}_{y|\mathbf{x}}}[y]$
+        description: |-
+          The GLM/SIM realizability assumption: the conditional mean label is determined by a linear function of features composed with a monotone link.
+
+  - type: definition
+    number: ""
+    name: "Matching loss"
+    statement: |
+      Let $\sigma : \mathbb{R} \to [0,1]$ be a monotone nondecreasing link function. The matching loss associated with $\sigma$ is $\ell_{\mathrm{m},\sigma}(t,y) := \int_0^t (\sigma(\tau) - y)\,\mathrm{d}\tau$.
+    context: "The matching loss is the natural convex surrogate for learning GLMs/SIMs. It is convex in $t$ and its minimizer over $t$ corresponds to the correct prediction under the link."
+    proof_notes:
+      - label: "(10)"
+        content: |
+          $\ell_{\mathrm{m},\sigma}(t,y) := \int_0^t (\sigma(\tau) - y)\,\mathrm{d}\tau$
+        description: |-
+          Definition of the matching loss. When $\sigma(t) = t$, this gives the squared loss (up to a constant). When $\sigma$ is the logit, this gives the logistic loss.
+
+  - type: lemma
+    number: "2"
+    name: "Properties of the matching loss"
+    statement: |
+      Let $\sigma : \mathbb{R} \to [0,1]$ be a monotone link function, and define $\ell_{\mathrm{m},\sigma}$ as in (10). Then $\frac{\partial}{\partial t}\ell_{\mathrm{m},\sigma}(t,y) = \sigma(t) - y$ and $\frac{\partial^2}{\partial t^2}\ell_{\mathrm{m},\sigma}(t,y) = \sigma'(t)$. Consequently, $\ell_{\mathrm{m},\sigma}(t,y)$ is convex in $t$, and if $\sigma$ is $\beta$-Lipschitz, then $\ell_{\mathrm{m},\sigma}(t,y)$ is $\beta$-smooth in $t$. Finally, for any $p \in [0,1]$ and $t \in \mathbb{R}$ with $\sigma(t) = p$, we have $t \in \operatorname{argmin}_{t \in \mathbb{R}} \mathbb{E}_{y \sim \mathrm{Bern}(p)}[\ell_{\mathrm{m},\sigma}(t,y)]$.
+    context: "Establishes convexity, smoothness, and optimality properties of the matching loss, justifying its use as a convex surrogate for learning GLMs."
+    proof_notes:
+      - label: "(11)"
+        content: |
+          $\frac{\partial}{\partial t}\ell_{\mathrm{m},\sigma}(t,y) = \sigma(t) - y, \quad \frac{\partial^2}{\partial t^2}\ell_{\mathrm{m},\sigma}(t,y) = \sigma'(t)$
+        description: |-
+          First and second derivatives of the matching loss. Convexity follows from $\sigma'(t) \geq 0$.
+      - label: "(12)"
+        content: |
+          $t \in \operatorname{argmin}_{t \in \mathbb{R}} \mathbb{E}_{y \sim \mathrm{Bern}(p)}[\ell_{\mathrm{m},\sigma}(t,y)]$
+        description: |-
+          The matching loss is minimized at the correct pre-link prediction, i.e., where $\sigma(t) = p$.
+
+  - type: definition
+    number: ""
+    name: "Proper loss associated with a link"
+    statement: |
+      For any monotone and one-to-one link function $\sigma : \mathbb{R} \to [0,1]$, the proper loss associated with $\sigma$ is $\ell_{\mathrm{p},\sigma}(p,y) := \ell_{\mathrm{m},\sigma}(\sigma^{-1}(p), y)$. This loss takes inputs in $[0,1] \times [0,1]$ and satisfies $p \in \operatorname{argmin}_{q \in [0,1]} \mathbb{E}_{y \sim \mathrm{Bern}(p)}[\ell_{\mathrm{p},\sigma}(q,y)]$.
+    context: |-
+      Converts a matching loss back into a proper loss on the probability scale. Equivalent to the characterization in Lemma 1 via $\omega' = \sigma^{-1}$.
+    proof_notes:
+      - label: "(13)"
+        content: |
+          $\ell_{\mathrm{p},\sigma}(p,y) := \ell_{\mathrm{m},\sigma}(\sigma^{-1}(p), y)$
+        description: |-
+          Definition of the proper loss associated with a link function $\sigma$.
+
+  - type: definition
+    number: "1"
+    name: "Calibration"
+    statement: |
+      Let $\mathcal{D}$ be a distribution over $(\mathbf{x}, y) \in \mathcal{X} \times \{0,1\}$, and let $p : \mathcal{X} \to [0,1]$ be a predictor. We say $p$ is calibrated with respect to $\mathcal{D}$ if for all $v \in [0,1]$, $\mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[y \mid p(\mathbf{x}) = v] = v$.
+    context: "Calibration means that conditioned on the predictor outputting probability $v$, the true outcome averages to $v$. PAV always produces calibrated predictors."
+
+  - type: lemma
+    number: "3"
+    name: "PAV produces calibrated predictors"
+    statement: |
+      Let $p : \mathcal{X} \to [0,1]$ be the predictor resulting from PAV run on inputs $\{y_i\}_{i \in [n]}$ where $\mathcal{X} := [n]$, and let $\mathcal{D}$ be uniform over $(i, y_i) \in \mathcal{X} \times \{0,1\}$. Then $p$ is calibrated with respect to $\mathcal{D}$.
+    context: "First key property of PAV: its output is always calibrated. Used in the proof that PAV optimizes all proper losses (Theorem 1)."
+
+  - type: lemma
+    number: "4"
+    name: "PAV residuals are anticorrelated with monotone sequences"
+    statement: |
+      Let $\{u_i\}_{i \in [n]}$ be monotone nondecreasing, and let $\{p_i\}_{i \in [n]}$ be the result of PAV run on inputs $\{y_i\}_{i \in [n]}$. Then $\sum_{i \in [n]} (p_i - y_i) u_i \geq 0$.
+    context: "Second key property of PAV: residuals are anticorrelated with any monotone sequence. Combined with Lemma 3, this proves PAV's optimality for all proper losses."
+    proof_notes:
+      - label: "(16)"
+        content: |
+          $\sum_{i=\ell}^{j} (y_i - \bar{y}_P) \geq 0$
+        description: |-
+          Pool prefix averages always exceed overall pool averages at any point in the PAV algorithm. Key invariant maintained throughout the proof, established by induction on pool merges.
+      - label: "(17)"
+        content: |
+          $\sum_{i=\ell}^{j} (y_i - \bar{y}_Q) \geq \sum_{i=\ell}^{j} (y_j - \bar{y}_P) \geq 0$
+        description: |-
+          After merging pools $P$ and $P'$ into $Q = P \cup P'$, the prefix-sum invariant (16) is preserved for indices in $P$.
+
+  - type: theorem
+    number: "1"
+    name: "PAV optimizes all proper losses"
+    statement: |
+      Let $\sigma : \mathbb{R} \to [0,1]$ be an arbitrary monotone, one-to-one link function, and define the associated proper loss $\ell_{\mathrm{p},\sigma} : [0,1] \times \{0,1\} \to \mathbb{R}$ as in (13). Let $\{p_i\}_{i \in [n]}$ be the result of PAV run on inputs $\{y_i\}_{i \in [n]} \in \{0,1\}^n$. Then for any $\{v_i\}_{i \in [n]} \subset [0,1]$ satisfying $v_1 \leq v_2 \leq \ldots \leq v_n$, $\sum_{i \in [n]} \ell_{\mathrm{p},\sigma}(p_i, y_i) \leq \sum_{i \in [n]} \ell_{\mathrm{p},\sigma}(v_i, y_i)$.
+    context: |-
+      PAV is optimal for isotonic regression under any proper loss, not just squared loss. The squared loss case is recovered by setting $\sigma$ to the identity. First observed by [BP13].
+    proof_notes:
+      - label: "(19)"
+        content: |
+          $\sum_{i \in [n]} \ell_{\mathrm{m},\sigma}(\sigma^{-1}(p_i), y_i) \leq \sum_{i \in [n]} \ell_{\mathrm{m},\sigma}(t_i, y_i)$
+        description: |-
+          The core inequality, proved in matching loss form. The desired claim follows by letting $t_i = \sigma^{-1}(v_i)$.
+      - label: "(20)"
+        content: |
+          $\mathbb{E}_{(i,y) \sim \widehat{\mathcal{D}}} \left[\ell_{\mathrm{m},\sigma}(\sigma^{-1}(p_i), y)\right] \leq \mathbb{E}_{(i,y) \sim \widehat{\mathcal{D}}} \left[\ell_{\mathrm{m},\sigma}(t_i, y)\right]$
+        description: |-
+          Inequality under the resampled distribution $\widehat{\mathcal{D}}$, following from the optimality of matching loss at calibrated predictions (Lemma 3 and equation (12)).
+      - label: "(21)"
+        content: |
+          $\mathbb{E}_{(i,y) \sim \mathcal{D}} \left[\ell_{\mathrm{m},\sigma}(\sigma^{-1}(p_i), y)\right] - \mathbb{E}_{(i,y) \sim \widehat{\mathcal{D}}} \left[\ell_{\mathrm{m},\sigma}(\sigma^{-1}(p_i), y)\right] = 0$ and $\mathbb{E}_{(i,y) \sim \widehat{\mathcal{D}}} \left[\ell_{\mathrm{m},\sigma}(t_i, y)\right] - \mathbb{E}_{(i,y) \sim \mathcal{D}} \left[\ell_{\mathrm{m},\sigma}(t_i, y)\right] \leq 0$
+        description: |-
+          The first equality uses the definition of $\ell_{\mathrm{m},\sigma}$ and calibration (Lemma 3). The second inequality uses anticorrelation with monotone sequences (Lemma 4).
+
+  - type: definition
+    number: ""
+    name: "Squared loss, matching loss, and excess squared loss for SIMs"
+    statement: |
+      For a SIM with link $\sigma$ and distribution $\mathcal{D}$, define: $\ell_{\mathrm{m},\sigma}(\mathbf{w}; \mathcal{D}) := \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[\ell_{\mathrm{m},\sigma}(\mathbf{w} \cdot \mathbf{x}, y)]$, $\ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) := \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)^2]$, and $\bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) := \ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) - \ell_{\mathrm{sq},\sigma_\star}(\mathbf{w}_\star; \mathcal{D})$.
+    context: |-
+      Standard notation for the population losses in the Isotron analysis. The excess squared loss $\bar{\ell}_{\mathrm{sq},\sigma}$ captures the explainable error due to incorrect predictions.
+    proof_notes:
+      - label: "(23)"
+        content: |
+          $\ell_{\mathrm{m},\sigma}(\mathbf{w}; \mathcal{D}) := \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[\ell_{\mathrm{m},\sigma}(\mathbf{w} \cdot \mathbf{x}, y)]$, $\ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) := \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)^2]$, $\bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) := \ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) - \ell_{\mathrm{sq},\sigma_\star}(\mathbf{w}_\star; \mathcal{D})$
+        description: |-
+          Population-level loss definitions used throughout Section 3.
+      - label: "(24)"
+        content: |
+          $\bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) = \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}\left[(\sigma(\mathbf{w} \cdot \mathbf{x}) - \sigma_\star(\mathbf{w}_\star \cdot \mathbf{x}))^2\right]$
+        description: |-
+          Bias-variance decomposition: the excess squared loss equals the expected squared difference between the predicted and true conditional means.
+
+  - type: lemma
+    number: "5"
+    name: "Matching loss dominates excess squared loss"
+    statement: |
+      For $\beta > 0$, let $\mathcal{S}_\beta$ be the set of monotone $\beta$-Lipschitz functions $\sigma : \mathbb{R} \to [0,1]$, i.e., $\mathcal{S}_\beta := \{\sigma : \mathbb{R} \to [0,1] \mid 0 \leq \sigma(t) - \sigma(t') \leq \beta(t - t') \text{ for all } t' \leq t\}$. If $\mathcal{D}$, a distribution on $\mathcal{X} \times \{0,1\}$, satisfies (22) for $\sigma_\star \in \mathcal{S}_\beta$, then for any $\mathbf{w} \in \mathbb{R}^d$, $\ell_{\mathrm{m},\sigma_\star}(\mathbf{w}; \mathcal{D}) - \ell_{\mathrm{m},\sigma_\star}(\mathbf{w}_\star; \mathcal{D}) \geq \frac{1}{2\beta} \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D})$. Moreover, for any invertible $\hat{\sigma} \in \mathcal{S}_\beta$, $\mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}\left[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)(\sigma_\star^{-1}(\sigma(\mathbf{w} \cdot \mathbf{x})) - \mathbf{w}_\star \cdot \mathbf{x})\right] \geq \frac{1}{\beta} \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D})$.
+    context: "Key structural lemma for the Isotron analysis. Shows that minimizing the matching loss also drives down the squared loss, enabling the use of convex surrogates."
+    proof_notes:
+      - label: "(25)"
+        content: |
+          $\ell_{\mathrm{m},\sigma_\star}(\mathbf{w}; \mathcal{D}) - \ell_{\mathrm{m},\sigma_\star}(\mathbf{w}_\star; \mathcal{D}) \geq \frac{1}{2\beta} \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D})$
+        description: |-
+          The gap in matching loss upper bounds the excess squared loss (up to a factor of $2\beta$). Follows from co-coercivity of the gradient of $\beta$-smooth convex functions.
+      - label: "(26)"
+        content: |
+          $\mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}\left[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)(\sigma_\star^{-1}(\sigma(\mathbf{w} \cdot \mathbf{x})) - \mathbf{w}_\star \cdot \mathbf{x})\right] \geq \frac{1}{\beta} \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D})$
+        description: |-
+          A correlation inequality between the residual and the prediction error in the unlinked space. Used in the Isotron convergence proof.
+
+  - type: remark
+    number: ""
+    name: "Gradient of matching loss for SIMs"
+    statement: |
+      By the chain rule, $\nabla \ell_{\mathrm{m},\sigma}(\mathbf{w}; \mathcal{D}) = \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)\mathbf{x}] = \mathbb{E}_{\mathbf{x} \sim \mathcal{D}_\mathbf{x}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - \sigma_\star(\mathbf{w}_\star \cdot \mathbf{x}))\mathbf{x}]$. When $\sigma$ is the identity and $\mathcal{D}$ is uniform over the rows of a regression matrix $\mathbf{X} \in \mathbb{R}^{n \times d}$ with $\mathbf{X}\mathbf{w} \approx \mathbf{y}$, this gives $\nabla(\frac{1}{2}\|\mathbf{X}\mathbf{w} - \mathbf{y}\|_2^2) \propto \mathbb{E}_{i \sim \mathrm{unif}[n]}[(\mathbf{w} \cdot \mathbf{x}_i - y_i)\mathbf{x}_i]$.
+    context: |-
+      The gradient of the matching loss has a simple form that does not require knowledge of $\sigma'$, making it practical for SIM learning.
+    proof_notes:
+      - label: "(27)"
+        content: |
+          $\nabla \ell_{\mathrm{m},\sigma}(\mathbf{w}; \mathcal{D}) = \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - y)\mathbf{x}] = \mathbb{E}_{\mathbf{x} \sim \mathcal{D}_\mathbf{x}}[(\sigma(\mathbf{w} \cdot \mathbf{x}) - \sigma_\star(\mathbf{w}_\star \cdot \mathbf{x}))\mathbf{x}]$
+        description: |-
+          The gradient formula for the matching loss. The second equality uses the realizability assumption.
+
+  - type: theorem
+    number: "2"
+    name: "Isotron convergence"
+    statement: |
+      Let $\mathcal{D}$, a distribution over $\mathcal{X} \times \{0,1\}$ for $\mathcal{X} \subseteq \mathbb{R}^d$, satisfy (22) for $\sigma_\star \in \mathcal{S}_\beta$, and let $\left\|\mathbb{E}_{\mathbf{x} \sim \mathcal{D}_\mathbf{x}}[\mathbf{x}\mathbf{x}^\top]\right\|_{\mathrm{op}} \leq L^2$, $\|\mathbf{w}_0 - \mathbf{w}_\star\|_2^2 \leq R^2$, for some $\mathbf{w}_0 \in \mathbb{R}^d$. Consider the following iteration: for all $0 \leq t < T$, let $\sigma_t \leftarrow \operatorname{argmin}_{\sigma \in \mathcal{S}_\beta} \mathbb{E}_{(\mathbf{x},y) \sim \mathcal{D}}[(\sigma(\mathbf{w}_t \cdot \mathbf{x}) - y)^2]$ and $\mathbf{w}_{t+1} \leftarrow \mathbf{w}_t - \eta \nabla \ell_{\mathrm{m},\sigma_t}(\mathbf{w}_t; \mathcal{D})$. Then for $\eta = \frac{1}{\beta L^2}$ and $T \geq \frac{\beta^2 L^2 R^2}{\epsilon}$, we have $\ell_{\mathrm{sq},\sigma_t}(\mathbf{w}_t; \mathcal{D}) \leq \ell_{\mathrm{sq},\sigma_\star}(\mathbf{w}_\star; \mathcal{D}) + \epsilon$ for some $0 \leq t < T$.
+    context: |-
+      The Isotron algorithm alternates between learning the link via PAV and updating the linear predictor via gradient descent on the matching loss. Achieves $\epsilon$-optimal squared loss in $O(1/\epsilon)$ iterations. Due to [KS09], further explored in [KKKS11].
+    proof_notes:
+      - label: "(28)"
+        content: |
+          $\frac{1}{T} \sum_{0 \leq t < T} \langle \nabla \ell_{\mathrm{m},\sigma_t}(\mathbf{w}_t; \mathcal{D}), \mathbf{w}_t - \mathbf{w}_\star \rangle \leq \frac{R^2}{2\eta T} + \frac{\eta}{2T} \sum_{0 \leq t < T} \|\nabla \ell_{\mathrm{m},\sigma_t}(\mathbf{w}_t; \mathcal{D})\|_2^2$
+        description: |-
+          Standard regret bound for gradient descent on the $\{\mathbf{w}_t\}$ iterates (Theorem 2, Part II).
+      - label: "(29)"
+        content: |
+          $\|\nabla \ell_{\mathrm{m},\sigma}(\mathbf{w}; \mathcal{D})\|_2^2 \leq \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) \cdot \left\|\mathbb{E}_{\mathbf{x} \sim \mathcal{D}_\mathbf{x}}[\mathbf{x}\mathbf{x}^\top]\right\|_{\mathrm{op}} \leq L^2 \bar{\ell}_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D})$
+        description: |-
+          Bound on the squared gradient norm in terms of the excess squared loss and the operator norm of the second moment matrix. Uses Cauchy-Schwarz.
+      - label: "(30)"
+        content: |
+          $\langle \nabla \ell_{\mathrm{m},\sigma_t}(\mathbf{w}_t; \mathcal{D}), \mathbf{w}_t - \mathbf{w}_\star \rangle \geq \frac{1}{\beta} \bar{\ell}_{\mathrm{sq},\sigma_t}(\mathbf{w}_t; \mathcal{D})$
+        description: |-
+          Lower bound on the inner product, using calibration (Lemma 3), anticorrelation (Lemma 4), and the correlation inequality (26). The key step connecting gradient descent progress to squared loss reduction.
+
+  - type: remark
+    number: ""
+    name: "Agnostic learning of SIMs"
+    statement: |
+      In the agnostic setting where the realizability assumption (22) need not hold, the goal is to find $(\sigma, \mathbf{w}) \in \mathcal{S}_\beta \times \mathbb{R}^d$ such that $\ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) \approx \min_{(\sigma^\star, \mathbf{w}^\star) \in \mathcal{S}_\beta \times \mathbb{R}^d} \ell_{\mathrm{sq},\sigma_\star}(\mathbf{w}_\star; \mathcal{D})$. With multiplicative approximation, this is computationally hard even when $\sigma = \sigma_\star$ is known ([DKMR22]). Under distributional assumptions (concentration, anticoncentration), multiplicative approximations are possible even in the SIM setting ([DGK+20, WZDD23, ZWDD24]).
+    context: "Summarizes the computational landscape for agnostic SIM learning: hardness in general, tractability under distributional assumptions."
+    proof_notes:
+      - label: "(31)"
+        content: |
+          $\ell_{\mathrm{sq},\sigma}(\mathbf{w}; \mathcal{D}) \approx \min_{(\sigma^\star, \mathbf{w}^\star) \in \mathcal{S}_\beta \times \mathbb{R}^d} \ell_{\mathrm{sq},\sigma_\star}(\mathbf{w}_\star; \mathcal{D})$
+        description: |-
+          The agnostic SIM learning objective.
+
+  - type: remark
+    number: ""
+    name: "Omniprediction"
+    statement: |
+      Theorem 1 is an example of an omniprediction guarantee: PAV optimizes all proper losses against all monotone predictors simultaneously. For SIMs, omniprediction is achievable even agnostically ([GHK+23, HTY25]): a single learned predictor simultaneously minimizes all matching losses against linear predictors. The omnipredictor in [HTY25] postprocesses the iterates of Isotron (Theorem 2).
+    context: "Connects PAV and Isotron to the modern notion of omniprediction, where a single predictor is simultaneously near-optimal for many loss functions."

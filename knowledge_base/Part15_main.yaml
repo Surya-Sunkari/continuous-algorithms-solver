@@ -1,0 +1,411 @@
+source: "Part15_main.pdf"
+lecture_number: 15
+title: "Continuous Random Walks"
+items:
+  - type: definition
+    number: "1"
+    name: "Conductance"
+    statement: |
+      For a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$, we denote the flow out of a set $S \subseteq \mathbb{R}^d$ by
+      \[
+        Q(S) := \int_{\mathbf{x} \in S} \mathcal{T}_\mathbf{x}(S^c) \pi^\star(\mathbf{x}) \mathrm{d}\mathbf{x} = \int_{\mathbf{x} \in S^c} \mathcal{T}_\mathbf{x}(S) \pi^\star(\mathbf{x}) \mathrm{d}\mathbf{x},
+      \]
+      where $S^c := \mathbb{R}^d \setminus S$. We define the conductance of the random walk by
+      \[
+        \Phi := \inf_{0 < \pi^\star(S) \le \frac{1}{2}} \frac{Q(S)}{\pi^\star(S)}.
+      \]
+    context: "Continuous analog of the discrete conductance (Definition 6, Part XIV). Used to bound mixing times of random walks."
+
+  - type: definition
+    number: "2"
+    name: "Warmness"
+    statement: |
+      For densities $\pi_0, \pi^\star$ on $\mathbb{R}^d$, we say $\pi_0$ is $\beta$-warm with respect to $\pi^\star$ if
+      \[
+        \frac{\pi_0(\mathbf{x})}{\pi^\star(\mathbf{x})} \le \beta \quad \text{for all } \mathbf{x} \in \mathbb{R}^d.
+      \]
+    context: >-
+      Measures how close an initial distribution is to the target. A $\beta$-warm start implies
+      $\pi_0(S) \le \beta \pi^\star(S)$ for any $S \subseteq \mathbb{R}^d$.
+
+  - type: definition
+    number: "3"
+    name: "Lovasz-Simonovits curve"
+    statement: |
+      For a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$, initialized at $\pi_0$ and with density $\pi_k$ after $k$ steps for all $k \in \mathbb{N}$, we define the Lovasz-Simonovits curve $h_k : [0,1] \to [0,1]$ for all $k \in \mathbb{N}$ by
+      \[
+        h_k(\tau) := \sup_{g \in G_\tau} \int g(\mathbf{x}) \pi_k(\mathbf{x}) \mathrm{d}\mathbf{x} - \tau, \quad \text{where } G_\tau := \left\{ g : \mathbb{R}^d \to [0,1] \;\middle|\; \int g(\mathbf{x}) \pi^\star(\mathbf{x}) \mathrm{d}\mathbf{x} = \tau \right\}.
+      \]
+    context: >-
+      The supremum is achieved by a 0-1 set indicator function $g(\mathbf{x}) = \mathbb{1}_{\mathbf{x} \in S}$
+      for some $S \subseteq \mathbb{R}^d$, so $h_k(\tau) = \sup_{S \subseteq \mathbb{R}^d, \pi^\star(S) = \tau} \pi_k(S) - \tau$.
+      The maximum over $\tau \in [0,1]$ equals $D_{\mathrm{TV}}(\pi_k, \pi^\star)$.
+    proof_notes:
+      - label: "(9)"
+        content: |
+          $h_k(\tau) = \sup_{\substack{S \subseteq \mathbb{R}^d \\ \pi^\star(S) = \tau}} \pi_k(S) - \tau$.
+        description: "Equivalent characterization of the Lovasz-Simonovits curve via set indicators; connects $h_k$ to total variation distance."
+
+  - type: definition
+    number: "4"
+    name: "Isoperimetry"
+    statement: |
+      Let $\pi^\star$ be a density on $\mathbb{R}^d$, and let $\mathrm{m} : \mathbb{R}^d \times \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ be a metric. We say that $\pi^\star$ has isoperimetric constant $\psi$ if, for any partition $S_1, S_2, S_3$ of $\mathbb{R}^d$,
+      \[
+        \frac{\pi^\star(S_3)}{\mathrm{m}(S_1, S_2) \pi^\star(S_1) \pi^\star(S_2)} \ge \psi,
+      \]
+      where we let $\mathrm{m}(S, T) := \min_{\mathbf{x} \in S, \mathbf{y} \in T} \mathrm{m}(\mathbf{x}, \mathbf{y})$ for $S, T \subseteq \mathbb{R}^d$.
+    context: >-
+      A geometric property of only the target distribution $\pi^\star$, independent of transition distributions.
+      When $S_3$ is an infinitesimally small strip on the boundary between $S_1$ and $S_2$, this reduces to
+      a lower bound on surface area-to-volume ratios.
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Consider a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$, initialized at $\pi_0$ and with density $\pi_k$ after $k$ steps for all $k \in \mathbb{N}$, and suppose it has conductance $\Phi$. Then the Lovasz-Simonovits curve (8) satisfies:
+      \[
+        h_k(\tau) \le \frac{1}{2} h_{k-1}((1 - 2\Phi)\tau) + \frac{1}{2} h_{k-1}((1 + 2\Phi)\tau) \quad \text{for all } \tau \in \left[0, \frac{1}{2}\right],
+      \]
+      \[
+        h_k(\tau) \le \frac{1}{2} h_{k-1}(\tau - 2\Phi(1-\tau)) + \frac{1}{2} h_{k-1}(\tau + 2\Phi(1-\tau)) \quad \text{for all } \tau \in \left[\frac{1}{2}, 1\right].
+      \]
+    context: "Key recurrence for bounding the Lovasz-Simonovits curve, leading to Corollary 1 on mixing from a warm start."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      Consider a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$, initialized at $\pi_0$ and with density $\pi_k$ after $k$ steps for all $k \in \mathbb{N}$, and suppose it has conductance $\Phi$. Let $\pi_0$ be $\beta$-warm with respect to $\pi^\star$. Then,
+      \[
+        D_{\mathrm{TV}}(\pi_k, \pi^\star) \le \epsilon, \quad \text{if } k \ge \frac{2}{\Phi^2} \log\left(\frac{\beta}{\epsilon}\right).
+      \]
+    context: "Main mixing time bound for warm-started random walks using conductance. Continuous analog of Corollary 2, Part XIV."
+    proof_notes:
+      - label: "(10)"
+        content: |
+          $h_k(\tau) \le \beta \min\left(\sqrt{\tau}, \sqrt{1-\tau}\right) \left(1 - \frac{\Phi^2}{2}\right)^k$.
+        description: "Inductive bound on the Lovasz-Simonovits curve showing geometric decay at rate $(1 - \Phi^2/2)$ per step."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      (Lemma 3, [CDWY20]). Let $\epsilon \in (0,1)$, and consider a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$, initialized at $\pi_0$ and with density $\pi_k$ after $k$ steps for all $k \in \mathbb{N}$. Let $\pi_0$ be $\beta$-warm with respect to $\pi^\star$, and suppose $\Omega \subseteq \mathbb{R}^d$ has $m := \pi^\star(\Omega) \ge 1 - \frac{\epsilon}{3\beta^2}$. For all $\tau \in (0, \frac{m}{2}]$, define (following notation (6))
+      \[
+        \Phi_\Omega(\tau) := \inf_{\substack{S \subseteq \Omega \\ \pi^\star(S) \le \tau}} \frac{Q(S)}{\pi^\star(S)}.
+      \]
+      Then,
+      \[
+        \chi^2(\pi_k \| \pi^\star) \le \epsilon, \quad \text{if } k \ge \int_{\frac{4}{\beta}}^{\frac{m}{2}} \frac{16}{\tau \Phi_\Omega(\tau)^2} \mathrm{d}\tau + \frac{32}{\Phi_\Omega(\frac{m}{2})^2} \log\left(\frac{4}{\epsilon}\right).
+      \]
+    context: >-
+      Extension of Corollary 1 using average conductance; allows excluding a small set $\Omega^c$ with
+      poor behavior. Bounds $\chi^2$ divergence rather than $D_{\mathrm{TV}}$. From [CDWY20], building on [LK99, GMT06].
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $\{\mathcal{T}_x\}_{x \in \mathbb{R}^d}$ be transition distributions corresponding to a random walk on $\mathbb{R}^d$ with stationary distribution $\pi^\star$, and let $\pi$ be a density on $\mathbb{R}^d$ which is $\beta$-warm with respect to $\pi^\star$. Then, $\mathcal{T}\pi$ is $\beta$-warm with respect to $\pi^\star$, and $D_{\mathrm{TV}}(\mathcal{T}\pi, \pi^\star) \le D_{\mathrm{TV}}(\pi, \pi^\star)$.
+    context: "Warmness is preserved under the Markov chain transition operator, and total variation distance to stationarity is nonincreasing. Used in the boosting argument."
+
+  - type: proposition
+    number: "2"
+    name: ""
+    statement: |
+      Under Assumption 1, if $\pi_0$ is $\beta$-warm with respect to $\pi^\star$ and $k \ge \log_2(\frac{1}{\epsilon})$,
+      \[
+        D_{\mathrm{TV}}\left(\mathcal{T}^k \pi_0, \pi^\star\right) \le \epsilon.
+      \]
+    context: >-
+      Boosting result: if a Markov chain achieves constant total variation distance in $T_{\mathrm{mix}}$ steps,
+      then it mixes to $\epsilon$ accuracy in roughly $T_{\mathrm{mix}} \log \frac{1}{\epsilon}$ steps. Does not require reversibility.
+
+  - type: proposition
+    number: "3"
+    name: ""
+    statement: |
+      Among all compact $\mathcal{K} \subseteq \mathbb{R}^d$ with a fixed volume $\mathrm{Vol}(\mathcal{K})$, the minimum surface area is achieved when $\mathcal{K}$ is a ball of radius $\left(\frac{\mathrm{Vol}(\mathcal{K})}{V_d}\right)^{\frac{1}{d}}$.
+    context: "Classical isoperimetric inequality in high-dimensional geometry. Proved using the Brunn-Minkowski inequality."
+    proof_notes:
+      - label: "(12)"
+        content: |
+          $\mathrm{Vol}(\mathbb{B}(1)) = \int_0^1 r^{d-1} \mathrm{Vol}(\partial \mathbb{B}(1)) \mathrm{d}r = \frac{1}{d} \mathrm{Vol}(\partial \mathbb{B}(1))$.
+        description: "Relates volume of the unit ball to its surface area; used to derive the isoperimetric ratio."
+
+  - type: proposition
+    number: "4"
+    name: ""
+    statement: |
+      Consider a random walk with stationary distribution $\pi^\star$ and lazy, reversible transition distributions $\{\mathcal{T}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$. Suppose that $\pi^\star$ has isoperimetric constant $\psi$, and that (13) holds, i.e.,
+      \[
+        D_{\mathrm{TV}}(\mathcal{T}_\mathbf{x}, \mathcal{T}_\mathbf{y}) \le \frac{1}{2} \quad \text{for all } \mathbf{x}, \mathbf{y} \in \mathbb{R}^d \text{ with } \mathrm{m}(\mathbf{x}, \mathbf{y}) \le \Delta.
+      \]
+      Then the conductance of the random walk satisfies
+      \[
+        \Phi \ge \min\left(\frac{1}{8}, \frac{\Delta\psi}{64}\right).
+      \]
+    context: >-
+      Reduces conductance lower bounds to two simpler quantities: an isoperimetric constant $\psi$
+      (geometric property of $\pi^\star$) and an overlap bound $\Delta$ (local property of transition distributions).
+      From [LS93].
+
+  - type: proposition
+    number: "5"
+    name: "Localization lemma"
+    statement: |
+      (Theorem 1, [FG04]). Let $\mathcal{K} \subset \mathbb{R}^d$ be compact and convex, and let $f : \mathcal{K} \to \mathbb{R}$ be upper semicontinuous. Let $\mathcal{P}(f)$ be the set of logconcave densities $\pi : \mathcal{K} \to \mathbb{R}_{\ge 0}$ satisfying $\int_{\mathbf{x} \in \mathcal{K}} f(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x} \ge 0$. All boundary points of $\mathrm{Conv}(\mathcal{P}(f))$ satisfy one of the following:
+      1. $\pi$ is a Dirac measure at a point $\mathbf{x} \in \mathcal{K}$ where $f(\mathbf{x}) \ge 0$.
+      2. $\pi$ is a logaffine distribution satisfying $\int f(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x} = 0$, and is supported on a one-dimensional subspace, i.e., for some $\gamma \in \mathbb{R}$ and $\mathbf{a}, \mathbf{b} \in \mathcal{K}$, we have
+      \[
+        \pi(\mathbf{x}) \propto \begin{cases} \exp(\gamma t) & \mathbf{x} = (1-t)\mathbf{a} + t\mathbf{b} \text{ for some } t \in [0,1] \\ 0 & \text{otherwise} \end{cases}.
+      \]
+    context: >-
+      Powerful tool for proving inequalities about logconcave densities. Reduces maximizing linear functions
+      of logconcave densities subject to one constraint to checking the inequality for point masses and
+      one-dimensional logaffine (exponential needle) distributions. From [FG04], building on [LS93, KLS95].
+
+  - type: lemma
+    number: "3"
+    name: ""
+    statement: |
+      Let $f_1 : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$, $f_2 : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ be upper semicontinuous and let $f_3 : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$, $f_4 : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ be lower semicontinuous. Then the following two statements are equivalent.
+      1. For every logconcave density $\pi : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$,
+      \[
+        \left(\int f_1(x) \pi(x) \mathrm{d}x\right)\left(\int f_2(x) \pi(x) \mathrm{d}x\right) \le \left(\int f_3(x) \pi(x) \mathrm{d}x\right)\left(\int f_4(x) \pi(x) \mathrm{d}x\right).
+      \]
+      2. For all $\mathbf{x} \in \mathbb{R}^d$, $f_1(\mathbf{x}) f_2(\mathbf{x}) \le f_3(\mathbf{x}) f_4(\mathbf{x})$, and for every $\mathbf{a}, \mathbf{b} \in \mathbb{R}^d$ and $\gamma \in \mathbb{R}$,
+      \[
+        \left(\int_0^1 f_1((1-t)\mathbf{a} + t\mathbf{b}) \exp(\gamma t) \mathrm{d}t\right)\left(\int_0^1 f_2((1-t)\mathbf{a} + t\mathbf{b}) \exp(\gamma t) \mathrm{d}t\right) \le \left(\int_0^1 f_3((1-t)\mathbf{a} + t\mathbf{b}) \exp(\gamma t) \mathrm{d}t\right)\left(\int_0^1 f_4((1-t)\mathbf{a} + t\mathbf{b}) \exp(\gamma t) \mathrm{d}t\right).
+      \]
+    context: >-
+      Consequence of the localization lemma (Proposition 5). Reduces proving four-function inequalities
+      for all logconcave densities to checking them pointwise and for one-dimensional logaffine densities.
+    proof_notes:
+      - label: "(15)"
+        content: |
+          $\int f_1(\mathbf{x}) \mu(\mathbf{x}) \mathrm{d}\mathbf{x} - \left(\frac{\int f_1(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x}}{\int f_3(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x}}\right) \int f_3(\mathbf{x}) \mu(\mathbf{x}) \mathrm{d}\mathbf{x} \ge 0 \implies \frac{\int f_1(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x}}{\int f_3(\mathbf{x}) \pi(\mathbf{x}) \mathrm{d}\mathbf{x}} \le \frac{\int f_1(\mathbf{x}) \mu(\mathbf{x}) \mathrm{d}\mathbf{x}}{\int f_3(\mathbf{x}) \mu(\mathbf{x}) \mathrm{d}\mathbf{x}}$.
+        description: >-
+          Key ratio comparison step: since $\pi \in \mathcal{P}(f)$ and $\mu \in \mathrm{Conv}(\mathcal{P}(f))$
+          is a boundary point, the ratio $f_1/f_3$ is monotone between $\pi$ and $\mu$.
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      Let $\pi : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ be a logconcave density, and let $S_1, S_2, S_3$ be a partition of $\mathbb{R}^d$ with $\min_{\mathbf{x} \in S_1, \mathbf{y} \in S_2} \|\mathbf{x} - \mathbf{y}\|_2 \ge \Delta$. Then,
+      \[
+        \pi(S_1) \pi(S_2) \le \frac{\mathbb{E}_{\mathbf{x} \sim \pi}[\|\mathbf{x} - \bar{\mathbf{x}}_\pi\|_2]}{\Delta \log 2} \cdot \pi(S_3).
+      \]
+    context: >-
+      Gives a lower bound on the isoperimetric constant (Definition 4) of any logconcave density with
+      respect to the $\ell_2$ norm, parameterized by the average distance to the mean.
+    proof_notes:
+      - label: "(17)"
+        content: |
+          $\left(\int_{t \in I_1} \exp(\gamma t) \mathrm{d}t\right)\left(\int_{t \in I_2} \exp(\gamma t) \mathrm{d}t\right) \le \frac{1}{\Delta \log 2} \left(\int_{t \in I_3} \exp(\gamma t) \mathrm{d}t\right)\left(\int_0^1 |u - t| \exp(\gamma t) \mathrm{d}t\right)$.
+        description: >-
+          One-dimensional needle inequality for partitions $I_1, I_2, I_3$ of $[0,1]$ with
+          $\min_{t \in I_1, t' \in I_2} |t - t'| \ge \Delta$. Proved by elementary arguments (Theorem 5.2, [KLS95]).
+
+  - type: proposition
+    number: "6"
+    name: ""
+    statement: |
+      (Theorem 1.2, [Kla23]). There is a universal constant $C > 0$ such that for any logconcave density $\pi : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$, the isoperimetric constant $\psi$ of $\pi$ with respect to $\|\cdot\|_2$ satisfies
+      \[
+        \psi \ge \frac{1}{C\sqrt{\log d}} \cdot \frac{1}{\sqrt{\|\mathrm{Cov}_\pi\|_{\mathrm{op}}}}.
+      \]
+    context: >-
+      State-of-the-art bound on the isoperimetric constant of logconcave distributions, due to [Che21]
+      who proved KLS conjecture up to $d^{o(1)}$, refined by [Kla23]. For isotropic distributions
+      ($\mathrm{Cov}_\pi = \mathbf{I}_d$), gives $\psi = \Omega(d^{-1/2})$.
+
+  - type: remark
+    number: ""
+    name: "Isoperimetric constant of logconcave densities"
+    statement: |
+      Lemma 4 proves that the isoperimetric constant (Definition 4) of any logconcave density $\pi : \mathbb{R}^d \to \mathbb{R}_{\ge 0}$ with respect to the $\ell_2$ norm is lower bounded by
+      \[
+        \frac{\log 2}{\sqrt{\mathrm{Tr}(\mathrm{Cov}_\pi)}}.
+      \]
+      For isotropic $\pi$ (i.e., $\mathrm{Cov}_\pi = \mathbf{I}_d$), this gives $\psi = \Omega(d^{-1/2})$.
+    context: >-
+      First established by [KLS95]. The KLS conjecture asks whether $\psi$ can be improved to
+      $\Omega(\|\mathrm{Cov}_\pi\|_{\mathrm{op}}^{-1})$.
+
+  - type: remark
+    number: ""
+    name: "Isotropic convex body containment"
+    statement: |
+      For any convex body $\mathcal{K} \subseteq \mathbb{R}^d$ satisfying $\mathrm{Cov}_{\pi^\star} = \mathbf{I}_d$ (where $\pi^\star$ is the uniform distribution on $\mathcal{K}$), we have
+      \[
+        \mathbb{B}(1) \subseteq \mathcal{K} \subseteq \mathbb{B}(d+1).
+      \]
+    context: >-
+      Fact 1 (Theorem 4.1, [KLS95]). Isotropic convex bodies are well-approximated by balls. The lower
+      bound follows because any 1D projection being contained in an interval of length $o(1)$ would
+      contradict unit covariance.
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      The local conductance $\ell$ defined by $\ell(\mathbf{x}) := \frac{\mathrm{Vol}(\mathbb{B}(\mathbf{x}, \eta) \cap \mathcal{K})}{\mathrm{Vol}(\mathbb{B}(\mathbf{x}, \eta))}$ is logconcave.
+    context: >-
+      Follows because $\ell$ is the convolution of the logconcave indicator functions of
+      $\mathbb{B}(\mathbf{0}_d, \eta)$ and $\mathcal{K}$ (Corollary 2, Part I).
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Let $\eta > 0$, and suppose $\mathbf{x}, \mathbf{x}' \in \mathbb{R}^d$ satisfy $\|\mathbf{x} - \mathbf{x}'\|_2 = \frac{\alpha \eta}{\sqrt{d}}$. Then,
+      \[
+        \frac{\mathrm{Vol}(\mathbb{B}(\mathbf{x}, \eta) \setminus \mathbb{B}(\mathbf{x}', \eta))}{\mathrm{Vol}(\mathbb{B}(\mathbf{x}, \eta))} \le \alpha.
+      \]
+    context: "Geometric lemma bounding the volume of the symmetric difference of nearby balls. Used to establish the overlap condition (13) for the ball walk."
+    proof_notes:
+      - label: "(25)"
+        content: |
+          $V_d := \mathrm{Vol}(\mathbb{B}(\mathbf{0}_d, 1)) = \frac{\pi^{d/2}}{\Gamma(\frac{d}{2} + 1)}$.
+        description: "Volume of the unit ball in $\\mathbb{R}^d$ using the Gamma function."
+
+  - type: lemma
+    number: "7"
+    name: ""
+    statement: |
+      (Lemma 3.5, [KLS97]). If $\mathbf{x}, \mathbf{x}' \in \mathcal{K}$ for compact, convex $\mathcal{K} \subseteq \mathbb{R}^d$ have $\|\mathbf{x} - \mathbf{x}'\|_2 \le \frac{\eta}{\sqrt{d}}$,
+      \[
+        \frac{\mathrm{Vol}(\mathcal{K} \cap (\mathbb{B}(\mathbf{x}, \eta) \cap \mathbb{B}(\mathbf{x}', \eta)))}{\mathrm{Vol}(\mathbb{B}(\mathbf{x}, \eta))} \ge \frac{1}{4} \min\{\ell(\mathbf{x}), \ell(\mathbf{x}')\}.
+      \]
+    context: >-
+      Multiplicative variant of Lemma 6 for the intersection with a convex body. Strengthens the overlap
+      bound by accounting for the intersection with $\mathcal{K}$.
+
+  - type: corollary
+    number: "2"
+    name: ""
+    statement: |
+      For convex $\mathcal{K} \subseteq \mathbb{R}^d$, let $S \subseteq \mathcal{K}$, and denote $S^c := \mathcal{K} \setminus S$. For any $\mathbf{x} \in S$ and $\mathbf{x}' \in S^c$ with $\|\mathbf{x} - \mathbf{x}'\|_2 \le \frac{\eta}{\sqrt{d}}$ and $\ell(\mathbf{x}) \in [\frac{2}{3}\ell(\mathbf{x}'), \frac{3}{2}\ell(\mathbf{x}')]$,
+      \[
+        \frac{\mathcal{T}_\mathbf{x}(S^c)}{\ell(\mathbf{x})} + \frac{\mathcal{T}_{\mathbf{x}'}(S)}{\ell(\mathbf{x}')} \ge \frac{1}{18}.
+      \]
+    context: >-
+      Bounds the crossing-over probability of nearby points on different sides of a partition, normalized
+      by local conductance. Used together with isoperimetry to lower bound the conductance of the speedy walk.
+
+  - type: lemma
+    number: "8"
+    name: ""
+    statement: |
+      The speedy walk (26) with transition distributions $\{\widetilde{\mathcal{T}}_\mathbf{x}\}_{\mathbf{x} \in \mathcal{K}}$ is reversible, and its stationary distribution is $\tilde{\pi}^\star$, the distribution proportional to $\ell$ over $\mathcal{K}$, defined as follows:
+      \[
+        \tilde{\pi}^\star(\mathbf{x}) = \begin{cases} \frac{\ell(\mathbf{x})}{\lambda(\mathcal{K})} \cdot \frac{1}{\mathrm{Vol}(\mathcal{K})} & \mathbf{x} \in \mathcal{K} \\ 0 & \text{else} \end{cases},
+      \]
+      where $\lambda(\mathcal{K})$ is the average local conductance over $\mathcal{K}$,
+      \[
+        \lambda(\mathcal{K}) := \frac{1}{\mathrm{Vol}(\mathcal{K})} \int_{\mathbf{x} \in \mathcal{K}} \ell(\mathbf{x}) \mathrm{d}\mathbf{x} = \mathbb{E}_{\mathbf{x} \sim \pi^\star}[\ell(\mathbf{x})].
+      \]
+    context: >-
+      The speedy walk is the ball walk with wasted nonlazy steps skipped. Its stationary distribution is a
+      reweighting of the uniform distribution $\pi^\star$ by local conductance $\ell(\mathbf{x})$.
+
+  - type: lemma
+    number: "9"
+    name: ""
+    statement: |
+      Let $\pi$ be $\beta$-warm with respect to $\tilde{\pi}^\star$ defined in (27). Then,
+      \[
+        \mathbb{E}_{\mathbf{x} \sim \pi}\left[\frac{1}{\ell(\mathbf{x})}\right] \le \frac{\beta}{\lambda(\mathcal{K})}.
+      \]
+    context: >-
+      Bounds the expected number of membership oracle queries to implement a step of the speedy walk
+      from a $\beta$-warm distribution. Since $1/\ell(\mathbf{x})$ is the expected number of draws from
+      $\mathbb{B}(\mathbf{x}, \eta)$ before landing in $\mathcal{K}$, a step costs $O(\beta)$ queries provided
+      $\lambda(\mathcal{K})$ is at least a constant.
+
+  - type: lemma
+    number: "10"
+    name: ""
+    statement: |
+      For $\tilde{\pi}^\star$ defined in (27), we have following notation (18) that
+      \[
+        \mathrm{Cov}_{\tilde{\pi}^\star} \preceq \frac{1}{\lambda(\mathcal{K})} \mathrm{Cov}_{\pi^\star}.
+      \]
+    context: >-
+      The covariance under the speedy walk stationary distribution is bounded by $1/\lambda(\mathcal{K})$
+      times the covariance under the uniform distribution. Used together with Lemma 4 and (18) to bound
+      the isoperimetric constant of $\tilde{\pi}^\star$.
+
+  - type: corollary
+    number: "3"
+    name: ""
+    statement: |
+      (Theorem 3.1, [KLS97]). The conductance of the speedy walk (26) is
+      \[
+        \Omega\left(\frac{\eta\sqrt{\lambda(\mathcal{K})}}{d^{1.5}}\right).
+      \]
+    context: "Conductance lower bound for the speedy walk on isotropic convex bodies. Combined with Corollary 1, yields the mixing time for the speedy walk."
+
+  - type: lemma
+    number: "11"
+    name: ""
+    statement: |
+      For $\pi^\star, \tilde{\pi}^\star$ defined in (19), (27) respectively, $D_{\mathrm{TV}}(\pi^\star, \tilde{\pi}^\star) \le 1 - \lambda(\mathcal{K})$.
+    context: "Bounds how far the speedy walk stationary distribution is from the true uniform distribution, in terms of the average local conductance."
+
+  - type: remark
+    number: ""
+    name: "Average local conductance bound"
+    statement: |
+      (Corollary 4.5, [KLS97]). Let $\mathcal{K} \subseteq \mathbb{R}^d$ be convex, and let $\partial\mathcal{K}$ denote the boundary of its closure. Then,
+      \[
+        \lambda(\mathcal{K}) \ge 1 - \frac{\eta}{2\sqrt{d}} \cdot \frac{\mathrm{Vol}(\partial\mathcal{K})}{\mathrm{Vol}(\mathcal{K})}.
+      \]
+    context: "Fact 2 in the notes. Lower bounds the average local conductance using the surface area-to-volume ratio."
+
+  - type: corollary
+    number: "4"
+    name: ""
+    statement: |
+      For any convex $\mathcal{K} \subseteq \mathbb{R}^d$ satisfying $\mathrm{Cov}_{\pi^\star} = \mathbf{I}_d$ (i.e., (20)), we have $D_{\mathrm{TV}}(\pi^\star, \tilde{\pi}^\star) \le \frac{\eta\sqrt{d}}{2}$.
+    context: >-
+      For isotropic convex bodies, the surface area-to-volume ratio is at most $d$, so the speedy walk
+      stationary distribution is close to uniform when $\eta$ is small.
+
+  - type: theorem
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathcal{K} \subseteq \mathbb{R}^d$ be convex and satisfy (20), and define $\pi^\star$ as in (19). We can produce a sample within $\epsilon$ total variation distance from $\pi^\star$, given an initial point drawn from a $\beta$-warm distribution for $\pi^\star$, using $\mathrm{poly}(d, \beta, \frac{1}{\epsilon})$ queries to a membership oracle for $\mathcal{K}$ in expectation.
+    context: >-
+      Main sampling guarantee for the ball walk / speedy walk on isotropic convex bodies. Uses
+      $\eta = \frac{\epsilon}{\sqrt{d}}$, giving $D_{\mathrm{TV}}(\pi^\star, \tilde{\pi}^\star) \le \epsilon/2$.
+      The number of speedy walk steps is $k = \Omega\left(\frac{d^4}{\epsilon^2} \log\frac{\beta}{\epsilon}\right)$,
+      and each step uses $O(\beta)$ membership oracle queries.
+
+  - type: remark
+    number: ""
+    name: "Reversibility and Metropolis-Hastings correction"
+    statement: |
+      Given proposal distributions $\{\mathcal{P}_\mathbf{x}\}_{\mathbf{x} \in \mathbb{R}^d}$ and a target stationary distribution $\pi^\star$, one can apply the Metropolis-Hastings correction to obtain transition distributions satisfying the detailed balance condition $\pi^\star(\mathbf{x})\mathcal{T}_\mathbf{x}(\mathbf{y}) = \pi^\star(\mathbf{y})\mathcal{T}_\mathbf{y}(\mathbf{x})$ by letting
+      \[
+        \mathcal{T}_\mathbf{x}(\mathbf{y}) := \mathcal{P}_\mathbf{x}(\mathbf{y}) \min\left(1, \frac{\pi^\star(\mathbf{y})\mathcal{P}_\mathbf{y}(\mathbf{x})}{\pi^\star(\mathbf{x})\mathcal{P}_\mathbf{x}(\mathbf{y})}\right) \quad \text{for all } \mathbf{y} \in \mathbb{R}^d, \mathbf{y} \ne \mathbf{x}.
+      \]
+    context: "Continuous analog of the Metropolis-Hastings correction (Lemma 3, Part XIV). Ensures reversibility and correct stationary distribution."
+
+  - type: remark
+    number: ""
+    name: "Chi-squared divergence and variance decay"
+    statement: |
+      The chi-squared divergence $\chi^2(\pi_k \| \pi^\star) := \mathbb{E}_{\pi^\star}\left[\left(\frac{\pi_k}{\pi^\star} - 1\right)^2\right] = \mathrm{Var}_{\pi^\star}\left[\frac{\pi_k}{\pi^\star}\right]$ also decays by a factor of $\Omega(\Phi^2)$ in each iteration. Under a $\beta$-warm start, $\chi^2(\pi_0 \| \pi^\star) \le \beta^2$, so $\chi^2(\pi_k \| \pi^\star)$ falls by $\Omega(\Phi^2)$ and yields a stronger bound than Corollary 1 in general. Pinsker's inequality transfers $\chi^2$ bounds to $D_{\mathrm{TV}}$ bounds:
+      \[
+        D_{\mathrm{KL}}(\mu \| \pi) \ge \frac{1}{2}\left(\int |\mu(\mathbf{x}) - \pi(\mathbf{x})| \mathrm{d}\mathbf{x}\right)^2 = 2 D_{\mathrm{TV}}(\mu, \pi)^2.
+      \]
+    context: >-
+      Connects chi-squared divergence, KL divergence, and total variation distance. The inequality
+      $\chi^2(\mu \| \pi) \ge D_{\mathrm{KL}}(\mu \| \pi)$ together with Pinsker's inequality gives
+      $\chi^2$ bounds on $D_{\mathrm{TV}}$.

@@ -1,0 +1,232 @@
+source: "Part12_main.pdf"
+lecture_number: 12
+title: "Sparse Recovery"
+items:
+  - type: definition
+    number: "1"
+    name: "Nullspace property"
+    statement: |
+      We say $\mathbf{A} \in \mathbb{R}^{n \times d}$ satisfies the $k$-nullspace property, or $k$-NSP, if for all $S \subseteq [d]$ with $|S| \le k$, all vectors $\mathbf{v} \in \mathbb{R}^d$ with $\mathbf{A}\mathbf{v} = \mathbf{0}_n$ have
+      \[
+        \|\mathbf{v}_S\|_1 < \|\mathbf{v}_{S^c}\|_1.
+      \]
+    context: "Structural condition on measurement matrix A ensuring sparse recovery is possible in the noiseless setting. Prevents sparse movement in the kernel of A."
+
+  - type: lemma
+    number: "1"
+    name: ""
+    statement: |
+      Let $\mathbf{x}^\star \in \mathbb{R}^d$ have $\mathbf{x}_i^\star = 0$ for all $i \notin S$, for $S \subseteq [d]$. Then for all $\mathbf{x} \in \mathbb{R}^d$ with $\|\mathbf{x}\|_1 \le \|\mathbf{x}^\star\|_1$, we have for $\mathbf{v} := \mathbf{x} - \mathbf{x}^\star$ that $\|\mathbf{v}_S\|_1 \ge \|\mathbf{v}_{S^c}\|_1$.
+    context: "Key helper for proving that basis pursuit recovers sparse vectors under NSP. Shows that any competitor with smaller ell_1 norm must have its difference vector concentrated on the support of the true signal."
+    proof_notes:
+      - label: "triangle inequality chain"
+        content: |
+          $\|\mathbf{x}\|_1 = \|\mathbf{x}^\star + \mathbf{v}_S + \mathbf{v}_{S^c}\|_1 = \|\mathbf{x}^\star + \mathbf{v}_S\|_1 + \|\mathbf{v}_{S^c}\|_1 \ge \|\mathbf{x}^\star\|_1 - \|\mathbf{v}_S\|_1 + \|\mathbf{v}_{S^c}\|_1$
+        description: "Uses coordinatewise separability of ell_1 and the triangle inequality to relate the ell_1 norms of v_S and v_{S^c}."
+
+  - type: theorem
+    number: "1"
+    name: "Basis pursuit"
+    statement: |
+      Consider an instance of the noiseless sparse recovery problem $\mathbf{b} = \mathbf{A}\mathbf{x}^\star$, $\mathbf{A} \in \mathbb{R}^{n \times d}$, $\mathbf{b} \in \mathbb{R}^n$, $\mathbf{x}^\star \in \mathbb{R}^d$ with $\operatorname{nnz}(\mathbf{x}^\star) \le k$. If $\mathbf{A}$ satisfies $k$-NSP, then $\mathbf{x}^\star$ is the unique solution to
+      \[
+        \min_{\substack{\mathbf{x} \in \mathbb{R}^d \\ \mathbf{A}\mathbf{x} = \mathbf{b}}} \|\mathbf{x}\|_1.
+      \]
+    context: "Fundamental result showing that ell_1 minimization (basis pursuit) exactly recovers sparse vectors when the measurement matrix satisfies the nullspace property. Reduces sparse recovery to a linear program."
+
+  - type: remark
+    number: "1"
+    name: ""
+    statement: |
+      The $\ell_1$-based minimization problem serves as a proxy for the $\ell_0$ "norm" $\|\mathbf{x}\|_0 := \operatorname{nnz}(\mathbf{x})$. We would like to find sparse solutions to $\mathbf{A}\mathbf{x} = \mathbf{b}$, but $\|\cdot\|_0$ is nonconvex (and discontinuous). The $\ell_1$ norm is smaller for sparse vectors since
+      \[
+        \|\mathbf{x}\|_1 \le \sqrt{\operatorname{nnz}(\mathbf{x})}\, \|\mathbf{x}\|_2
+      \]
+      by the Cauchy--Schwarz inequality. Basis pursuit (3) is a convex relaxation of $\min_{\mathbf{A}\mathbf{x}=\mathbf{b}} \operatorname{nnz}(\mathbf{x})$.
+    context: "Explains the intuition for why ell_1 minimization promotes sparsity: among vectors with the same ell_2 norm, sparser vectors have smaller ell_1 norm."
+
+  - type: definition
+    number: "2"
+    name: "Restricted isometry property"
+    statement: |
+      We say $\mathbf{A} \in \mathbb{R}^{n \times d}$ satisfies the $(\epsilon, k)$-restricted isometry property, or $(\epsilon, k)$-RIP, if for all $\mathbf{x} \in \mathbb{R}^d$ with $\operatorname{nnz}(\mathbf{x}) \le k$,
+      \[
+        (1 - \epsilon)\, \|\mathbf{x}\|_2^2 \le \|\mathbf{A}\mathbf{x}\|_2^2 \le (1 + \epsilon)\, \|\mathbf{x}\|_2^2.
+      \]
+    context: "Quantitative strengthening of NSP. Requires that A acts as an approximate isometry when restricted to sparse vectors, i.e., A^T A is well-conditioned on the set of k-sparse vectors."
+
+  - type: lemma
+    number: "2"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ have i.i.d.\ rows $\sim \mathcal{N}(\mathbf{0}_d, \frac{1}{n}\mathbf{I}_d)$. For $\epsilon, \delta \in (0,1)$, if
+      \[
+        n \ge C \cdot \frac{k \log\!\bigl(\frac{d}{k}\bigr) + \log\!\bigl(\frac{1}{\delta}\bigr)}{\epsilon^2},
+      \]
+      for an appropriate constant $C$, then $\mathbf{A}$ satisfies $(\epsilon, k)$-RIP with probability $\ge 1 - \delta$.
+    context: "Shows that isotropic Gaussian measurement matrices satisfy RIP with high probability using O(k log(d/k) / epsilon^2) measurements. Proved via epsilon-net arguments and the Johnson-Lindenstrauss lemma."
+    proof_notes:
+      - label: "net bound"
+        content: |
+          For each $T \subseteq [d]$ with $|T| = k$, there exists a $\frac{1}{4}$-net $N_T$ of the unit sphere $S_T$ in $\mathbb{R}^T$ with $|N_T| \le 9^k$.
+        description: "Bounds the size of the epsilon-net needed to discretize the unit sphere restricted to each k-sparse support."
+      - label: "RIP from net"
+        content: |
+          For all $\mathbf{v} \in N_T$ for some $T \subseteq [d]$, $|T| = k$, we need $1 - \epsilon \le \|\mathbf{A}\mathbf{v}\|_2^2 \le 1 + \epsilon$.
+        description: "Reduces the continuous RIP condition to a finite number of norm-preservation conditions via the epsilon-net argument and Lemma 4, Part IX."
+      - label: "union bound"
+        content: |
+          The total number of events is $\binom{d}{k} \cdot 9^k$, and the failure probability is set to $\frac{\delta}{9^k} \cdot \binom{d}{k}^{-1}$ per event, using $\log \binom{d}{k} = O(k \log \frac{d}{k})$.
+        description: "Combines the epsilon-net bound with a union bound over all k-subsets to obtain the sample complexity."
+
+  - type: definition
+    number: "3"
+    name: "Numerical sparsity"
+    statement: |
+      We say $\mathbf{x} \in \mathbb{R}^d$ is $k$-numerically sparse if
+      \[
+        \mathrm{NS}(\mathbf{x}) := \frac{\|\mathbf{x}\|_1^2}{\|\mathbf{x}\|_2^2} \le k.
+      \]
+    context: "Continuous relaxation of exact sparsity. By Cauchy-Schwarz, all truly k-sparse vectors are k-numerically sparse, but numerically sparse vectors may have many small nonzero coordinates."
+
+  - type: lemma
+    number: "3"
+    name: "Shelling decomposition"
+    statement: |
+      Let $\mathbf{x} \in \mathbb{R}^d$ have $\mathrm{NS}(\mathbf{x}) \le k$. For any $C > 1$, we can write $\mathbf{x} = \sum_{i \in [m]} \mathbf{v}_i$ for $\{\mathbf{v}_i\}_{i \in [m]} \subset \mathbb{R}^d$ with disjoint supports, such that $\operatorname{nnz}(\mathbf{v}_i) \le Ck$ for all $i \in [k]$, and
+      \[
+        \sum_{i=2}^{m} \|\mathbf{v}_i\|_2 \le \frac{1}{\sqrt{C}}\, \|\mathbf{x}\|_2.
+      \]
+    context: "Decomposes a numerically sparse vector into shells of disjoint Ck-sparse vectors. The tail shells have geometrically decreasing ell_2 norms. Used to transfer RIP (on exactly sparse vectors) to RWC (on numerically sparse vectors)."
+    proof_notes:
+      - label: "greedy decomposition step"
+        content: |
+          Starting from $i \leftarrow 1$, let $\mathbf{v}_i$ be $\mathbf{x}$ restricted to its $Ck$ largest remaining coordinates by magnitude, and update $\mathbf{x} \leftarrow \mathbf{x} - \mathbf{v}_i$, until $\mathbf{x} = \mathbf{0}_d$.
+        description: "Construction of the shelling decomposition: greedily peel off the largest Ck coordinates at each step."
+      - label: "tail bound"
+        content: |
+          $\|\mathbf{v}_{i+1}\|_2 \le \sqrt{Ck}\, \|\mathbf{v}_{i+1}\|_\infty \le \frac{1}{\sqrt{Ck}}\, \|\mathbf{v}_i\|_1$ for all $i \in [m-1]$.
+        description: "Each successive shell has ell_2 norm bounded by the ell_1 norm of the previous shell divided by sqrt(Ck), because every coordinate of v_{i+1} is smaller than every coordinate of v_i."
+
+  - type: definition
+    number: "4"
+    name: "Restricted well-conditioned"
+    statement: |
+      We say $\mathbf{A} \in \mathbb{R}^{n \times d}$ is $(\epsilon, k)$-restricted well-conditioned, or $(\epsilon, k)$-RWC, if for all $\mathbf{x} \in \mathbb{R}^d$ with $\mathrm{NS}(\mathbf{x}) \le k$,
+      \[
+        (1 - \epsilon)\, \|\mathbf{x}\|_2^2 \le \|\mathbf{A}\mathbf{x}\|_2^2 \le (1 + \epsilon)\, \|\mathbf{x}\|_2^2.
+      \]
+    context: "Extension of RIP to numerically sparse vectors. RWC implies RIP (since exactly sparse vectors are numerically sparse) and also implies NSP. This is the key structural assumption used in the projected gradient descent analysis."
+
+  - type: lemma
+    number: "4"
+    name: ""
+    statement: |
+      For $\mathbf{A} \in \mathbb{R}^{n \times d}$ and $\epsilon \in (0,1)$, if $\mathbf{A}$ is $(\epsilon, 4k)$-RWC, it also satisfies $k$-NSP.
+    context: "Shows that RWC is a quantitative strengthening of NSP. Used to connect the RWC assumption to the basis pursuit guarantee."
+    proof_notes:
+      - label: "(5)"
+        content: |
+          $\|\mathbf{v}\|_1 \le 2\,\|\mathbf{v}_S\|_1 \le 2\sqrt{k}\,\|\mathbf{v}_S\|_2 \le 2\sqrt{k}\,\|\mathbf{v}\|_2$.
+        description: "Bounds the ell_1 norm of a vector v in the kernel of A (satisfying the NSP violation condition) in terms of its ell_2 norm, showing NS(v) <= 4k. Then RWC gives a contradiction since Av = 0 but ||v||_2 > 0."
+
+  - type: lemma
+    number: "5"
+    name: ""
+    statement: |
+      For $\mathbf{A} \in \mathbb{R}^{n \times d}$ and $\epsilon \in (0,1)$, if $\mathbf{A}$ satisfies $\bigl(\frac{\epsilon}{5}, \frac{25k}{\epsilon^2}\bigr)$-RIP, it is also $(\epsilon, k)$-RWC.
+    context: "Transfers RIP (approximate isometry on exactly sparse vectors) to RWC (approximate isometry on numerically sparse vectors) via the shelling decomposition of Lemma 3, with constant overhead in the sparsity parameter."
+
+  - type: theorem
+    number: "2"
+    name: "Noise-tolerant basis pursuit"
+    statement: |
+      Consider an instance of the noisy sparse recovery problem $\mathbf{b} = \mathbf{A}\mathbf{x}^\star + \boldsymbol{\xi}$, where $\|\boldsymbol{\xi}\|_2 \le \Delta$. If $\mathbf{A}$ is $(\epsilon, 4k)$-RWC for any $\epsilon \in (0, \frac{1}{2}]$, then $\|\mathbf{x} - \mathbf{x}^\star\|_2 \le 4\Delta$, where
+      \[
+        \mathbf{x} := \operatorname{argmin}_{\substack{\mathbf{x} \in \mathbb{R}^d \\ \|\mathbf{A}\mathbf{x} - \mathbf{b}\|_2 \le \Delta}} \|\mathbf{x}\|_1.
+      \]
+    context: "Generalizes Theorem 1 to the noisy setting. Basis pursuit with a relaxed feasibility constraint recovers x* up to error O(Delta), scaling linearly with the noise level."
+    proof_notes:
+      - label: "error bound chain"
+        content: |
+          $\|\mathbf{x} - \mathbf{x}^\star\|_2^2 \le \frac{1}{1-\epsilon}\,\|\mathbf{A}(\mathbf{x} - \mathbf{x}^\star)\|_2^2 \le \frac{4}{1-\epsilon}\bigl(\|\mathbf{A}\mathbf{x} - \mathbf{b}\|_2^2 + \|\mathbf{A}\mathbf{x}^\star - \mathbf{b}\|_2^2\bigr) \le \frac{8\Delta^2}{1-\epsilon} \le 16\Delta^2$.
+        description: "Uses RWC on v = x - x* (which has NS(v) <= 4k by Lemma 1 and inequality (5)), then the triangle inequality and the feasibility constraints."
+
+  - type: remark
+    number: "2"
+    name: ""
+    statement: |
+      In situations where it is important to output proper hypotheses, i.e., estimates $\mathbf{x}$ which are truly $k$-sparse, we can take any hypothesis $\tilde{\mathbf{x}}$ and truncate it to its largest $k$ coordinates. This will at most double the distance to $\mathbf{x}^\star$, due to the observation
+      \[
+        \hat{\mathbf{x}}_{S_k(\tilde{\mathbf{x}})} = \operatorname{argmin}_{\substack{\hat{\mathbf{x}} \in \mathbb{R}^d \\ \operatorname{nnz}(\hat{\mathbf{x}}) \le k}} \|\mathbf{x} - \hat{\mathbf{x}}\|_2
+      \]
+      \[
+        \implies \|\tilde{\mathbf{x}}_{S_k(\tilde{\mathbf{x}})} - \mathbf{x}^\star\|_2 \le \|\tilde{\mathbf{x}} - \tilde{\mathbf{x}}_{S_k(\tilde{\mathbf{x}})}\|_2 + \|\tilde{\mathbf{x}} - \mathbf{x}^\star\|_2 \le 2\,\|\tilde{\mathbf{x}} - \mathbf{x}^\star\|_2,
+      \]
+      where $S_k(\tilde{\mathbf{x}})$ denotes the indices of $\tilde{\mathbf{x}}$'s $k$ largest coordinates by magnitude.
+    context: "Truncation to top-k coordinates at most doubles the recovery error. Used in the projected gradient descent algorithm to produce k-sparse outputs."
+
+  - type: lemma
+    number: "6"
+    name: ""
+    statement: |
+      Let $\mathbf{A} \in \mathbb{R}^{n \times d}$ and $\mathbf{v} \in \mathbb{R}^d$. If $\mathbf{A}$ is $(\frac{1}{2}, k)$-RWC and $\mathrm{NS}(\mathbf{v}) \le k$, then
+      \[
+        \|\mathbf{g}_{S_k(\mathbf{g})}\|_2 \le \frac{3}{2}\,\|\mathbf{v}\|_2, \quad \text{for } \mathbf{g} := \mathbf{A}^\top \mathbf{A}\mathbf{v}.
+      \]
+    context: "Shows that the gradient step A^T A v, when restricted to its top k coordinates, has ell_2 norm at most (3/2)||v||_2. Key tool for the projected gradient descent analysis: the gradient is decomposed into a 'short' component (top k coordinates, ell_2 norm O(||v||_2)) and a 'flat' component (remaining coordinates, ell_infinity norm O(||v||_2 / sqrt(k)))."
+    proof_notes:
+      - label: "Cauchy-Schwarz bound"
+        content: |
+          $\|\mathbf{h}\|_2^2 = \langle \mathbf{h}, \mathbf{g} \rangle = \langle \mathbf{h}, \mathbf{A}^\top \mathbf{A}\mathbf{v} \rangle \le \|\mathbf{A}\mathbf{h}\|_2\,\|\mathbf{A}\mathbf{v}\|_2 \le \frac{3}{2}\,\|\mathbf{h}\|_2\,\|\mathbf{v}\|_2$
+        description: "Where h = g_{S_k(g)} is k-sparse. Uses RWC on both h and v to bound ||Ah||_2 and ||Av||_2."
+
+  - type: proposition
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of the noiseless problem $\mathbf{b} = \mathbf{A}\mathbf{x}^\star$ with $\operatorname{nnz}(\mathbf{x}^\star) \le k$, let $\mathbf{x}_0 \in \mathbb{R}^d$ have $\operatorname{nnz}(\mathbf{x}_0) \le k$ and $\|\mathbf{x}_0 - \mathbf{x}^\star\|_2 \le R$. Suppose $\mathbf{A}$ is $(\frac{1}{2}, 2^{16}k)$-RWC, and $\mathbf{x} \in \mathbb{R}^d$ satisfies
+      \[
+        \|\mathbf{x} - \mathbf{x}^\star\|_2 \le R, \quad \mathbf{x} \in \mathcal{X} := \bigl\{\mathbf{x} \in \mathbb{R}^d \mid \|\mathbf{x} - \mathbf{x}_0\|_1 \le \sqrt{2kR}\bigr\}.
+      \]
+      Then, one of the following two situations must occur, where we denote $\mathbf{v} := \mathbf{x} - \mathbf{x}^\star$:
+      1. $\|\mathbf{A}\mathbf{v}\|_2^2 \ge \frac{R^2}{32}$ and $\mathbf{A}^\top \mathbf{A}\mathbf{v} = \mathbf{s} + \mathbf{f}$ for some $\mathbf{s}, \mathbf{f} \in \mathbb{R}^d$ with $\|\mathbf{s}\|_2 \le \frac{3R}{2}$, $\|\mathbf{f}\|_\infty \le \frac{3}{2^9 \sqrt{k}}\,R$.
+      2. $\|\mathbf{v}\|_2 \le \frac{R}{4}$.
+      In the former case, letting $\eta := \frac{1}{180}$ and $\mathbf{x}' \leftarrow \operatorname{argmin}_{\mathbf{x}' \in \mathcal{X}} \bigl\{\langle \eta \mathbf{g}, \mathbf{x}' - \mathbf{x}\rangle + \frac{1}{2}\|\mathbf{x}' - \mathbf{x}\|_2^2\bigr\}$, we have
+      \[
+        \|\mathbf{x}' - \mathbf{x}^\star\|_2^2 \le \|\mathbf{x} - \mathbf{x}^\star\|_2^2 - \frac{R^2}{14400}.
+      \]
+    context: "One-step analysis for the projected gradient descent algorithm. Shows that either the current iterate is already close to x* (Case 2), or a single projected gradient step makes Omega(R^2) progress on the squared distance (Case 1). The short-flat decomposition of the gradient is the key structural insight."
+    proof_notes:
+      - label: "flat bound"
+        content: |
+          $\|\mathbf{f}\|_\infty \le \min_{i \in \operatorname{supp}(\mathbf{s})} |\mathbf{s}_i| \le \frac{1}{2^8 \sqrt{k}}\,\|\mathbf{s}\|_2 \le \frac{3}{2^9 \sqrt{k}}\,R$.
+        description: "Bounds the ell_infinity norm of the flat component f = g - s by relating it to the minimum coordinate of the short component s on its support."
+      - label: "progress bound"
+        content: |
+          $\|\mathbf{v}\|_2^2 - \|\mathbf{v}'\|_2^2 \ge 2\eta\,\|\mathbf{A}\mathbf{v}\|_2^2 + \langle 2\eta \mathbf{f}, \mathbf{x}' - \mathbf{x}\rangle + \|\mathbf{x} - \mathbf{x}'\|_2^2 \ge \frac{\eta R^2}{40} - \frac{9\eta^2 R^2}{4} \ge \frac{R^2}{14400}$.
+        description: "Uses the first-order optimality condition, the short-flat decomposition, and the choice eta = 1/180 to show net progress."
+
+  - type: corollary
+    number: "1"
+    name: ""
+    statement: |
+      In the setting of the noiseless problem, let $\mathbf{x}_0 \in \mathbb{R}^d$ have $\operatorname{nnz}(\mathbf{x}_0) \le k$ and $\|\mathbf{x}_0 - \mathbf{x}^\star\|_2 \le R$, and suppose $\mathbf{A}$ is $(\frac{1}{2}, 2^{16}k)$-RWC. There is an algorithm which produces $\hat{\mathbf{x}} \in \mathbb{R}^d$ satisfying $\operatorname{nnz}(\hat{\mathbf{x}}) \le k$ and $\|\hat{\mathbf{x}} - \mathbf{x}^\star\|_2 \le \frac{R}{2}$, in time $O(nd)$.
+    context: "Implements one phase of the projected gradient descent algorithm by iterating Proposition 1. Halves the distance to x* in O(1) iterations, each costing O(nd) time."
+
+  - type: theorem
+    number: "3"
+    name: "Sparse recovery via projected gradient descent"
+    statement: |
+      In the setting of the noiseless problem $\mathbf{b} = \mathbf{A}\mathbf{x}^\star$ with $\operatorname{nnz}(\mathbf{x}^\star) \le k$, let $\|\mathbf{x}^\star\|_2 \le R$, and suppose $\mathbf{A}$ is $(\frac{1}{2}, 2^{16}k)$-RWC. There is an algorithm which produces $\hat{\mathbf{x}} \in \mathbb{R}^d$ satisfying $\operatorname{nnz}(\hat{\mathbf{x}}) \le k$ and $\|\hat{\mathbf{x}} - \mathbf{x}^\star\|_2 \le r$, in time
+      \[
+        O\!\left(nd \log\!\left(\frac{R}{r}\right)\right).
+      \]
+    context: "Main result for sparse recovery via projected gradient descent. Achieves the same O(Delta) recovery guarantee as basis pursuit (Theorem 2) in the noisy case, but runs in nearly-linear time O(nd log(R/r)) rather than requiring an LP solver."
+
+  - type: remark
+    number: "3"
+    name: ""
+    statement: |
+      In addition to sparse recovery (i.e., underconstrained linear regression), the frameworks described in this lecture extend to varying degrees to solve a variety of other linear inverse problems with structural assumptions on the solution, including low-rank matrix generalizations of compressed sensing, and recovering permutation or orthogonal matrices.
+    context: "Broader context: the RIP/RWC framework and the short-flat decomposition strategy extend beyond sparse vectors to structured matrix recovery problems such as matrix completion."
