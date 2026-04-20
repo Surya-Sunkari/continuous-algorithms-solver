@@ -1,0 +1,11 @@
+Let $D_\alpha(P \| Q) := \frac{1}{\alpha - 1} \log(\int_\Omega P(\omega)^\alpha Q(\omega)^{1-\alpha} \mathrm{d}\omega)$ denote the R\'enyi divergence of order $\alpha \geq 1$ between two probability distributions $P, Q$ supported on the same sample space $\Omega$.
+
+\begin{enumerate}
+    \item[(i)] Prove that if $\alpha \leq \beta$, then $D_\alpha(P \| Q) \leq D_\beta(P \| Q)$. You may use that for fixed $P, Q$, $\log(\int_\Omega P(\omega)^\alpha Q(\omega)^{1-\alpha} \mathrm{d}\omega)$ is convex as a function of $\alpha$.
+    \item[(ii)] Prove that $\lim_{\alpha \to 1^+} D_\alpha(P \| Q) = D_{\mathrm{KL}}(P \| Q)$,\footnote{We use $\lim_{\cdot \to \cdot^+}$ to denote a one-sided limit from the right.} assuming $D_\alpha(P \| Q) < \infty$ for some $\alpha > 1$.
+    \item[(iii)] Let $f : \Omega \to \Omega'$ be arbitrary, and let $P^f$ denote the density of $f(\omega)$ for $\omega \sim P$, and similarly define $Q^f$. Prove that for all $\alpha \geq 1$,
+    \[
+    \int_{\Omega'} \left( \frac{P^f(\omega')}{Q^f(\omega')} \right)^\alpha Q^f(\omega') \mathrm{d}\omega' \leq \int_\Omega \left( \frac{P(\omega)}{Q(\omega)} \right)^\alpha Q(\omega) \mathrm{d}\omega
+    \]
+    and conclude that $D_\alpha(f(P) \| f(Q)) \leq D_\alpha(P \| Q)$.
+\end{enumerate}

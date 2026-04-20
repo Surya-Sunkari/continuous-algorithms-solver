@@ -1,0 +1,15 @@
+The \emph{underdamped Langevin dynamics} (ULD) is the drift-diffusion process on $\{(\mathbf{x}_t, \mathbf{v}_t)\}_{t \geq 0} \subset \mathbb{R}^d \times \mathbb{R}^d$ satisfying the following stochastic differential equation, for a parameter $\gamma > 0$:\footnote{Note the similarity to the accelerated gradient flow ODE (Proposition 2, Part V). Coincidence?}
+\[
+\mathrm{d} \begin{pmatrix} \mathbf{x}_t \\ \mathbf{v}_t \end{pmatrix} = \begin{pmatrix} \mathbf{v}_t \\ -\mathbf{v}_t - \gamma \nabla V(\mathbf{x}_t) \end{pmatrix} \mathrm{d}t + \begin{pmatrix} \mathbf{0}_d & \mathbf{0}_d \\ \mathbf{0}_d & \sqrt{2\gamma}\mathbf{I}_d \end{pmatrix} \mathrm{d}\mathbf{B}_t,
+\]
+where $\{\mathbf{B}_t\}_{t \geq 0}$ is Brownian motion in $\mathbb{R}^{2d}$, and $V : \mathbb{R}^d \to \mathbb{R}$ satisfies $\int \exp(-V(\mathbf{x})) \mathrm{d}\mathbf{x} < \infty$.
+
+\begin{enumerate}[(i)]
+    \item Let $\mathcal{L}$ be the generator of the ULD. Give a formula for $\mathcal{L}f$, for a smooth function $f : \mathbb{R}^{2d} \to \mathbb{R}$.
+    \item Let $\mathcal{L}^*$ be the adjoint of $\mathcal{L}$. Give a formula for $\mathcal{L}^* \pi$, for a probability density $\pi \in \mathcal{P}(\mathbb{R}^{2d})$.
+    \item Verify that
+    \[
+    \pi^\star(\mathbf{x}, \mathbf{v}) \propto \exp\left( -V(\mathbf{x}) - \frac{1}{2\gamma} \|\mathbf{v}\|_2^2 \right)
+    \]
+    is a stationary distribution for the ULD.
+\end{enumerate}
