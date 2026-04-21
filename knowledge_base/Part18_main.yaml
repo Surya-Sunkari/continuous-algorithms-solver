@@ -1,0 +1,169 @@
+source: "Part18_main.pdf"
+lecture_number: 18
+title: "Restricted Gaussian dynamics"
+items:
+  - type: definition
+    number: "1"
+    name: "Restricted Gaussian oracle"
+    statement: |
+      We say $\mathcal{O}$ is a restricted Gaussian oracle (RGO) for $\psi : \mathbb{R}^d \to \mathbb{R}$ if for any $v \in \mathbb{R}^d$ and $\lambda \in \mathbb{R}_{\geq 0}$, $\mathcal{O}(\lambda, v)$ returns a sample from the density on $\mathbb{R}^d$
+      \[
+        \propto \exp\left(-\frac{\lambda}{2} \|x - v\|_2^2 - \psi(x)\right).
+      \]
+    context: "Central object of Part XVIII. Plays an analogous role to a proximal oracle for optimization, but in the sampling setting. Supports efficient implementation when $\\psi$ is simple (coordinatewise separable, e.g., $\\|x\\|_1$ or indicator of an axis-aligned box) or when $\\psi + \\frac{\\lambda}{2}\\|\\cdot - v\\|_2^2$ is extremely well-conditioned."
+
+  - type: lemma
+    number: "1"
+    name: "Rejection sampling analysis"
+    statement: |
+      Let $\pi, \mu$ be probability densities over the same sample space $\Omega$, and suppose $\pi \propto P$, $\mu \propto Q$ for nonnegative functions $P : \Omega \to \mathbb{R}_{\geq 0}$, $Q : \Omega \to \mathbb{R}_{\geq 0}$. Suppose that
+      \[
+        P(\omega) \leq Q(\omega) \text{ for all } \omega \in \Omega.
+      \]
+      Let $N_P := \int_{\Omega} P(\omega) d\omega$, $N_Q := \int_{\Omega} Q(\omega) d\omega$. There is an algorithm that samples from $\pi$, using an expected $\frac{N_Q}{N_P}$ samples from $\mu$, $\frac{N_Q}{N_P}$ evaluations of $Q$, and $\frac{N_Q}{N_P}$ evaluations of $P$.
+    context: "Generic rejection sampling bound. The algorithm samples $\\omega \\sim \\mu$ and accepts with probability $P(\\omega)/Q(\\omega)$. Used as the core building block of Lemma 2 for implementing an RGO when $\\psi + \\frac{\\lambda}{2}\\|\\cdot - v\\|_2^2$ is well-conditioned."
+    proof_notes:
+      - label: "acceptance probability"
+        content: |
+          \int_{\Omega} \mu(\omega) \cdot \frac{P(\omega)}{Q(\omega)} d\omega = \int_{\Omega} \frac{Q(\omega)}{N_Q} \cdot \frac{P(\omega)}{Q(\omega)} d\omega = \frac{N_P}{N_Q}
+        description: "Per-iteration acceptance probability in rejection sampling; drives the expected number of iterations to $N_Q/N_P$."
+      - label: "output density"
+        content: |
+          \propto Q(\omega) \cdot \frac{P(\omega)}{Q(\omega)} = P(\omega)
+        description: "Conditional on returning, the output has density exactly proportional to $P$, hence equals $\\pi$."
+
+  - type: lemma
+    number: "2"
+    name: "RGO via rejection sampling for well-conditioned potentials"
+    statement: |
+      Let $\psi : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and $\mu$-strongly convex, and let $(\lambda, v) \in \mathbb{R}_{\geq 0} \times \mathbb{R}^d$. Assume we know $x^\star := \operatorname{argmin}_{x \in \mathbb{R}^d} \psi(x) + \frac{\lambda}{2} \|x - v\|_2^2$. Then we can sample from the density (1) in
+      \[
+        O\left(\left(\frac{L+\lambda}{\mu+\lambda}\right)^{d/2}\right) \text{ expected value queries to } \psi,
+      \]
+      and
+      \[
+        O\left(\left(\frac{L+\lambda}{\mu+\lambda}\right)^{d/2} d\right) \text{ expected additional time.}
+      \]
+    context: "Shows that an RGO can be implemented with essentially $O(1)$ value queries when $\\lambda \\gg Ld$, since then $(L+\\lambda)/(\\mu+\\lambda) = 1 + O(1/d)$. This is the key primitive that enables the proximal sampling framework to reduce to nearly-well-conditioned inner subproblems."
+    proof_notes:
+      - label: "rejection sampling instantiation"
+        content: |
+          P(x) \leftarrow \exp(-U(x)), \quad Q(x) \leftarrow \exp\left(-U(x^\star) - \frac{\mu+\lambda}{2} \|x - x^\star\|_2^2\right), \text{ where } U(x) := \psi(x) + \frac{\lambda}{2}\|x - v\|_2^2
+        description: "Choice of upper envelope $Q$: a Gaussian centered at the minimizer with inverse covariance $\\mu + \\lambda$. Pointwise $P \\leq Q$ follows from strong convexity of $U$."
+      - label: "ratio bound"
+        content: |
+          \frac{N_Q}{N_P} \leq \frac{\int \exp\left(-U(x^\star) - \frac{\mu+\lambda}{2}\|x-x^\star\|_2^2\right)dx}{\int \exp\left(-U(x^\star) - \frac{L+\lambda}{2}\|x-x^\star\|_2^2\right)dx} = \left(\frac{L+\lambda}{\mu+\lambda}\right)^{d/2}
+        description: "Upper bound on the rejection sampling ratio, obtained by using smoothness of $U$ to lower bound the denominator by a Gaussian integral with inverse covariance $L+\\lambda$."
+
+  - type: theorem
+    number: "1"
+    name: "Well-conditioned proximal sampling"
+    statement: |
+      Let $V : \mathbb{R}^d \to \mathbb{R}$ be $\mu$-strongly convex, let $\pi^\star \propto \exp(-V)$, and let $\eta \leq \frac{1}{\mu}$. Consider the algorithm which initializes $x^{(0)} \leftarrow \operatorname{argmin}_{x \in \mathbb{R}^d} V(x)$, and then iterates for all $0 \leq k < K$:
+      \begin{align*}
+        y^{(k)} &\sim \text{density} \propto \exp\left(-\frac{1}{2\eta} \|x^{(k)} - \cdot\|_2^2\right), \\
+        x^{(k+1)} &\sim \text{density} \propto \exp\left(-V(\cdot) - \frac{1}{2\eta} \|y^{(k)} - \cdot\|_2^2\right).
+      \end{align*}
+      Then letting $\pi^{(K)}$ denote the law of $x^{(K)}$,
+      \[
+        D_{\mathrm{KL}}(\pi^{(K)} \| \pi^\star) \leq \epsilon^2, \text{ for } K \geq \frac{2}{\eta \mu} \log\left(\frac{d}{\eta \mu \epsilon^2}\right).
+      \]
+    context: "Main theorem of Part XVIII: the proximal sampler iteration converges to $\\pi^\\star$ in KL at rate $1 - O(\\eta \\mu)$ per iteration. The $y$-step is a Gaussian convolution; the $x$-step implements an RGO with $\\psi = V$, $v = y^{(k)}$, $\\lambda = 1/\\eta$. Choosing $\\eta = 1/(Ld)$ (Corollary 1) or $\\eta = 1/L$ (Corollary 2) controls the conditioning of the inner RGO subproblem."
+    proof_notes:
+      - label: "joint density interpretation"
+        content: |
+          (x,y) \text{ joint density} \propto \exp\left(-V(x) - \frac{1}{2\eta}\|x-y\|_2^2\right)
+        description: "The updates alternate-sample the conditional marginals of this extended joint density; the $x$-marginal is exactly $\\pi^\\star$, and the conditional of $y \\mid x$ is $\\mathcal{N}(x, \\eta I_d)$."
+      - label: "final KL bound"
+        content: |
+          W_2^2(\pi^{(K-1)}, \pi^\star) \leq W_2^2(\pi^{(0)}, \pi^\star) \cdot \left(\frac{1}{1+\eta\mu}\right)^{2(K-1)} \leq 2\eta\epsilon^2, \quad D_{\mathrm{KL}}(\pi^{(K)}\|\pi^\star) \leq \frac{1}{2\eta}\mathbb{E}\|y^{(K-1)} - y_\star^{(K-1)}\|_2^2 \leq \epsilon^2
+        description: "Chaining the $W_2^2$ contraction of Lemma 4 with the LSI-based KL-from-$W_2^2$ estimate (equation (4)) and the data processing inequality (Lemma 5). Uses initial bound $W_2^2(\\pi^{(0)}, \\pi^\\star) \\leq 2d/\\mu$ (Lemma 5, Part XVI)."
+
+  - type: corollary
+    number: "1"
+    name: "Well-conditioned proximal sampler with cheap RGO"
+    statement: |
+      Let $V : \mathbb{R}^d \to \mathbb{R}$ be $L$-smooth and $\mu$-strongly convex, and let $\pi^\star \propto \exp(-V)$, $\kappa := L/\mu$, $\epsilon \in (0,1)$. There is an algorithm that samples within $\epsilon$ total variation distance of $\pi^\star$, using
+      \[
+        O\left(\kappa d \log^2\left(\frac{\kappa d}{\epsilon}\right)\right) \text{ queries to } V.
+      \]
+    context: "Applies Theorem 1 with $\\eta = 1/(Ld)$. Each RGO subproblem has condition number $(L + 1/\\eta)/(\\mu + 1/\\eta) \\leq 1 + 1/d$, so Lemma 2 implements it with $O(\\log(\\kappa d/\\epsilon))$ queries. Total outer iterations $K = O(\\kappa d \\log(\\kappa d/\\epsilon))$. Quadratically improves over MALA in the dependence on $\\kappa$."
+    proof_notes:
+      - label: "RGO condition number"
+        content: |
+          \frac{L + 1/\eta}{\mu + 1/\eta} \leq \frac{L(d+1)}{Ld} \leq 1 + \frac{1}{d}
+        description: "Bound on the inner RGO's condition number when $\\eta = 1/(Ld)$, which makes the rejection-sampling ratio $(1 + 1/d)^{d/2} = O(1)$."
+
+  - type: corollary
+    number: "2"
+    name: "Reduction from well-conditioned to constant-conditioned sampling"
+    statement: |
+      If there is an algorithm which, given oracle query access to $L$-smooth and $\mu$-strongly convex $V : \mathbb{R}^d \to \mathbb{R}$, uses a total of $\mathcal{T}(\kappa, d, \epsilon)$ queries to achieve total variation distance $\epsilon$, there is an algorithm using $K \cdot \mathcal{T}(2, d, \frac{\epsilon}{2K})$ queries to achieve total variation distance $\epsilon$, for $K = O(\kappa \log(\frac{\kappa d}{\epsilon}))$.
+    context: "Key reduction: condition number dependence of any sampler can be improved to linear in $\\kappa$ (without loss of generality) by using it inside the proximal sampler loop with $\\eta = 1/L$. If one has an algorithm running in $f(\\kappa)\\sqrt{d}\\,\\mathrm{polylog}(d/\\epsilon)$, this yields $O(\\kappa\\sqrt{d}\\,\\mathrm{polylog}(\\kappa d/\\epsilon))$ regardless of $f$."
+    proof_notes:
+      - label: "inner condition number"
+        content: |
+          \frac{L + 1/\eta}{\mu + 1/\eta} \leq \frac{2L}{L} = 2, \quad \eta = \frac{1}{L}
+        description: "Choosing $\\eta = 1/L$ makes each inner RGO problem $2$-conditioned, so any black-box sampler can handle it with $\\mathcal{T}(2, d, \\cdot)$ queries."
+
+  - type: lemma
+    number: "3"
+    name: "Reversibility of the proximal sampler"
+    statement: |
+      In the setting of Theorem 1, the updates (2) (viewed as a transition distribution from $x^{(k)} \to x^{(k+1)}$) are reversible with respect to $\pi^\star$ (and hence have stationary density $\pi^\star$).
+    context: "Establishes that the proximal sampler Markov chain has $\\pi^\\star$ as its stationary distribution and is reversible. The proof uses the symmetric form of the extended density $\\pi^\\star_{\\mathrm{ext}}(x,y) \\propto \\exp(-V(x) - \\frac{1}{2\\eta}\\|x-y\\|_2^2)$; the chain alternates sampling conditional marginals of this joint."
+    proof_notes:
+      - label: "detailed balance expression"
+        content: |
+          \pi^\star(x) \mathcal{T}_x(x') = \int \frac{\pi^\star_{\mathrm{ext}}(x,y)\, \pi^\star_{\mathrm{ext}}(x',y)}{\int_z \pi^\star_{\mathrm{ext}}(z,y)\, dz}\, dy
+        description: "The product of the stationary density and the transition kernel is a symmetric function of $(x, x')$; this symmetry is detailed balance, hence reversibility."
+
+  - type: lemma
+    number: "4"
+    name: "$W_2^2$ contraction of the proximal sampler"
+    statement: |
+      In the setting of Theorem 1, let $\pi^{(k)}$ denote the law of $x^{(k)}$ for all $0 \leq k \leq K$. Then,
+      \[
+        W_2^2(\pi^{(k+1)}, \pi^\star) \leq \frac{1}{(1+\eta\mu)^2} W_2^2(\pi^{(k)}, \pi^\star) \text{ for all } 0 \leq k < K.
+      \]
+    context: "Quadratic Wasserstein contraction at rate $1/(1+\\eta\\mu)^2$ per iteration. Proven by coupling the Gaussian noise in the $y$-step and then using Talagrand's transportation inequality and LSI applied to the $(\\mu + 1/\\eta)$-strongly logconcave conditional densities $\\pi^\\star_y$."
+    proof_notes:
+      - label: "(3)"
+        content: |
+          \pi^\star_y(x) \propto \exp\left(-V(x) - \frac{1}{2\eta}\|x - y\|_2^2\right)
+        description: "Induced conditional density used in the coupling argument; $(\\mu + 1/\\eta)$-strongly logconcave, hence satisfies Talagrand's transportation inequality and an LSI."
+      - label: "(4)"
+        content: |
+          W_2^2(\pi^\star_{y^{(k)}}, \pi^\star_{y_\star^{(k)}}) \leq \frac{2}{\mu + 1/\eta} D_{\mathrm{KL}}(\pi^\star_{y^{(k)}} \| \pi^\star_{y_\star^{(k)}}) \leq \frac{1}{(\mu+1/\eta)^2} \mathbb{E}_{x \sim \pi^\star_{y^{(k)}}}\left[\left\|\nabla \log\frac{\pi^\star_{y^{(k)}}(x)}{\pi^\star_{y_\star^{(k)}}(x)}\right\|_2^2\right] = \frac{1}{(1+\eta\mu)^2} \|y^{(k)} - y_\star^{(k)}\|_2^2
+        description: "Chain: Talagrand $\\to$ relative Fisher information (via LSI) $\\to$ closed-form gradient (independent of $x$ since only the Gaussian factor depends on $y$) $\\to$ explicit $W_2^2$ bound between conditionals. This is the crux of the proximal sampler convergence analysis; also reused directly in the final KL bound in Theorem 1."
+
+  - type: lemma
+    number: "5"
+    name: "Data processing inequality for KL divergence"
+    statement: |
+      Let $\Omega$ be some sample space that distributions $P, Q$ are supported on. Let $f : \Omega \to \Omega'$ be arbitrary, and let $P^f$ denote the density of $f(\omega)$ for $\omega \sim P$, and similarly define $Q^f$. Then,
+      \[
+        D_{\mathrm{KL}}(P^f \| Q^f) \leq D_{\mathrm{KL}}(P \| Q).
+      \]
+    context: "Standard DPI for KL divergence; proven by Jensen's inequality applied to the convex function $X \\log X$ on the preimage fibers of $f$. Used in Lemma 6 and in the final step of the proof of Theorem 1 to pass from KL between extended joint distributions to KL between marginals."
+
+  - type: lemma
+    number: "6"
+    name: "KL contraction for Markov processes"
+    statement: |
+      Let $P_\xi, Q_\xi$ be distributions supported on $\Omega$, indexed by a random variable $\xi \sim \pi$. Let $\widetilde{P}$ be the joint distribution of $(\omega, \xi)$ for $\xi \sim \pi$ and then $\omega \sim P_\xi$, and similarly define $\widetilde{Q}$. Finally, let $P, Q$ be the marginal distributions of $\widetilde{P}, \widetilde{Q}$ on $\Omega$ (i.e., averaged over $\xi \sim \pi$). Then,
+      \[
+        D_{\mathrm{KL}}(P \| Q) \leq \mathbb{E}_{\xi \sim \pi}[D_{\mathrm{KL}}(P_\xi \| Q_\xi)].
+      \]
+    context: "Corollary of the data processing inequality (Lemma 5) for the coordinate projection $f(\\omega, \\xi) = \\omega$. Used to pass from pointwise (per-$y$) KL bounds on conditional densities to a bound on the marginal KL divergence of the proximal-sampler iterates."
+
+  - type: remark
+    number: "1.2-alt-proofs"
+    name: "Alternative proofs via heat flow and localization"
+    statement: |
+      Theorem 1 admits multiple alternative proofs beyond the [LST21] presentation used in Section 2:
+      \begin{itemize}
+        \item [CCSW22] views the $x^{(k)} \to y^{(k)}$ step as a forward heat flow ($dx_t = dB_t$) and $y^{(k)} \to x^{(k+1)}$ as the backwards heat flow (Brownian motion conditioned on an endpoint). Using this perspective, [CCSW22] extend Theorem 1 to target densities that are merely log-Sobolev with constant $1/\mu$ (not necessarily logconcave), and also derive weaker $\chi^2$ results under Poincaré.
+        \item [CE22] views the RGO as a Markov chain induced by a localization process --- in particular, by stochastic localization with Gaussian noise. The convolution view of $y^{(k)} \mid x^{(k)} \sim \mathcal{N}(x^{(k)}, \eta I_d)$ yields improved log-Sobolev constants (Theorem 4, Part XVI), which drives entropy decay.
+      \end{itemize}
+    context: "Extensions of the RGO framework: log-Sobolev targets, $\\chi^2$/Poincaré bounds, and the stochastic localization interpretation. These results are used when the target density is not strongly logconcave but satisfies a weaker functional inequality."
